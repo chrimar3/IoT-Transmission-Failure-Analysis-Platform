@@ -103,7 +103,7 @@ async function generateScreenshots() {
             }
 
             // Wait a moment for any animations
-            await page.waitForTimeout(1000);
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             const screenshotPath = path.join(screenshotDir, screenshot.filename);
             await page.screenshot({
@@ -140,7 +140,7 @@ async function generateScreenshots() {
             console.log(`📱 Capturing ${screenshot.description}...`);
 
             await page.goto(screenshot.url, { waitUntil: 'networkidle2' });
-            await page.waitForTimeout(1000);
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             const screenshotPath = path.join(screenshotDir, screenshot.filename);
             await page.screenshot({

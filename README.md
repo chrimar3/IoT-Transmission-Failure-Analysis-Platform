@@ -91,20 +91,16 @@ We developed a complete end-to-end analytics platform that:
 > **📋 Note**: Screenshots will be added once the application is running. For now, you can view the live demo at the URLs above.
 
 #### 📊 Analytics Dashboard
-<!-- ![Dashboard Overview](docs/images/screenshots/dashboard-overview.png) -->
-**Coming Soon**: Main analytics dashboard showing 124.9M sensor readings analysis
+![Dashboard Overview](docs/images/screenshots/dashboard-overview.png)
 
 #### 💡 Business Insights Panel
 <!-- ![Insights Panel](docs/images/screenshots/insights-panel.png) -->
-**Coming Soon**: Interactive insights showing $273,500 annual savings opportunities
 
 #### 🔌 API Response Example
-<!-- ![API Response](docs/images/screenshots/api-response.png) -->
-**Coming Soon**: Live JSON API response with real sensor data
+![API Response](docs/images/screenshots/api-response.png)
 
 #### 📱 Mobile Responsive Views
-<!-- ![Mobile Dashboard](docs/images/screenshots/mobile-dashboard.png) -->
-**Coming Soon**: Mobile-optimized dashboard for executive presentations
+![Mobile Dashboard](docs/images/screenshots/mobile-dashboard.png)
 
 ---
 **🎯 How to Generate Screenshots:**

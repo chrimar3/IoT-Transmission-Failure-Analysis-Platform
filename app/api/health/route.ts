@@ -4,14 +4,14 @@
  */
 
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase'
+import { supabaseServer } from '@/lib/supabase-server'
 
 export async function GET() {
   try {
     const startTime = Date.now()
 
     // Test database connectivity
-    const supabase = createServerClient()
+    const supabase = supabaseServer
     const { data, error } = await supabase
       .from('sensor_readings')
       .select('count', { count: 'exact', head: true })
