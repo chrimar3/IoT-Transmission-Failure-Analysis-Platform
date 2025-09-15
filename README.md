@@ -137,16 +137,30 @@ We developed a complete end-to-end analytics platform that:
 | **Compressed Size** | 7.65GB → 456MB (94.5% compression) |
 
 ### 🔗 Dataset Access
-The complete 124.9M record dataset is stored in Cloudflare R2 storage:
-- **Base Path**: `bangkok-dataset/`
-- **Structure**:
-  - `bangkok-dataset/2018/floor-{1-7}.csv.gz`
-  - `bangkok-dataset/2019/floor-{1-7}.csv.gz`
-  - `bangkok-dataset/metadata/`
-- **Format**: Gzip-compressed CSV files
-- **Compression**: Lossless 94.5% reduction (7.65GB → 456MB)
-- **Integrity**: 100% data integrity guarantee
-- **Access**: Available for authorized research and development
+
+> **⚠️ Large Dataset Not Included in Repository**
+> Due to GitHub file size limitations, the 7.65GB Bangkok CU-BEMS dataset is stored externally.
+
+**Dataset Details:**
+- **Total Size**: 7.65GB raw data (456MB compressed)
+- **Records**: 124,903,795 sensor readings
+- **Format**: CSV files (14 files, 2 years of data)
+- **Coverage**: 144 IoT sensors across 7 floors
+- **Time Period**: 18 months (2018-2019)
+
+**Access Options:**
+1. **Cloud Storage**: Dataset available via Cloudflare R2
+   - Path: `bangkok-dataset/{year}/floor-{1-7}.csv.gz`
+   - Compressed with lossless GZIP (94.5% reduction)
+
+2. **Sample Data**: Representative samples included in repository
+   - `bangkok-insights.json` - Key findings and metrics
+   - `validation-report.json` - Data quality assessment
+   - `upload-summary.json` - Processing statistics
+
+3. **Research Access**: Contact repository owner for full dataset access
+   - Academic/Research use: Free access available
+   - Commercial use: Licensing available
 
 ## 💡 Critical Insights Discovered
 

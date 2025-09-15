@@ -9,23 +9,27 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
-    // Handle module aliases to match tsconfig.json paths
-    '^@/(.*)$': '<rootDir>/src/$1',
+    // Handle module aliases to match new structure
+    '^@/(.*)$': '<rootDir>/$1',
   },
   testEnvironment: 'jest-environment-jsdom', // Use jsdom for React components
   testMatch: [
-    '**/__tests__/**/*.(ts|tsx|js)',
-    '**/*.(test|spec).(ts|tsx|js)'
+    '<rootDir>/tests/**/*.(test|spec).(ts|tsx|js)',
+    '<rootDir>/app/**/__tests__/**/*.(test|spec).(ts|tsx|js)',
+    '<rootDir>/components/**/__tests__/**/*.(test|spec).(ts|tsx|js)',
+    '<rootDir>/lib/**/__tests__/**/*.(test|spec).(ts|tsx|js)'
   ],
   collectCoverageFrom: [
-    'src/**/*.{js,jsx,ts,tsx}',
-    'app/api/**/*.{js,ts}',
-    '!src/**/*.d.ts',
-    '!src/app/layout.tsx',
-    '!src/app/globals.css',
+    'app/**/*.{js,jsx,ts,tsx}',
+    'components/**/*.{js,jsx,ts,tsx}',
+    'lib/**/*.{js,jsx,ts,tsx}',
+    '!**/*.d.ts',
+    '!**/layout.tsx',
+    '!**/globals.css',
     '!**/__tests__/**',
     '!**/*.test.*',
-    '!**/*.spec.*'
+    '!**/*.spec.*',
+    '!tests/**/*'
   ],
   coverageThreshold: {
     global: {

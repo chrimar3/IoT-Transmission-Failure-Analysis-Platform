@@ -12,11 +12,11 @@ import { GET as TimeseriesGET } from '../../app/api/readings/timeseries/route'
 import { GET as PatternsGET } from '../../app/api/readings/patterns/route'
 
 // Mock R2 client and Supabase
-jest.mock('../../src/lib/r2-client')
-jest.mock('../../src/lib/supabase-server')
+jest.mock('../../lib/r2-client')
+jest.mock('../../lib/supabase-server')
 
-import { r2Client } from '../../src/lib/r2-client'
-import { supabaseServer } from '../../src/lib/supabase-server'
+import { r2Client } from '../../lib/r2-client'
+import { supabaseServer } from '../../lib/supabase-server'
 
 const mockR2Client = r2Client as jest.Mocked<typeof r2Client>
 const mockSupabaseServer = supabaseServer as jest.Mocked<typeof supabaseServer>
