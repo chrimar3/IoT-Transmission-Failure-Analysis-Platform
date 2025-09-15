@@ -84,18 +84,34 @@ We developed a complete end-to-end analytics platform that:
 - **Landing Page**: [http://localhost:3000](http://localhost:3000) - Platform overview
 - **API Endpoint**: [http://localhost:3000/api/insights](http://localhost:3000/api/insights) - Raw JSON data
 
-### Screenshots
+### 📸 Screenshots
 <details>
-<summary>View Platform Screenshots</summary>
+<summary>🖼️ View Platform Screenshots</summary>
 
-#### Analytics Dashboard
-![Dashboard](docs/images/dashboard.png)
+> **📋 Note**: Screenshots will be added once the application is running. For now, you can view the live demo at the URLs above.
 
-#### Insights Engine
-![Insights](docs/images/insights.png)
+#### 📊 Analytics Dashboard
+<!-- ![Dashboard Overview](docs/images/screenshots/dashboard-overview.png) -->
+**Coming Soon**: Main analytics dashboard showing 124.9M sensor readings analysis
 
-#### API Response
-![API](docs/images/api-response.png)
+#### 💡 Business Insights Panel
+<!-- ![Insights Panel](docs/images/screenshots/insights-panel.png) -->
+**Coming Soon**: Interactive insights showing $273,500 annual savings opportunities
+
+#### 🔌 API Response Example
+<!-- ![API Response](docs/images/screenshots/api-response.png) -->
+**Coming Soon**: Live JSON API response with real sensor data
+
+#### 📱 Mobile Responsive Views
+<!-- ![Mobile Dashboard](docs/images/screenshots/mobile-dashboard.png) -->
+**Coming Soon**: Mobile-optimized dashboard for executive presentations
+
+---
+**🎯 How to Generate Screenshots:**
+1. Run the application: `npm run dev`
+2. Visit dashboard at: http://localhost:3000/dashboard
+3. Take screenshots and save to `docs/images/screenshots/`
+4. Update this README with actual image links
 
 </details>
 

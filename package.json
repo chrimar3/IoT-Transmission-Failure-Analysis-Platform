@@ -20,6 +20,8 @@
     "db:status": "node scripts/check-supabase-status.js",
     "db:migrate": "psql $DATABASE_URL -f config/database/001-core-schema.sql -f config/database/002-materialized-views.sql -f config/database/003-rls-policies.sql",
     "env:check": "node scripts/validate-env.js",
+    "screenshots": "node scripts/generate-screenshots.js",
+    "docs:images": "npm run screenshots",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "rm -rf .next dist coverage",
