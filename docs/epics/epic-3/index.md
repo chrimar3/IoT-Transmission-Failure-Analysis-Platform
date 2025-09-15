@@ -1,0 +1,28 @@
+# Epic 3: Core Analytics Dashboard
+
+## Table of Contents
+
+- [Epic 3: Core Analytics Dashboard](#table-of-contents)
+  - [Epic Overview](./epic-overview.md)
+  - [Stories](./stories.md)
+    - [Story 3.1: Executive Summary Dashboard](./stories.md#story-31-executive-summary-dashboard)
+    - [Story 3.2: Interactive Time-Series Visualizations](./stories.md#story-32-interactive-time-series-visualizations)
+    - [Story 3.3: Failure Pattern Detection Engine](./stories.md#story-33-failure-pattern-detection-engine)
+    - [Story 3.4: Data Export and Reporting](./stories.md#story-34-data-export-and-reporting)
+  - [MVP Feature Priorities (Reduced Scope)](./mvp-feature-priorities-reduced-scope.md)
+    - [Core Features (Must Have)](./mvp-feature-priorities-reduced-scope.md#core-features-must-have)
+    - [Professional Features (Should Have)](./mvp-feature-priorities-reduced-scope.md#professional-features-should-have)
+    - [Deferred Features (Post-MVP)](./mvp-feature-priorities-reduced-scope.md#deferred-features-post-mvp)
+  - [Technical Implementation Details](./technical-implementation-details.md)
+    - [Chart Performance Optimization](./technical-implementation-details.md#chart-performance-optimization)
+    - [Anomaly Detection Algorithm (MVP)](./technical-implementation-details.md#anomaly-detection-algorithm-mvp)
+  - [Definition of Done](./definition-of-done.md)
+  - [Dependencies](./dependencies.md)
+  - [Risks & Mitigations](./risks-mitigations.md)
+  - [Success Metrics](./success-metrics.md)
+    - [Technical Performance](./success-metrics.md#technical-performance)
+    - [User Engagement](./success-metrics.md#user-engagement)
+    - [Business Impact](./success-metrics.md#business-impact)
+  - [Implementation Timeline](./implementation-timeline.md)
+    - [Week 4](./implementation-timeline.md#week-4)
+    - [Week 5](./implementation-timeline.md#week-5)

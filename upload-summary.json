@@ -1,0 +1,32 @@
+{
+  "uploadSummary": {
+    "status": "validation_complete_ready_for_upload",
+    "timestamp": "2025-09-13T12:26:03.192Z",
+    "dataset": {
+      "totalFiles": 14,
+      "totalRecords": 124903795,
+      "totalSizeGB": 7.65,
+      "dataQualityScore": 100,
+      "floors": [1, 2, 3, 4, 5, 6, 7],
+      "sensors": 144,
+      "years": ["2018", "2019"],
+      "equipmentTypes": ["AC1", "AC10", "AC11", "AC12", "AC13", "AC14", "AC2", "AC3", "AC4", "AC5", "AC6", "AC7", "AC8", "AC9", "Equipment", "Lighting", "S1"]
+    },
+    "compressionAnalysis": {
+      "method": "gzip",
+      "averageRatio": "94.5%",
+      "lossless": true,
+      "integrityGuarantee": "100%"
+    },
+    "r2Structure": {
+      "basePath": "bangkok-dataset",
+      "structure": {
+        "2018": "bangkok-dataset/2018/floor-{1-7}.csv.gz",
+        "2019": "bangkok-dataset/2019/floor-{1-7}.csv.gz",
+        "metadata": "bangkok-dataset/metadata/"
+      }
+    },
+    "readyForInsightExtraction": true,
+    "nextPhase": "Build insight extraction engine for Epic 3 dashboard"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "name": "cu-bems-iot-platform",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "typecheck": "tsc --noEmit",
+    "db:test": "node scripts/test-supabase-connection.js",
+    "db:setup": "node scripts/setup-supabase-schema.js",
+    "db:status": "node scripts/check-supabase-status.js",
+    "db:setup-prod": "node scripts/setup-database.js --environment=production"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.3.2",
+    "@supabase/auth-helpers-nextjs": "^0.8.7",
+    "@supabase/supabase-js": "^2.39.0",
+    "csv-parser": "^3.2.0",
+    "date-fns": "^3.0.6",
+    "dotenv": "^17.2.2",
+    "lucide-react": "^0.294.0",
+    "next": "14.2.15",
+    "next-auth": "^4.24.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.48.2",
+    "recharts": "^2.10.1",
+    "stripe": "^14.11.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.6",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.10.5",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.2.15",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-mock-extended": "^3.0.5",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

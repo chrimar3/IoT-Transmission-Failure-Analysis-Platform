@@ -1,0 +1,2437 @@
+{
+  "validationTimestamp": "2025-09-13T12:26:03.192Z",
+  "summary": {
+    "totalFiles": 14,
+    "validFiles": 14,
+    "totalRecords": 124903795,
+    "totalSizeMB": 7652.809999999999,
+    "overallQualityScore": 100,
+    "readyForUpload": true
+  },
+  "fileResults": {
+    "2018Floor1-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-06-30T21:00:00.000Z,SENSOR_1_Z1_LIGHT,1,Lighting,12.94,kW,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_1_Z1_PLUG,1,Equipment,18.56,kW,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_1_Z2_AC1,1,AC1,45.24,kW,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_1_Z2_AC2,1,AC2,0.01,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_1_Z2_AC3,1,AC3,0.01,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_1_Z2_AC4,1,AC4,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_1_Z2_LIGHT,1,Lighting,13.76,kW,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_1_Z2_PLUG,1,Equipment,17.64,kW,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_1_Z3_LIGHT,1,Lighting,10.92,kW,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_1_Z3_PLUG,1,Equipment,0.89,kW,warning"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 2872969,
+        "uniqueTimestamps": 264485,
+        "uniqueSensorIds": [
+          "SENSOR_1_Z1_LIGHT",
+          "SENSOR_1_Z1_PLUG",
+          "SENSOR_1_Z2_AC1",
+          "SENSOR_1_Z2_AC2",
+          "SENSOR_1_Z2_AC3",
+          "SENSOR_1_Z2_AC4",
+          "SENSOR_1_Z2_LIGHT",
+          "SENSOR_1_Z2_PLUG",
+          "SENSOR_1_Z3_LIGHT",
+          "SENSOR_1_Z3_PLUG",
+          "SENSOR_1_Z4_LIGHT"
+        ],
+        "sensorCount": 11,
+        "floorNumbers": [
+          1
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting"
+        ],
+        "units": [
+          "kW"
+        ],
+        "statuses": [
+          "critical",
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 2872969,
+          "2019": 0,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2018Floor2-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-06-30T21:00:00.000Z,SENSOR_2_Z1_AC1,2,AC1,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_2_Z1_LIGHT,2,Lighting,0.01,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_2_Z1_PLUG,2,Equipment,0.15,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_2_Z1_S1,2,S1,28.36,degC,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_2_Z1_S1,2,S1,58.93,RH%,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_2_Z1_S1,2,S1,0,lux,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_2_Z2_AC1,2,AC1,1.08,kW,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_2_Z2_AC2,2,AC2,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_2_Z2_AC3,2,AC3,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_2_Z2_AC4,2,AC4,0,kW,offline"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 7266158,
+        "uniqueTimestamps": 264577,
+        "uniqueSensorIds": [
+          "SENSOR_2_Z1_AC1",
+          "SENSOR_2_Z1_LIGHT",
+          "SENSOR_2_Z1_PLUG",
+          "SENSOR_2_Z1_S1",
+          "SENSOR_2_Z2_AC1",
+          "SENSOR_2_Z2_AC10",
+          "SENSOR_2_Z2_AC11",
+          "SENSOR_2_Z2_AC12",
+          "SENSOR_2_Z2_AC13",
+          "SENSOR_2_Z2_AC14",
+          "SENSOR_2_Z2_AC2",
+          "SENSOR_2_Z2_AC3",
+          "SENSOR_2_Z2_AC4",
+          "SENSOR_2_Z2_AC5",
+          "SENSOR_2_Z2_AC6",
+          "SENSOR_2_Z2_AC7",
+          "SENSOR_2_Z2_AC8",
+          "SENSOR_2_Z2_AC9",
+          "SENSOR_2_Z2_LIGHT",
+          "SENSOR_2_Z2_PLUG",
+          "SENSOR_2_Z2_S1",
+          "SENSOR_2_Z3_LIGHT",
+          "SENSOR_2_Z3_PLUG",
+          "SENSOR_2_Z3_S1",
+          "SENSOR_2_Z4_AC1",
+          "SENSOR_2_Z4_LIGHT",
+          "SENSOR_2_Z4_PLUG"
+        ],
+        "sensorCount": 27,
+        "floorNumbers": [
+          2
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC10",
+          "AC11",
+          "AC12",
+          "AC13",
+          "AC14",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5",
+          "AC6",
+          "AC7",
+          "AC8",
+          "AC9",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "critical",
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 7266158,
+          "2019": 0,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2018Floor3-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-06-30T21:00:00.000Z,SENSOR_3_Z1_AC1,3,AC1,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_3_Z1_AC2,3,AC2,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_3_Z1_AC3,3,AC3,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_3_Z1_AC4,3,AC4,0.07,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_3_Z1_LIGHT,3,Lighting,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_3_Z1_PLUG,3,Equipment,0.03,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_3_Z1_S1,3,S1,28.44,degC,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_3_Z1_S1,3,S1,60.67,RH%,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_3_Z1_S1,3,S1,0,lux,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_3_Z2_AC1,3,AC1,0,kW,offline"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 4592826,
+        "uniqueTimestamps": 205859,
+        "uniqueSensorIds": [
+          "SENSOR_3_Z1_AC1",
+          "SENSOR_3_Z1_AC2",
+          "SENSOR_3_Z1_AC3",
+          "SENSOR_3_Z1_AC4",
+          "SENSOR_3_Z1_LIGHT",
+          "SENSOR_3_Z1_PLUG",
+          "SENSOR_3_Z1_S1",
+          "SENSOR_3_Z2_AC1",
+          "SENSOR_3_Z2_LIGHT",
+          "SENSOR_3_Z2_PLUG",
+          "SENSOR_3_Z2_S1",
+          "SENSOR_3_Z3_LIGHT",
+          "SENSOR_3_Z3_PLUG",
+          "SENSOR_3_Z4_AC1",
+          "SENSOR_3_Z4_LIGHT",
+          "SENSOR_3_Z4_PLUG",
+          "SENSOR_3_Z4_S1",
+          "SENSOR_3_Z5_AC1",
+          "SENSOR_3_Z5_LIGHT",
+          "SENSOR_3_Z5_PLUG",
+          "SENSOR_3_Z5_S1"
+        ],
+        "sensorCount": 21,
+        "floorNumbers": [
+          3
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "critical",
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 4592826,
+          "2019": 0,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2018Floor4-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-06-30T21:00:00.000Z,SENSOR_4_Z1_AC1,4,AC1,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_4_Z1_AC2,4,AC2,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_4_Z1_AC3,4,AC3,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_4_Z1_AC4,4,AC4,8.74,kW,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_4_Z1_LIGHT,4,Lighting,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_4_Z1_PLUG,4,Equipment,0.22,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_4_Z1_S1,4,S1,28.28,degC,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_4_Z1_S1,4,S1,62.5,RH%,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_4_Z1_S1,4,S1,0,lux,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_4_Z2_AC1,4,AC1,0,kW,offline"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 5058368,
+        "uniqueTimestamps": 231641,
+        "uniqueSensorIds": [
+          "SENSOR_4_Z1_AC1",
+          "SENSOR_4_Z1_AC2",
+          "SENSOR_4_Z1_AC3",
+          "SENSOR_4_Z1_AC4",
+          "SENSOR_4_Z1_LIGHT",
+          "SENSOR_4_Z1_PLUG",
+          "SENSOR_4_Z1_S1",
+          "SENSOR_4_Z2_AC1",
+          "SENSOR_4_Z2_LIGHT",
+          "SENSOR_4_Z2_PLUG",
+          "SENSOR_4_Z2_S1",
+          "SENSOR_4_Z3_LIGHT",
+          "SENSOR_4_Z3_PLUG",
+          "SENSOR_4_Z4_AC1",
+          "SENSOR_4_Z4_LIGHT",
+          "SENSOR_4_Z4_PLUG",
+          "SENSOR_4_Z4_S1",
+          "SENSOR_4_Z5_AC1",
+          "SENSOR_4_Z5_LIGHT",
+          "SENSOR_4_Z5_PLUG",
+          "SENSOR_4_Z5_S1"
+        ],
+        "sensorCount": 21,
+        "floorNumbers": [
+          4
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 5058368,
+          "2019": 0,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2018Floor5-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-06-30T21:00:00.000Z,SENSOR_5_Z1_AC1,5,AC1,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_5_Z1_AC2,5,AC2,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_5_Z1_AC3,5,AC3,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_5_Z1_AC4,5,AC4,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_5_Z1_LIGHT,5,Lighting,0.34,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_5_Z1_PLUG,5,Equipment,0.17,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_5_Z1_S1,5,S1,27.54,degC,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_5_Z1_S1,5,S1,68.29,RH%,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_5_Z1_S1,5,S1,3,lux,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_5_Z2_AC1,5,AC1,0,kW,offline"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 5607965,
+        "uniqueTimestamps": 258689,
+        "uniqueSensorIds": [
+          "SENSOR_5_Z1_AC1",
+          "SENSOR_5_Z1_AC2",
+          "SENSOR_5_Z1_AC3",
+          "SENSOR_5_Z1_AC4",
+          "SENSOR_5_Z1_LIGHT",
+          "SENSOR_5_Z1_PLUG",
+          "SENSOR_5_Z1_S1",
+          "SENSOR_5_Z2_AC1",
+          "SENSOR_5_Z2_LIGHT",
+          "SENSOR_5_Z2_PLUG",
+          "SENSOR_5_Z2_S1",
+          "SENSOR_5_Z3_LIGHT",
+          "SENSOR_5_Z3_PLUG",
+          "SENSOR_5_Z4_AC1",
+          "SENSOR_5_Z4_LIGHT",
+          "SENSOR_5_Z4_PLUG",
+          "SENSOR_5_Z4_S1",
+          "SENSOR_5_Z5_AC1",
+          "SENSOR_5_Z5_LIGHT",
+          "SENSOR_5_Z5_PLUG",
+          "SENSOR_5_Z5_S1"
+        ],
+        "sensorCount": 21,
+        "floorNumbers": [
+          5
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 5607965,
+          "2019": 0,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2018Floor6-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-06-30T21:00:00.000Z,SENSOR_6_Z1_AC1,6,AC1,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_6_Z1_LIGHT,6,Lighting,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_6_Z1_PLUG,6,Equipment,0.31,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_6_Z1_S1,6,S1,27.57,degC,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_6_Z1_S1,6,S1,72.19,RH%,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_6_Z1_S1,6,S1,0,lux,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_6_Z2_AC1,6,AC1,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_6_Z2_LIGHT,6,Lighting,0.01,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_6_Z2_PLUG,6,Equipment,0.13,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_6_Z2_S1,6,S1,27.79,degC,normal"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 5719494,
+        "uniqueTimestamps": 264585,
+        "uniqueSensorIds": [
+          "SENSOR_6_Z1_AC1",
+          "SENSOR_6_Z1_LIGHT",
+          "SENSOR_6_Z1_PLUG",
+          "SENSOR_6_Z1_S1",
+          "SENSOR_6_Z2_AC1",
+          "SENSOR_6_Z2_LIGHT",
+          "SENSOR_6_Z2_PLUG",
+          "SENSOR_6_Z2_S1",
+          "SENSOR_6_Z3_LIGHT",
+          "SENSOR_6_Z3_PLUG",
+          "SENSOR_6_Z4_AC1",
+          "SENSOR_6_Z4_AC2",
+          "SENSOR_6_Z4_AC3",
+          "SENSOR_6_Z4_AC4",
+          "SENSOR_6_Z4_LIGHT",
+          "SENSOR_6_Z4_PLUG",
+          "SENSOR_6_Z4_S1",
+          "SENSOR_6_Z5_AC1",
+          "SENSOR_6_Z5_LIGHT",
+          "SENSOR_6_Z5_PLUG",
+          "SENSOR_6_Z5_S1"
+        ],
+        "sensorCount": 21,
+        "floorNumbers": [
+          6
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 5719494,
+          "2019": 0,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2018Floor7-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-06-30T21:00:00.000Z,SENSOR_7_Z1_AC1,7,AC1,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_7_Z1_AC2,7,AC2,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_7_Z1_AC3,7,AC3,0.01,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_7_Z1_AC4,7,AC4,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_7_Z1_LIGHT,7,Lighting,0,kW,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_7_Z1_PLUG,7,Equipment,0.02,kW,warning",
+          "2018-06-30T21:00:00.000Z,SENSOR_7_Z1_S1,7,S1,28.23,degC,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_7_Z1_S1,7,S1,64.42,RH%,normal",
+          "2018-06-30T21:00:00.000Z,SENSOR_7_Z1_S1,7,S1,0,lux,offline",
+          "2018-06-30T21:00:00.000Z,SENSOR_7_Z2_AC1,7,AC1,0,kW,offline"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 5731023,
+        "uniqueTimestamps": 264580,
+        "uniqueSensorIds": [
+          "SENSOR_7_Z1_AC1",
+          "SENSOR_7_Z1_AC2",
+          "SENSOR_7_Z1_AC3",
+          "SENSOR_7_Z1_AC4",
+          "SENSOR_7_Z1_LIGHT",
+          "SENSOR_7_Z1_PLUG",
+          "SENSOR_7_Z1_S1",
+          "SENSOR_7_Z2_AC1",
+          "SENSOR_7_Z2_LIGHT",
+          "SENSOR_7_Z2_PLUG",
+          "SENSOR_7_Z2_S1",
+          "SENSOR_7_Z3_LIGHT",
+          "SENSOR_7_Z3_PLUG",
+          "SENSOR_7_Z4_AC1",
+          "SENSOR_7_Z4_LIGHT",
+          "SENSOR_7_Z4_PLUG",
+          "SENSOR_7_Z4_S1",
+          "SENSOR_7_Z5_AC1",
+          "SENSOR_7_Z5_LIGHT",
+          "SENSOR_7_Z5_PLUG",
+          "SENSOR_7_Z5_S1"
+        ],
+        "sensorCount": 21,
+        "floorNumbers": [
+          7
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 5731023,
+          "2019": 0,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2019Floor1-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-12-31T22:00:00.000Z,SENSOR_1_Z1_LIGHT,1,Lighting,0.03,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_1_Z1_PLUG,1,Equipment,0.58,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_1_Z2_AC1,1,AC1,2.31,kW,normal",
+          "2018-12-31T22:00:00.000Z,SENSOR_1_Z2_AC2,1,AC2,21.15,kW,normal",
+          "2018-12-31T22:00:00.000Z,SENSOR_1_Z2_AC3,1,AC3,0.01,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_1_Z2_AC4,1,AC4,0.02,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_1_Z2_LIGHT,1,Lighting,17.37,kW,normal",
+          "2018-12-31T22:00:00.000Z,SENSOR_1_Z2_PLUG,1,Equipment,15.2,kW,normal",
+          "2018-12-31T22:00:00.000Z,SENSOR_1_Z3_LIGHT,1,Lighting,10.01,kW,normal",
+          "2018-12-31T22:00:00.000Z,SENSOR_1_Z3_PLUG,1,Equipment,0.38,kW,warning"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 5773735,
+        "uniqueTimestamps": 524948,
+        "uniqueSensorIds": [
+          "SENSOR_1_Z1_LIGHT",
+          "SENSOR_1_Z1_PLUG",
+          "SENSOR_1_Z2_AC1",
+          "SENSOR_1_Z2_AC2",
+          "SENSOR_1_Z2_AC3",
+          "SENSOR_1_Z2_AC4",
+          "SENSOR_1_Z2_LIGHT",
+          "SENSOR_1_Z2_PLUG",
+          "SENSOR_1_Z3_LIGHT",
+          "SENSOR_1_Z3_PLUG",
+          "SENSOR_1_Z4_LIGHT"
+        ],
+        "sensorCount": 11,
+        "floorNumbers": [
+          1
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting"
+        ],
+        "units": [
+          "kW"
+        ],
+        "statuses": [
+          "critical",
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 0,
+          "2019": 5773735,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2019Floor2-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-12-31T22:00:00.000Z,SENSOR_2_Z1_AC1,2,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_2_Z1_LIGHT,2,Lighting,0.31,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_2_Z1_PLUG,2,Equipment,0.09,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_2_Z2_AC1,2,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_2_Z2_AC2,2,AC2,1.15,kW,normal",
+          "2018-12-31T22:00:00.000Z,SENSOR_2_Z2_AC3,2,AC3,0.85,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_2_Z2_AC4,2,AC4,0.91,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_2_Z2_AC5,2,AC5,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_2_Z2_AC6,2,AC6,0.24,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_2_Z2_AC7,2,AC7,0,kW,offline"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 17569212,
+        "uniqueTimestamps": 525055,
+        "uniqueSensorIds": [
+          "SENSOR_2_Z1_AC1",
+          "SENSOR_2_Z1_LIGHT",
+          "SENSOR_2_Z1_PLUG",
+          "SENSOR_2_Z1_S1",
+          "SENSOR_2_Z2_AC1",
+          "SENSOR_2_Z2_AC10",
+          "SENSOR_2_Z2_AC11",
+          "SENSOR_2_Z2_AC12",
+          "SENSOR_2_Z2_AC13",
+          "SENSOR_2_Z2_AC14",
+          "SENSOR_2_Z2_AC2",
+          "SENSOR_2_Z2_AC3",
+          "SENSOR_2_Z2_AC4",
+          "SENSOR_2_Z2_AC5",
+          "SENSOR_2_Z2_AC6",
+          "SENSOR_2_Z2_AC7",
+          "SENSOR_2_Z2_AC8",
+          "SENSOR_2_Z2_AC9",
+          "SENSOR_2_Z2_LIGHT",
+          "SENSOR_2_Z2_PLUG",
+          "SENSOR_2_Z2_S1",
+          "SENSOR_2_Z3_LIGHT",
+          "SENSOR_2_Z3_PLUG",
+          "SENSOR_2_Z3_S1",
+          "SENSOR_2_Z4_AC1",
+          "SENSOR_2_Z4_LIGHT",
+          "SENSOR_2_Z4_PLUG",
+          "SENSOR_2_Z4_S1"
+        ],
+        "sensorCount": 28,
+        "floorNumbers": [
+          2
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC10",
+          "AC11",
+          "AC12",
+          "AC13",
+          "AC14",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5",
+          "AC6",
+          "AC7",
+          "AC8",
+          "AC9",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 0,
+          "2019": 17569212,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2019Floor3-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-12-31T22:00:00.000Z,SENSOR_3_Z1_AC1,3,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_3_Z1_AC2,3,AC2,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_3_Z1_AC3,3,AC3,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_3_Z1_AC4,3,AC4,0.07,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_3_Z1_LIGHT,3,Lighting,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_3_Z1_PLUG,3,Equipment,0.03,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_3_Z2_AC1,3,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_3_Z2_LIGHT,3,Lighting,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_3_Z2_PLUG,3,Equipment,0.02,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_3_Z3_LIGHT,3,Lighting,0.02,kW,warning"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 13553692,
+        "uniqueTimestamps": 525131,
+        "uniqueSensorIds": [
+          "SENSOR_3_Z1_AC1",
+          "SENSOR_3_Z1_AC2",
+          "SENSOR_3_Z1_AC3",
+          "SENSOR_3_Z1_AC4",
+          "SENSOR_3_Z1_LIGHT",
+          "SENSOR_3_Z1_PLUG",
+          "SENSOR_3_Z1_S1",
+          "SENSOR_3_Z2_AC1",
+          "SENSOR_3_Z2_LIGHT",
+          "SENSOR_3_Z2_PLUG",
+          "SENSOR_3_Z2_S1",
+          "SENSOR_3_Z3_LIGHT",
+          "SENSOR_3_Z3_PLUG",
+          "SENSOR_3_Z4_AC1",
+          "SENSOR_3_Z4_LIGHT",
+          "SENSOR_3_Z4_PLUG",
+          "SENSOR_3_Z4_S1",
+          "SENSOR_3_Z5_AC1",
+          "SENSOR_3_Z5_LIGHT",
+          "SENSOR_3_Z5_PLUG",
+          "SENSOR_3_Z5_S1"
+        ],
+        "sensorCount": 21,
+        "floorNumbers": [
+          3
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "critical",
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 0,
+          "2019": 13553692,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2019Floor4-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-12-31T22:00:00.000Z,SENSOR_4_Z1_AC1,4,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_4_Z1_AC2,4,AC2,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_4_Z1_AC3,4,AC3,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_4_Z1_AC4,4,AC4,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_4_Z1_LIGHT,4,Lighting,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_4_Z1_PLUG,4,Equipment,0.27,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_4_Z2_AC1,4,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_4_Z2_LIGHT,4,Lighting,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_4_Z2_PLUG,4,Equipment,0.02,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_4_Z3_LIGHT,4,Lighting,0.02,kW,warning"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 13242331,
+        "uniqueTimestamps": 525071,
+        "uniqueSensorIds": [
+          "SENSOR_4_Z1_AC1",
+          "SENSOR_4_Z1_AC2",
+          "SENSOR_4_Z1_AC3",
+          "SENSOR_4_Z1_AC4",
+          "SENSOR_4_Z1_LIGHT",
+          "SENSOR_4_Z1_PLUG",
+          "SENSOR_4_Z1_S1",
+          "SENSOR_4_Z2_AC1",
+          "SENSOR_4_Z2_LIGHT",
+          "SENSOR_4_Z2_PLUG",
+          "SENSOR_4_Z2_S1",
+          "SENSOR_4_Z3_LIGHT",
+          "SENSOR_4_Z3_PLUG",
+          "SENSOR_4_Z4_AC1",
+          "SENSOR_4_Z4_LIGHT",
+          "SENSOR_4_Z4_PLUG",
+          "SENSOR_4_Z4_S1",
+          "SENSOR_4_Z5_AC1",
+          "SENSOR_4_Z5_LIGHT",
+          "SENSOR_4_Z5_PLUG",
+          "SENSOR_4_Z5_S1"
+        ],
+        "sensorCount": 21,
+        "floorNumbers": [
+          4
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "critical",
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 0,
+          "2019": 13242331,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2019Floor5-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-12-31T22:00:00.000Z,SENSOR_5_Z1_AC1,5,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_5_Z1_AC2,5,AC2,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_5_Z1_AC3,5,AC3,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_5_Z1_AC4,5,AC4,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_5_Z1_LIGHT,5,Lighting,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_5_Z1_PLUG,5,Equipment,0.13,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_5_Z2_AC1,5,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_5_Z2_LIGHT,5,Lighting,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_5_Z2_PLUG,5,Equipment,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_5_Z3_LIGHT,5,Lighting,0.02,kW,warning"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 13146207,
+        "uniqueTimestamps": 525079,
+        "uniqueSensorIds": [
+          "SENSOR_5_Z1_AC1",
+          "SENSOR_5_Z1_AC2",
+          "SENSOR_5_Z1_AC3",
+          "SENSOR_5_Z1_AC4",
+          "SENSOR_5_Z1_LIGHT",
+          "SENSOR_5_Z1_PLUG",
+          "SENSOR_5_Z1_S1",
+          "SENSOR_5_Z2_AC1",
+          "SENSOR_5_Z2_LIGHT",
+          "SENSOR_5_Z2_PLUG",
+          "SENSOR_5_Z2_S1",
+          "SENSOR_5_Z3_LIGHT",
+          "SENSOR_5_Z3_PLUG",
+          "SENSOR_5_Z4_AC1",
+          "SENSOR_5_Z4_LIGHT",
+          "SENSOR_5_Z4_PLUG",
+          "SENSOR_5_Z4_S1",
+          "SENSOR_5_Z5_AC1",
+          "SENSOR_5_Z5_LIGHT",
+          "SENSOR_5_Z5_PLUG",
+          "SENSOR_5_Z5_S1"
+        ],
+        "sensorCount": 21,
+        "floorNumbers": [
+          5
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 0,
+          "2019": 13146207,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2019Floor6-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-12-31T22:00:00.000Z,SENSOR_6_Z1_AC1,6,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_6_Z1_LIGHT,6,Lighting,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_6_Z1_PLUG,6,Equipment,0.2,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_6_Z2_AC1,6,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_6_Z2_LIGHT,6,Lighting,0.01,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_6_Z2_PLUG,6,Equipment,0.01,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_6_Z3_LIGHT,6,Lighting,0.02,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_6_Z3_PLUG,6,Equipment,0.28,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_6_Z4_AC1,6,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_6_Z4_AC2,6,AC2,0,kW,offline"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 10982825,
+        "uniqueTimestamps": 423673,
+        "uniqueSensorIds": [
+          "SENSOR_6_Z1_AC1",
+          "SENSOR_6_Z1_LIGHT",
+          "SENSOR_6_Z1_PLUG",
+          "SENSOR_6_Z1_S1",
+          "SENSOR_6_Z2_AC1",
+          "SENSOR_6_Z2_LIGHT",
+          "SENSOR_6_Z2_PLUG",
+          "SENSOR_6_Z2_S1",
+          "SENSOR_6_Z3_LIGHT",
+          "SENSOR_6_Z3_PLUG",
+          "SENSOR_6_Z4_AC1",
+          "SENSOR_6_Z4_AC2",
+          "SENSOR_6_Z4_AC3",
+          "SENSOR_6_Z4_AC4",
+          "SENSOR_6_Z4_LIGHT",
+          "SENSOR_6_Z4_PLUG",
+          "SENSOR_6_Z4_S1",
+          "SENSOR_6_Z5_AC1",
+          "SENSOR_6_Z5_LIGHT",
+          "SENSOR_6_Z5_PLUG",
+          "SENSOR_6_Z5_S1"
+        ],
+        "sensorCount": 21,
+        "floorNumbers": [
+          6
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 0,
+          "2019": 10982825,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    },
+    "2019Floor7-transformed.csv": {
+      "existence": {
+        "allFilesExist": true,
+        "missingFiles": [],
+        "fileSizes": {
+          "2018Floor1-transformed.csv": {
+            "bytes": 192657574,
+            "mb": "183.73",
+            "readable": 4
+          },
+          "2018Floor2-transformed.csv": {
+            "bytes": 463415802,
+            "mb": "441.95",
+            "readable": 4
+          },
+          "2018Floor3-transformed.csv": {
+            "bytes": 296470057,
+            "mb": "282.74",
+            "readable": 4
+          },
+          "2018Floor4-transformed.csv": {
+            "bytes": 326062834,
+            "mb": "310.96",
+            "readable": 4
+          },
+          "2018Floor5-transformed.csv": {
+            "bytes": 361550400,
+            "mb": "344.80",
+            "readable": 4
+          },
+          "2018Floor6-transformed.csv": {
+            "bytes": 369436838,
+            "mb": "352.32",
+            "readable": 4
+          },
+          "2018Floor7-transformed.csv": {
+            "bytes": 370842604,
+            "mb": "353.66",
+            "readable": 4
+          },
+          "2019Floor1-transformed.csv": {
+            "bytes": 386567723,
+            "mb": "368.66",
+            "readable": 4
+          },
+          "2019Floor2-transformed.csv": {
+            "bytes": 1113358393,
+            "mb": "1061.78",
+            "readable": 4
+          },
+          "2019Floor3-transformed.csv": {
+            "bytes": 867689192,
+            "mb": "827.49",
+            "readable": 4
+          },
+          "2019Floor4-transformed.csv": {
+            "bytes": 848237635,
+            "mb": "808.94",
+            "readable": 4
+          },
+          "2019Floor5-transformed.csv": {
+            "bytes": 841646623,
+            "mb": "802.66",
+            "readable": 4
+          },
+          "2019Floor6-transformed.csv": {
+            "bytes": 703246761,
+            "mb": "670.67",
+            "readable": 4
+          },
+          "2019Floor7-transformed.csv": {
+            "bytes": 883376269,
+            "mb": "842.45",
+            "readable": 4
+          }
+        },
+        "totalFiles": 14
+      },
+      "structure": {
+        "isValidStructure": true,
+        "lineCount": 1000,
+        "header": "timestamp,sensor_id,floor_number,equipment_type,reading_value,unit,status",
+        "sampleRows": [
+          "2018-12-31T22:00:00.000Z,SENSOR_7_Z1_AC1,7,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_7_Z1_AC2,7,AC2,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_7_Z1_AC3,7,AC3,0.01,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_7_Z1_AC4,7,AC4,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_7_Z1_LIGHT,7,Lighting,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_7_Z1_PLUG,7,Equipment,0.13,kW,warning",
+          "2018-12-31T22:00:00.000Z,SENSOR_7_Z2_AC1,7,AC1,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_7_Z2_LIGHT,7,Lighting,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_7_Z2_PLUG,7,Equipment,0,kW,offline",
+          "2018-12-31T22:00:00.000Z,SENSOR_7_Z3_LIGHT,7,Lighting,0.02,kW,warning"
+        ],
+        "errors": []
+      },
+      "quality": {
+        "recordCount": 13786990,
+        "uniqueTimestamps": 524978,
+        "uniqueSensorIds": [
+          "SENSOR_7_Z1_AC1",
+          "SENSOR_7_Z1_AC2",
+          "SENSOR_7_Z1_AC3",
+          "SENSOR_7_Z1_AC4",
+          "SENSOR_7_Z1_LIGHT",
+          "SENSOR_7_Z1_PLUG",
+          "SENSOR_7_Z1_S1",
+          "SENSOR_7_Z2_AC1",
+          "SENSOR_7_Z2_LIGHT",
+          "SENSOR_7_Z2_PLUG",
+          "SENSOR_7_Z2_S1",
+          "SENSOR_7_Z3_LIGHT",
+          "SENSOR_7_Z3_PLUG",
+          "SENSOR_7_Z4_AC1",
+          "SENSOR_7_Z4_LIGHT",
+          "SENSOR_7_Z4_PLUG",
+          "SENSOR_7_Z4_S1",
+          "SENSOR_7_Z5_AC1",
+          "SENSOR_7_Z5_LIGHT",
+          "SENSOR_7_Z5_PLUG",
+          "SENSOR_7_Z5_S1"
+        ],
+        "sensorCount": 21,
+        "floorNumbers": [
+          7
+        ],
+        "equipmentTypes": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "Equipment",
+          "Lighting",
+          "S1"
+        ],
+        "units": [
+          "RH%",
+          "degC",
+          "kW",
+          "lux"
+        ],
+        "statuses": [
+          "normal",
+          "offline",
+          "warning"
+        ],
+        "missingValues": 0,
+        "missingPercentage": 0,
+        "invalidTimestamps": 0,
+        "invalidReadingValues": 0,
+        "yearDistribution": {
+          "2018": 0,
+          "2019": 13786990,
+          "other": 0
+        },
+        "qualityScore": 100
+      }
+    }
+  },
+  "aggregateAnalysis": {
+    "allUniqueSensorIds": [
+      "SENSOR_1_Z1_LIGHT",
+      "SENSOR_1_Z1_PLUG",
+      "SENSOR_1_Z2_AC1",
+      "SENSOR_1_Z2_AC2",
+      "SENSOR_1_Z2_AC3",
+      "SENSOR_1_Z2_AC4",
+      "SENSOR_1_Z2_LIGHT",
+      "SENSOR_1_Z2_PLUG",
+      "SENSOR_1_Z3_LIGHT",
+      "SENSOR_1_Z3_PLUG",
+      "SENSOR_1_Z4_LIGHT",
+      "SENSOR_2_Z1_AC1",
+      "SENSOR_2_Z1_LIGHT",
+      "SENSOR_2_Z1_PLUG",
+      "SENSOR_2_Z1_S1",
+      "SENSOR_2_Z2_AC1",
+      "SENSOR_2_Z2_AC10",
+      "SENSOR_2_Z2_AC11",
+      "SENSOR_2_Z2_AC12",
+      "SENSOR_2_Z2_AC13",
+      "SENSOR_2_Z2_AC14",
+      "SENSOR_2_Z2_AC2",
+      "SENSOR_2_Z2_AC3",
+      "SENSOR_2_Z2_AC4",
+      "SENSOR_2_Z2_AC5",
+      "SENSOR_2_Z2_AC6",
+      "SENSOR_2_Z2_AC7",
+      "SENSOR_2_Z2_AC8",
+      "SENSOR_2_Z2_AC9",
+      "SENSOR_2_Z2_LIGHT",
+      "SENSOR_2_Z2_PLUG",
+      "SENSOR_2_Z2_S1",
+      "SENSOR_2_Z3_LIGHT",
+      "SENSOR_2_Z3_PLUG",
+      "SENSOR_2_Z3_S1",
+      "SENSOR_2_Z4_AC1",
+      "SENSOR_2_Z4_LIGHT",
+      "SENSOR_2_Z4_PLUG",
+      "SENSOR_2_Z4_S1",
+      "SENSOR_3_Z1_AC1",
+      "SENSOR_3_Z1_AC2",
+      "SENSOR_3_Z1_AC3",
+      "SENSOR_3_Z1_AC4",
+      "SENSOR_3_Z1_LIGHT",
+      "SENSOR_3_Z1_PLUG",
+      "SENSOR_3_Z1_S1",
+      "SENSOR_3_Z2_AC1",
+      "SENSOR_3_Z2_LIGHT",
+      "SENSOR_3_Z2_PLUG",
+      "SENSOR_3_Z2_S1",
+      "SENSOR_3_Z3_LIGHT",
+      "SENSOR_3_Z3_PLUG",
+      "SENSOR_3_Z4_AC1",
+      "SENSOR_3_Z4_LIGHT",
+      "SENSOR_3_Z4_PLUG",
+      "SENSOR_3_Z4_S1",
+      "SENSOR_3_Z5_AC1",
+      "SENSOR_3_Z5_LIGHT",
+      "SENSOR_3_Z5_PLUG",
+      "SENSOR_3_Z5_S1",
+      "SENSOR_4_Z1_AC1",
+      "SENSOR_4_Z1_AC2",
+      "SENSOR_4_Z1_AC3",
+      "SENSOR_4_Z1_AC4",
+      "SENSOR_4_Z1_LIGHT",
+      "SENSOR_4_Z1_PLUG",
+      "SENSOR_4_Z1_S1",
+      "SENSOR_4_Z2_AC1",
+      "SENSOR_4_Z2_LIGHT",
+      "SENSOR_4_Z2_PLUG",
+      "SENSOR_4_Z2_S1",
+      "SENSOR_4_Z3_LIGHT",
+      "SENSOR_4_Z3_PLUG",
+      "SENSOR_4_Z4_AC1",
+      "SENSOR_4_Z4_LIGHT",
+      "SENSOR_4_Z4_PLUG",
+      "SENSOR_4_Z4_S1",
+      "SENSOR_4_Z5_AC1",
+      "SENSOR_4_Z5_LIGHT",
+      "SENSOR_4_Z5_PLUG",
+      "SENSOR_4_Z5_S1",
+      "SENSOR_5_Z1_AC1",
+      "SENSOR_5_Z1_AC2",
+      "SENSOR_5_Z1_AC3",
+      "SENSOR_5_Z1_AC4",
+      "SENSOR_5_Z1_LIGHT",
+      "SENSOR_5_Z1_PLUG",
+      "SENSOR_5_Z1_S1",
+      "SENSOR_5_Z2_AC1",
+      "SENSOR_5_Z2_LIGHT",
+      "SENSOR_5_Z2_PLUG",
+      "SENSOR_5_Z2_S1",
+      "SENSOR_5_Z3_LIGHT",
+      "SENSOR_5_Z3_PLUG",
+      "SENSOR_5_Z4_AC1",
+      "SENSOR_5_Z4_LIGHT",
+      "SENSOR_5_Z4_PLUG",
+      "SENSOR_5_Z4_S1",
+      "SENSOR_5_Z5_AC1",
+      "SENSOR_5_Z5_LIGHT",
+      "SENSOR_5_Z5_PLUG",
+      "SENSOR_5_Z5_S1",
+      "SENSOR_6_Z1_AC1",
+      "SENSOR_6_Z1_LIGHT",
+      "SENSOR_6_Z1_PLUG",
+      "SENSOR_6_Z1_S1",
+      "SENSOR_6_Z2_AC1",
+      "SENSOR_6_Z2_LIGHT",
+      "SENSOR_6_Z2_PLUG",
+      "SENSOR_6_Z2_S1",
+      "SENSOR_6_Z3_LIGHT",
+      "SENSOR_6_Z3_PLUG",
+      "SENSOR_6_Z4_AC1",
+      "SENSOR_6_Z4_AC2",
+      "SENSOR_6_Z4_AC3",
+      "SENSOR_6_Z4_AC4",
+      "SENSOR_6_Z4_LIGHT",
+      "SENSOR_6_Z4_PLUG",
+      "SENSOR_6_Z4_S1",
+      "SENSOR_6_Z5_AC1",
+      "SENSOR_6_Z5_LIGHT",
+      "SENSOR_6_Z5_PLUG",
+      "SENSOR_6_Z5_S1",
+      "SENSOR_7_Z1_AC1",
+      "SENSOR_7_Z1_AC2",
+      "SENSOR_7_Z1_AC3",
+      "SENSOR_7_Z1_AC4",
+      "SENSOR_7_Z1_LIGHT",
+      "SENSOR_7_Z1_PLUG",
+      "SENSOR_7_Z1_S1",
+      "SENSOR_7_Z2_AC1",
+      "SENSOR_7_Z2_LIGHT",
+      "SENSOR_7_Z2_PLUG",
+      "SENSOR_7_Z2_S1",
+      "SENSOR_7_Z3_LIGHT",
+      "SENSOR_7_Z3_PLUG",
+      "SENSOR_7_Z4_AC1",
+      "SENSOR_7_Z4_LIGHT",
+      "SENSOR_7_Z4_PLUG",
+      "SENSOR_7_Z4_S1",
+      "SENSOR_7_Z5_AC1",
+      "SENSOR_7_Z5_LIGHT",
+      "SENSOR_7_Z5_PLUG",
+      "SENSOR_7_Z5_S1"
+    ],
+    "allFloorNumbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "allEquipmentTypes": [
+      "AC1",
+      "AC10",
+      "AC11",
+      "AC12",
+      "AC13",
+      "AC14",
+      "AC2",
+      "AC3",
+      "AC4",
+      "AC5",
+      "AC6",
+      "AC7",
+      "AC8",
+      "AC9",
+      "Equipment",
+      "Lighting",
+      "S1"
+    ],
+    "allUnits": [
+      "RH%",
+      "degC",
+      "kW",
+      "lux"
+    ],
+    "allStatuses": [
+      "critical",
+      "normal",
+      "offline",
+      "warning"
+    ],
+    "yearDistribution": {
+      "2018": 36848803,
+      "2019": 88054992,
+      "other": 0
+    }
+  },
+  "issues": [],
+  "recommendations": [
+    {
+      "action": "PROCEED",
+      "message": "Dataset validation passed. Ready for R2 upload.",
+      "priority": "HIGH"
+    }
+  ]
+}
