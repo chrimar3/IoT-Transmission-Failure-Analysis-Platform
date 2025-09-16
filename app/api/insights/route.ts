@@ -10,10 +10,10 @@ import path from 'path';
 // Load generated insights
 function loadInsights() {
   try {
-    const insightsPath = path.join(process.cwd(), 'bangkok-insights.json');
+    const insightsPath = path.join(process.cwd(), 'data', 'bangkok-insights.json');
     const insightsData = fs.readFileSync(insightsPath, 'utf8');
     return JSON.parse(insightsData);
-  } catch (error) {
+  } catch {
     // Fallback to mock data if file not found
     return {
       summary: {
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
  * GET /api/insights/summary
  * Returns executive summary of insights
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const insights = loadInsights();
 

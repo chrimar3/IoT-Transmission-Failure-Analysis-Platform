@@ -99,7 +99,7 @@ export class CUBEMSInsightEngine {
 
     // For MVP, we'll simulate loading with our validation report data
     // In production, this would stream from R2 or read from processed files
-    const validationReport = require('../../validation-report.json');
+    const validationReport = await import('../../data/validation-report.json');
 
     // Generate representative sample from validation metadata
     this.data = this.generateRepresentativeSample(validationReport);
