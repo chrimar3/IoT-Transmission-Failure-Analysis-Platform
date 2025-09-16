@@ -1,17 +1,132 @@
-# 🏢 CU-BEMS IoT Transmission Failure Analysis Platform
+<div align="center">
+  <img src="docs/images/banner.svg" alt="CU-BEMS IoT Analytics Platform Banner" width="100%" />
 
-[![Next.js](https://img.shields.io/badge/Next.js-14.2.15-black)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-blue)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.0-38B2AC)](https://tailwindcss.com/)
-[![Node.js](https://img.shields.io/badge/Node.js-18.0+-green)](https://nodejs.org/)
-[![Dataset](https://img.shields.io/badge/Dataset-124.9M_Records-orange)](https://github.com/chrimar3/IoT-Transmission-Failure-Analysis-Platform)
-[![Savings](https://img.shields.io/badge/Savings_Identified-$273,500-green)](https://github.com/chrimar3/IoT-Transmission-Failure-Analysis-Platform)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen)](https://github.com/chrimar3/IoT-Transmission-Failure-Analysis-Platform/actions)
-[![Coverage](https://img.shields.io/badge/Coverage-85%25+-brightgreen)](https://github.com/chrimar3/IoT-Transmission-Failure-Analysis-Platform)
+  <h1>🏢 CU-BEMS IoT Transmission Failure Analysis Platform</h1>
+
+  <p align="center">
+    <strong>Enterprise-Grade IoT Analytics Platform for Building Energy Management Systems</strong>
+  </p>
+
+  <p align="center">
+    Transforming 124.9M sensor records into $273,500 annual savings through AI-powered insights
+  </p>
+
+  <br />
+
+  <!-- Primary Badges -->
+  <p align="center">
+    <a href="https://github.com/chrimar3/IoT-Transmission-Failure-Analysis-Platform/actions">
+      <img src="https://img.shields.io/github/actions/workflow/status/chrimar3/IoT-Transmission-Failure-Analysis-Platform/ci.yml?style=for-the-badge&logo=github-actions&label=Build" alt="Build Status" />
+    </a>
+    <a href="#">
+      <img src="https://img.shields.io/badge/Coverage-85%25-brightgreen?style=for-the-badge&logo=codecov" alt="Code Coverage" />
+    </a>
+    <a href="https://github.com/chrimar3/IoT-Transmission-Failure-Analysis-Platform/blob/main/LICENSE">
+      <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
+    </a>
+    <a href="https://github.com/chrimar3/IoT-Transmission-Failure-Analysis-Platform/releases">
+      <img src="https://img.shields.io/badge/Version-1.0.0-purple?style=for-the-badge" alt="Version" />
+    </a>
+  </p>
+
+  <!-- Tech Stack Badges -->
+  <p align="center">
+    <img src="https://img.shields.io/badge/Next.js-14.2-black?style=flat-square&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/TypeScript-5.3-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React" />
+    <img src="https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/Supabase-2.39-3FCF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" />
+    <img src="https://img.shields.io/badge/PostgreSQL-15.0-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" />
+    <img src="https://img.shields.io/badge/R-4.3-276DC3?style=flat-square&logo=r&logoColor=white" alt="R" />
+  </p>
+
+  <!-- Stats Badges -->
+  <p align="center">
+    <img src="https://img.shields.io/badge/Dataset-124.9M_Records-orange?style=flat-square&logo=databricks" alt="Dataset Size" />
+    <img src="https://img.shields.io/badge/Savings-$273,500/year-success?style=flat-square&logo=cash-app" alt="Annual Savings" />
+    <img src="https://img.shields.io/badge/Sensors-144_IoT_Devices-blue?style=flat-square&logo=azure-iot-hub" alt="IoT Sensors" />
+    <img src="https://img.shields.io/badge/Data_Quality-100%25-brightgreen?style=flat-square&logo=checkmarx" alt="Data Quality" />
+    <img src="https://img.shields.io/badge/Response_Time-<100ms-success?style=flat-square&logo=speedtest" alt="API Performance" />
+  </p>
+
+  <!-- Quick Links -->
+  <p align="center">
+    <a href="#-quick-start"><strong>Quick Start</strong></a> •
+    <a href="#-features"><strong>Features</strong></a> •
+    <a href="#-demo"><strong>Demo</strong></a> •
+    <a href="#-api-documentation"><strong>API Docs</strong></a> •
+    <a href="#-contributing"><strong>Contributing</strong></a>
+  </p>
+</div>
+
+<br />
+
+---
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg" width="40" height="40" alt="React" />
+        <br /><sub><b>React 18</b></sub>
+      </td>
+      <td align="center">
+        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nextjs/nextjs-original.svg" width="40" height="40" alt="Next.js" />
+        <br /><sub><b>Next.js 14</b></sub>
+      </td>
+      <td align="center">
+        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/typescript/typescript-original.svg" width="40" height="40" alt="TypeScript" />
+        <br /><sub><b>TypeScript</b></sub>
+      </td>
+      <td align="center">
+        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/postgresql/postgresql-original.svg" width="40" height="40" alt="PostgreSQL" />
+        <br /><sub><b>PostgreSQL</b></sub>
+      </td>
+      <td align="center">
+        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" width="40" height="40" alt="Python" />
+        <br /><sub><b>Python</b></sub>
+      </td>
+      <td align="center">
+        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/r/r-original.svg" width="40" height="40" alt="R" />
+        <br /><sub><b>R Analytics</b></sub>
+      </td>
+      <td align="center">
+        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg" width="40" height="40" alt="Docker" />
+        <br /><sub><b>Docker</b></sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br />
+
+## 🎯 Executive Summary
 
 > **🚀 Real-World IoT Analytics Platform** - Analyzing 18 months of Bangkok building sensor data (124.9M records) to identify transmission failures, energy anomalies, and maintenance opportunities worth **$273,500 in annual savings**.
+
+### 🔑 Key Achievements
+
+<table>
+  <tr>
+    <td width="25%" align="center">
+      <h3>💰 $273,500</h3>
+      <p><strong>Annual Savings</strong><br/>Identified & Validated</p>
+    </td>
+    <td width="25%" align="center">
+      <h3>📊 124.9M</h3>
+      <p><strong>Records Analyzed</strong><br/>100% Data Quality</p>
+    </td>
+    <td width="25%" align="center">
+      <h3>⚡ <100ms</h3>
+      <p><strong>API Response</strong><br/>Production-Ready</p>
+    </td>
+    <td width="25%" align="center">
+      <h3>🎯 89-99%</h3>
+      <p><strong>Confidence Score</strong><br/>On All Insights</p>
+    </td>
+  </tr>
+</table>
 
 ## 📖 Project Story
 
@@ -77,39 +192,12 @@ We developed a complete end-to-end analytics platform that:
 - Filtering and pagination for large datasets
 - Health monitoring and status endpoints
 
-## 🚀 Live Demo & Screenshots
+## 🚀 Live Demo
 
 ### Demo Links
 - **Dashboard**: [http://localhost:3000/dashboard](http://localhost:3000/dashboard) - Full analytics interface
 - **Landing Page**: [http://localhost:3000](http://localhost:3000) - Platform overview
 - **API Endpoint**: [http://localhost:3000/api/insights](http://localhost:3000/api/insights) - Raw JSON data
-
-### 📸 Screenshots
-<details>
-<summary>🖼️ View Platform Screenshots</summary>
-
-> **📋 Note**: Screenshots will be added once the application is running. For now, you can view the live demo at the URLs above.
-
-#### 📊 Analytics Dashboard
-![Dashboard Overview](docs/images/screenshots/dashboard-overview.png)
-
-#### 💡 Business Insights Panel
-<!-- ![Insights Panel](docs/images/screenshots/insights-panel.png) -->
-
-#### 🔌 API Response Example
-![API Response](docs/images/screenshots/api-response.png)
-
-#### 📱 Mobile Responsive Views
-![Mobile Dashboard](docs/images/screenshots/mobile-dashboard.png)
-
----
-**🎯 How to Generate Screenshots:**
-1. Run the application: `npm run dev`
-2. Visit dashboard at: http://localhost:3000/dashboard
-3. Take screenshots and save to `docs/images/screenshots/`
-4. Update this README with actual image links
-
-</details>
 
 ## 📊 Key Discoveries & Results
 
@@ -283,20 +371,25 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 cu-bems-iot-platform/
 ├── 📁 app/                    # Next.js 14 App Router
-│   ├── 📁 api/               # API endpoints
-│   │   ├── health/           # Health check
-│   │   └── insights/         # Business intelligence API
-│   ├── 📁 dashboard/         # Analytics dashboard
-│   └── page.tsx              # Landing page
-├── 📁 components/            # Reusable React components
+│   ├── 📁 api/               # API endpoints & business logic
+│   ├── 📁 dashboard/         # Analytics dashboard pages
+│   └── page.tsx              # Main landing page
 ├── 📁 src/                   # Source code
-│   ├── 📁 lib/              # Utilities and configurations
-│   ├── 📁 types/            # TypeScript definitions
-│   └── 📁 utils/            # Helper functions
+│   ├── 📁 components/        # Reusable React components
+│   └── 📁 lib/              # Utilities, types, and configurations
+├── 📁 config/               # Configuration files
+│   ├── 📁 database/         # Schema and migrations
+│   ├── jest.config.js       # Test configuration
+│   ├── next.config.js       # Next.js configuration
+│   └── *.config.js          # Build tool configs
 ├── 📁 docs/                 # Comprehensive documentation
-├── 📁 scripts/              # Data processing and deployment
-├── 📁 __tests__/           # Test suites
-└── 📁 database/            # Schema and migrations
+├── 📁 data/                 # Datasets and processed files
+│   ├── 📁 processed-data/   # Cleaned sensor datasets
+│   └── 📁 r2-optimized/     # Production-ready data
+├── 📁 tools/                # Development and deployment tools
+│   └── 📁 deployment/       # Build and deployment scripts
+├── 📁 __tests__/           # Test suites and mocks
+└── 📁 assets/              # Static assets and resources
 ```
 
 ## 🔧 Development Commands
