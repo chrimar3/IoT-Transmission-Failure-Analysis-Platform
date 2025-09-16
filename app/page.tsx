@@ -2,7 +2,7 @@
  * CU-BEMS IoT Platform - Main Landing Page
  */
 
-import Navigation from '../components/Navigation'
+import Navigation from '../src/components/Navigation'
 import Link from 'next/link'
 
 export default function Home() {
