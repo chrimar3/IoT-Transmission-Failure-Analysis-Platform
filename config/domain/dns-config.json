@@ -1,0 +1,77 @@
+{
+  "production": {
+    "domain": "cu-bems.com",
+    "subdomains": {
+      "api": "api.cu-bems.com",
+      "cdn": "cdn.cu-bems.com",
+      "status": "status.cu-bems.com",
+      "docs": "docs.cu-bems.com"
+    },
+    "records": [
+      {
+        "type": "A",
+        "name": "@",
+        "value": "76.76.19.61",
+        "ttl": 300,
+        "comment": "Vercel production deployment"
+      },
+      {
+        "type": "CNAME",
+        "name": "www",
+        "value": "cu-bems.com",
+        "ttl": 300,
+        "comment": "WWW redirect to apex domain"
+      },
+      {
+        "type": "CNAME",
+        "name": "api",
+        "value": "cname.vercel-dns.com",
+        "ttl": 300,
+        "comment": "API subdomain for backend services"
+      },
+      {
+        "type": "CNAME",
+        "name": "status",
+        "value": "cname.vercel-dns.com",
+        "ttl": 300,
+        "comment": "Status page subdomain"
+      },
+      {
+        "type": "TXT",
+        "name": "@",
+        "value": "v=spf1 include:_spf.google.com ~all",
+        "ttl": 300,
+        "comment": "SPF record for email verification"
+      },
+      {
+        "type": "TXT",
+        "name": "_vercel",
+        "value": "vc-domain-verify=cu-bems.com,your-verification-token",
+        "ttl": 300,
+        "comment": "Vercel domain verification"
+      }
+    ],
+    "ssl": {
+      "provider": "lets-encrypt",
+      "auto-renewal": true,
+      "force-https": true,
+      "hsts": {
+        "max-age": 31536000,
+        "include-subdomains": true,
+        "preload": true
+      }
+    }
+  },
+  "staging": {
+    "domain": "cu-bems-staging.vercel.app",
+    "ssl": {
+      "provider": "vercel",
+      "auto-renewal": true,
+      "force-https": true
+    }
+  },
+  "development": {
+    "domain": "localhost:3000",
+    "ssl": false
+  }
+}

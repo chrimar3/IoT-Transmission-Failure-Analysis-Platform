@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { ApiKeyManager, ApiKeyValidator } from './key-management'
-import { RateLimiter, RateLimitMiddleware } from './rate-limiting'
+import { _RateLimiter, RateLimitMiddleware } from './rate-limiting'
 import type { ApiKey, ApiKeyScope, RateLimitTier } from '@/types/api'
 
 export interface AuthenticatedRequest extends NextRequest {
@@ -32,6 +32,13 @@ export interface AuthorizationOptions {
   requireAnyScope?: boolean // If true, requires ANY of the scopes; if false, requires ALL
   allowPublicAccess?: boolean // If true, allows unauthenticated access with reduced functionality
   rateLimitCost?: number // Custom rate limit cost for this endpoint
+}
+
+export interface ErrorDetails {
+  documentation?: string
+  header_examples?: string[]
+  suggestions?: string[]
+  retry_after?: number
 }
 
 /**
@@ -120,7 +127,7 @@ export class ApiAuthentication {
     apiKey?: ApiKey
     userId?: string
     rateLimitHeaders?: Record<string, string>
-    error?: any
+    error?: unknown
   }> {
     try {
       // Handle public access
@@ -228,8 +235,8 @@ export class ApiAuthentication {
   /**
    * Get additional error details based on error code
    */
-  private static getErrorDetails(errorCode: string): any {
-    const details: Record<string, any> = {
+  private static getErrorDetails(errorCode: string): ErrorDetails | undefined {
+    const details: Record<string, ErrorDetails> = {
       MISSING_API_KEY: {
         documentation: 'https://docs.cu-bems.com/api/authentication',
         header_examples: [

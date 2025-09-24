@@ -25,7 +25,7 @@ describe('Rate Limiting Validation - Story 4.2 AC3', () => {
 
   describe('Free Tier Rate Limiting (100 req/hr)', () => {
     test('enforces 100 requests per hour limit', async () => {
-      const startTime = Date.now()
+      const _startTime = Date.now()
       let successCount = 0
       let rateLimitedCount = 0
 
@@ -59,7 +59,7 @@ describe('Rate Limiting Validation - Story 4.2 AC3', () => {
 
     test('implements burst allowance correctly', async () => {
       // Free tier should allow burst of 110 requests (10% buffer)
-      const responses = []
+      const _responses = []
 
       // Make 110 rapid requests (burst allowance)
       const promises = Array.from({ length: 110 }, () =>
@@ -293,7 +293,7 @@ describe('Rate Limiting Validation - Story 4.2 AC3', () => {
 
     test('implements sliding window rate limiting', async () => {
       const requests = []
-      const startTime = Date.now()
+      const _startTime = Date.now()
 
       // Make requests spread over time
       for (let i = 0; i < 10; i++) {
@@ -349,7 +349,7 @@ describe('Rate Limiting Validation - Story 4.2 AC3', () => {
     })
 
     test('rate limit headers are consistent across requests', async () => {
-      const responses = []
+      const _responses = []
 
       // Make multiple requests and collect headers
       for (let i = 0; i < 5; i++) {
@@ -382,11 +382,11 @@ describe('Rate Limiting Validation - Story 4.2 AC3', () => {
       const responseTimes = []
 
       for (let i = 0; i < iterations; i++) {
-        const startTime = Date.now()
+        const _startTime = Date.now()
         await makeApiRequest('/v1/data/timeseries', professionalApiKey)
         const endTime = Date.now()
 
-        responseTimes.push(endTime - startTime)
+        responseTimes.push(endTime - _startTime)
       }
 
       const averageTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
@@ -400,13 +400,13 @@ describe('Rate Limiting Validation - Story 4.2 AC3', () => {
     test('handles high concurrency without degradation', async () => {
       const concurrency = 100
       const promises = Array.from({ length: concurrency }, async () => {
-        const startTime = Date.now()
+        const _startTime = Date.now()
         const response = await makeApiRequest('/v1/data/timeseries', professionalApiKey)
         const endTime = Date.now()
 
         return {
           status: response.status,
-          responseTime: endTime - startTime,
+          responseTime: endTime - _startTime,
           remaining: response.headers['x-ratelimit-remaining']
         }
       })
@@ -435,7 +435,7 @@ async function createMockApiKey(options: { tier: string, limit: number }) {
   return `sk_test_${options.tier}_${Date.now()}`
 }
 
-async function makeApiRequest(endpoint: string, apiKey: string, options: any = {}) {
+async function makeApiRequest(endpoint: string, apiKey: string, options: unknown = {}) {
   // Mock API request implementation
   return {
     status: 200,
@@ -449,13 +449,13 @@ async function makeApiRequest(endpoint: string, apiKey: string, options: any = {
   }
 }
 
-async function advanceTimeBy(milliseconds: number) {
+async function advanceTimeBy(_milliseconds: number) {
   // Mock time advancement for testing time-based logic
   // In real implementation, this would work with the rate limiting system
 }
 
-async function waitFor(milliseconds: number) {
-  return new Promise(resolve => setTimeout(resolve, milliseconds))
+async function waitFor(_milliseconds: number) {
+  return new Promise(resolve => setTimeout(resolve, _milliseconds))
 }
 
 async function mockRateLimitStorageFailure() {

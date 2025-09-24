@@ -79,7 +79,7 @@ describe('API Integration Tests', () => {
     ]
     
     // Mock fetchSensorData to filter based on query parameters
-    mockR2Client.fetchSensorData.mockImplementation((query: any) => {
+    mockR2Client.fetchSensorData.mockImplementation((query: unknown) => {
       let filteredData = [...mockSensorData]
       
       if (query.floorNumber !== undefined) {
@@ -110,7 +110,7 @@ describe('API Integration Tests', () => {
   describe('Summary API Integration', () => {
     it('should return complete dashboard metrics structure', async () => {
       const request = new NextRequest('http://localhost:3000/api/readings/summary')
-      const response = await SummaryGET(request)
+      const _response = await SummaryGET(request)
       const result = await response.json()
 
       // Validate HTTP response
@@ -141,7 +141,7 @@ describe('API Integration Tests', () => {
     it('should handle summary API error scenarios gracefully', async () => {
       // This test would run with mocked database errors
       const request = new NextRequest('http://localhost:3000/api/readings/summary')
-      const response = await SummaryGET(request)
+      const _response = await SummaryGET(request)
       
       // Should return a response (either success or error)
       expect([200, 500]).toContain(response.status)
@@ -160,7 +160,7 @@ describe('API Integration Tests', () => {
   describe('Timeseries API Integration', () => {
     it('should return paginated timeseries data with metadata', async () => {
       const request = new NextRequest('http://localhost:3000/api/readings/timeseries?page=1&limit=10')
-      const response = await TimeseriesGET(request)
+      const _response = await TimeseriesGET(request)
       const result = await response.json()
 
       expect(response.status).toBe(200)
@@ -191,14 +191,14 @@ describe('API Integration Tests', () => {
     it('should handle sensor_id filtering', async () => {
       const testSensorId = 'SENSOR_001'
       const request = new NextRequest(`http://localhost:3000/api/readings/timeseries?sensor_id=${testSensorId}`)
-      const response = await TimeseriesGET(request)
+      const _response = await TimeseriesGET(request)
       const result = await response.json()
 
       expect(response.status).toBe(200)
       expect(result.success).toBe(true)
       
       // If data exists, all readings should match the filter
-      result.data.data.forEach((reading: any) => {
+      result.data.data.forEach((reading: unknown) => {
         if (reading.sensor_id) {
           expect(reading.sensor_id).toBe(testSensorId)
         }
@@ -208,14 +208,14 @@ describe('API Integration Tests', () => {
     it('should handle floor_number filtering', async () => {
       const testFloor = 2
       const request = new NextRequest(`http://localhost:3000/api/readings/timeseries?floor_number=${testFloor}`)
-      const response = await TimeseriesGET(request)
+      const _response = await TimeseriesGET(request)
       const result = await response.json()
 
       expect(response.status).toBe(200)
       expect(result.success).toBe(true)
       
       // If data exists, all readings should match the floor filter
-      result.data.data.forEach((reading: any) => {
+      result.data.data.forEach((reading: unknown) => {
         if (reading.floor_number !== undefined && reading.floor_number !== null) {
           expect(reading.floor_number).toBe(testFloor)
         }
@@ -225,14 +225,14 @@ describe('API Integration Tests', () => {
     it('should handle equipment_type filtering', async () => {
       const testEquipmentType = 'HVAC'
       const request = new NextRequest(`http://localhost:3000/api/readings/timeseries?equipment_type=${testEquipmentType}`)
-      const response = await TimeseriesGET(request)
+      const _response = await TimeseriesGET(request)
       const result = await response.json()
 
       expect(response.status).toBe(200)
       expect(result.success).toBe(true)
       
       // If data exists, all readings should match the equipment type filter
-      result.data.data.forEach((reading: any) => {
+      result.data.data.forEach((reading: unknown) => {
         if (reading.equipment_type) {
           expect(reading.equipment_type).toBe(testEquipmentType)
         }
@@ -243,14 +243,14 @@ describe('API Integration Tests', () => {
       const startDate = '2024-09-01T00:00:00Z'
       const endDate = '2024-09-30T23:59:59Z'
       const request = new NextRequest(`http://localhost:3000/api/readings/timeseries?start_date=${startDate}&end_date=${endDate}`)
-      const response = await TimeseriesGET(request)
+      const _response = await TimeseriesGET(request)
       const result = await response.json()
 
       expect(response.status).toBe(200)
       expect(result.success).toBe(true)
       
       // Validate date range if data exists
-      result.data.data.forEach((reading: any) => {
+      result.data.data.forEach((reading: unknown) => {
         if (reading.timestamp) {
           const timestamp = new Date(reading.timestamp).getTime()
           const start = new Date(startDate).getTime()
@@ -263,7 +263,7 @@ describe('API Integration Tests', () => {
 
     it('should handle combined filters', async () => {
       const request = new NextRequest('http://localhost:3000/api/readings/timeseries?sensor_id=SENSOR_001&floor_number=1&limit=5')
-      const response = await TimeseriesGET(request)
+      const _response = await TimeseriesGET(request)
       const result = await response.json()
 
       expect(response.status).toBe(200)
@@ -275,7 +275,7 @@ describe('API Integration Tests', () => {
   describe('Patterns API Integration', () => {
     it('should return pattern analysis with business impact', async () => {
       const request = new NextRequest('http://localhost:3000/api/readings/patterns')
-      const response = await PatternsGET(request)
+      const _response = await PatternsGET(request)
       const result = await response.json()
 
       expect(response.status).toBe(200)
@@ -297,7 +297,7 @@ describe('API Integration Tests', () => {
       expect(result.data.total_patterns_found).toBeGreaterThanOrEqual(0)
 
       // Validate pattern structure if patterns exist
-      result.data.patterns.forEach((pattern: any) => {
+      result.data.patterns.forEach((pattern: unknown) => {
         expect(pattern).toMatchObject({
           pattern_id: expect.any(String),
           equipment_type: expect.any(String),
@@ -316,7 +316,7 @@ describe('API Integration Tests', () => {
 
     it('should return patterns sorted by confidence', async () => {
       const request = new NextRequest('http://localhost:3000/api/readings/patterns')
-      const response = await PatternsGET(request)
+      const _response = await PatternsGET(request)
       const result = await response.json()
 
       expect(response.status).toBe(200)
@@ -344,7 +344,7 @@ describe('API Integration Tests', () => {
       const timeseriesResult = await timeseriesResponse.json()
 
       if (summaryResult.success && timeseriesResult.success) {
-        const uniqueSensors = new Set(timeseriesResult.data.data.map((r: any) => r.sensor_id))
+        const uniqueSensors = new Set(timeseriesResult.data.data.map((r: unknown) => r.sensor_id))
         
         // Allow for small discrepancies due to data freshness
         const tolerance = Math.max(1, Math.ceil(summaryResult.data.total_sensors * 0.05))
@@ -392,7 +392,7 @@ describe('API Integration Tests', () => {
 
       for (const endpoint of endpoints) {
         const request = new NextRequest(`http://localhost:3000/api/readings/${endpoint.name}`)
-        const response = await endpoint.handler(request)
+        const _response = await endpoint.handler(request)
         const result = await response.json()
 
         // Should always return a valid JSON response
@@ -423,7 +423,7 @@ describe('API Integration Tests', () => {
       for (const testCase of testCases) {
         const startTime = performance.now()
         const request = new NextRequest(testCase.url)
-        const response = await testCase.handler(request)
+        const _response = await testCase.handler(request)
         const endTime = performance.now()
 
         const responseTime = endTime - startTime
@@ -441,7 +441,7 @@ describe('API Integration Tests', () => {
     it('should handle realistic data volumes', async () => {
       // Test with parameters that would return substantial data
       const request = new NextRequest('http://localhost:3000/api/readings/timeseries?limit=1000')
-      const response = await TimeseriesGET(request)
+      const _response = await TimeseriesGET(request)
       const result = await response.json()
 
       expect(response.status).toBe(200)
@@ -452,7 +452,7 @@ describe('API Integration Tests', () => {
         expect(result.data.total_count).toBeGreaterThan(0)
         
         // Validate data quality from Bangkok dataset
-        result.data.data.forEach((reading: any, index: number) => {
+        result.data.data.forEach((reading: unknown, _index: number) => {
           expect(reading).toHaveProperty('sensor_id')
           expect(reading).toHaveProperty('timestamp')
           
@@ -468,7 +468,7 @@ describe('API Integration Tests', () => {
 
     it('should detect patterns in real Bangkok data', async () => {
       const request = new NextRequest('http://localhost:3000/api/readings/patterns')
-      const response = await PatternsGET(request)
+      const _response = await PatternsGET(request)
       const result = await response.json()
 
       expect(response.status).toBe(200)

@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Copy, Eye, EyeOff, Plus, Trash2, RotateCcw, AlertTriangle } from 'lucide-react'
-import type { ApiKey, ApiKeyScope, CreateApiKeyRequest } from '@/types/api'
+import type { ApiKey, ApiKeyScope, _CreateApiKeyRequest } from '@/types/api'
 
 interface ApiKeyManagerProps {
   className?: string
@@ -77,7 +77,7 @@ export function ApiKeyManager({ className }: ApiKeyManagerProps) {
       } else {
         setError(data.error.message)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to fetch API keys')
     } finally {
       setLoading(false)
@@ -108,7 +108,7 @@ export function ApiKeyManager({ className }: ApiKeyManagerProps) {
       } else {
         setError(data.error.message)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to create API key')
     }
   }
@@ -130,7 +130,7 @@ export function ApiKeyManager({ className }: ApiKeyManagerProps) {
       } else {
         setError(data.error.message)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to delete API key')
     }
   }
@@ -153,7 +153,7 @@ export function ApiKeyManager({ className }: ApiKeyManagerProps) {
       } else {
         setError(data.error.message)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to rotate API key')
     }
   }
@@ -174,8 +174,8 @@ export function ApiKeyManager({ className }: ApiKeyManagerProps) {
     try {
       await navigator.clipboard.writeText(text)
       // You might want to show a toast notification here
-    } catch (err) {
-      console.error('Failed to copy to clipboard:', err)
+    } catch (_err) {
+      console.error('Failed to copy to clipboard:', _err)
     }
   }
 
@@ -341,7 +341,7 @@ export function ApiKeyManager({ className }: ApiKeyManagerProps) {
                     variant="outline"
                     onClick={() => setNewKey(null)}
                   >
-                    I've copied the key
+                    I&apos;ve copied the key
                   </Button>
                 </div>
               </AlertDescription>

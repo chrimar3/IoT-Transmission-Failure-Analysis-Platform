@@ -2,25 +2,28 @@ const nextJest = require('next/jest')
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files
-  dir: '../',
+  dir: './',
 })
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/../jest.setup.js'],
   moduleNameMapper: {
     // Handle module aliases to match new structure
-    '^@/(.*)$': '<rootDir>/$1',
+    '^@/(.*)$': '<rootDir>/../$1',
   },
   testEnvironment: 'jest-environment-jsdom', // Use jsdom for React components
   testMatch: [
-    '<rootDir>/__tests__/**/*.(test|spec).(ts|tsx|js)',
-    '<rootDir>/app/**/__tests__/**/*.(test|spec).(ts|tsx|js)',
-    '<rootDir>/src/**/__tests__/**/*.(test|spec).(ts|tsx|js)'
+    '<rootDir>/../__tests__/**/*.(test|spec).(ts|tsx|js)',
+    '<rootDir>/../app/**/__tests__/**/*.(test|spec).(ts|tsx|js)',
+    '<rootDir>/../src/**/__tests__/**/*.(test|spec).(ts|tsx|js)',
+    '<rootDir>/../**/__tests__/**/*.(test|spec).(ts|tsx|js)',
+    '<rootDir>/../**/*.test.(ts|tsx|js)',
+    '<rootDir>/../**/*.spec.(ts|tsx|js)'
   ],
   collectCoverageFrom: [
-    'app/**/*.{js,jsx,ts,tsx}',
-    'src/**/*.{js,jsx,ts,tsx}',
+    '<rootDir>/../app/**/*.{js,jsx,ts,tsx}',
+    '<rootDir>/../src/**/*.{js,jsx,ts,tsx}',
     '!**/*.d.ts',
     '!**/layout.tsx',
     '!**/globals.css',
@@ -37,7 +40,7 @@ const customJestConfig = {
       statements: 80
     }
   },
-  moduleDirectories: ['node_modules', '<rootDir>/'],
+  moduleDirectories: ['node_modules', '<rootDir>/../'],
   testTimeout: 30000,
   maxWorkers: 4,
 }

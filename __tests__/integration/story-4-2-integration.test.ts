@@ -8,15 +8,15 @@ import {
   ApiKeyTestFactory,
   UserTestFactory,
   BangkokDataFactory,
-  WebhookTestFactory
+  _WebhookTestFactory
 } from '../utils/api-test-factory'
 import { MockWebhookServer } from '../utils/webhook-test-helpers'
 
 describe('Story 4.2: Professional API Integration Tests', () => {
-  let testEnvironment: any
+  let testEnvironment: unknown
   let mockWebhookServer: MockWebhookServer
-  let professionalUser: any
-  let freeUser: any
+  let professionalUser: unknown
+  let _freeUser: unknown
   let professionalApiKey: string
   let freeApiKey: string
 
@@ -68,19 +68,19 @@ describe('Story 4.2: Professional API Integration Tests', () => {
         rate_limit_tier: 'professional'
       })
 
-      const apiKey = apiKeyResponse.body.api_key_value
+      const _apiKey = apiKeyResponse.body.api_key_value
 
       // 2. User sets up webhook for notifications
-      const webhookResponse = await createWebhook(apiKey, {
+      const webhookResponse = await createWebhook(_apiKey, {
         url: `${mockWebhookServer.url}/integration-webhook`,
         events: ['data.updated', 'export.completed']
       })
 
       expect(webhookResponse.status).toBe(201)
-      const webhook = webhookResponse.body.webhook
+      const _webhook = webhookResponse.body.webhook
 
       // 3. User queries time-series data
-      const timeseriesResponse = await queryTimeSeriesData(apiKey, {
+      const timeseriesResponse = await queryTimeSeriesData(_apiKey, {
         sensor_ids: 'SENSOR_001,SENSOR_002,SENSOR_003',
         start_date: '2024-09-01T00:00:00Z',
         end_date: '2024-09-23T23:59:59Z',
@@ -92,7 +92,7 @@ describe('Story 4.2: Professional API Integration Tests', () => {
       expect(timeseriesResponse.body.meta.processing_time_ms).toBeLessThan(500)
 
       // 4. User requests analytics insights
-      const analyticsResponse = await queryAnalytics(apiKey, {
+      const analyticsResponse = await queryAnalytics(_apiKey, {
         analysis_type: 'efficiency_metrics',
         confidence_level: 0.95
       })
@@ -102,7 +102,7 @@ describe('Story 4.2: Professional API Integration Tests', () => {
       expect(analyticsResponse.body.data.confidence_intervals).toBeDefined()
 
       // 5. User creates large data export
-      const exportResponse = await createDataExport(apiKey, {
+      const exportResponse = await createDataExport(_apiKey, {
         format: 'csv',
         data_type: 'timeseries',
         sensors: ['SENSOR_001', 'SENSOR_002', 'SENSOR_003', 'SENSOR_004'],
@@ -117,7 +117,7 @@ describe('Story 4.2: Professional API Integration Tests', () => {
       const exportJobId = exportResponse.body.job_id
 
       // 6. User monitors export progress
-      const progressResponse = await checkExportProgress(apiKey, exportJobId)
+      const progressResponse = await checkExportProgress(_apiKey, exportJobId)
       expect(progressResponse.status).toBe(200)
       expect(progressResponse.body.status).toMatch(/^(queued|processing|completed)$/)
 
@@ -130,12 +130,12 @@ describe('Story 4.2: Professional API Integration Tests', () => {
       expect(webhooks.some(w => w.event_type === 'export.completed')).toBe(true)
 
       // 8. User downloads completed export
-      const downloadResponse = await downloadExport(apiKey, exportJobId)
+      const downloadResponse = await downloadExport(_apiKey, exportJobId)
       expect(downloadResponse.status).toBe(200)
       expect(downloadResponse.body.download_url).toMatch(/^https:\/\//)
 
       // 9. User checks API usage analytics
-      const usageResponse = await getUsageAnalytics(apiKey, {
+      const usageResponse = await getUsageAnalytics(_apiKey, {
         timeframe: '24_hours'
       })
 
@@ -144,7 +144,7 @@ describe('Story 4.2: Professional API Integration Tests', () => {
       expect(usageResponse.body.data.successful_requests).toBeGreaterThan(0)
 
       // 10. User tests webhook functionality
-      const webhookTestResponse = await testWebhook(apiKey, webhook.id)
+      const webhookTestResponse = await testWebhook(_apiKey, webhook.id)
       expect(webhookTestResponse.status).toBe(200)
 
       await mockWebhookServer.waitForWebhook(3000)
@@ -156,7 +156,7 @@ describe('Story 4.2: Professional API Integration Tests', () => {
       // Professional tier should handle 10,000 requests per hour
       const startTime = Date.now()
       const requests = []
-      let rateLimitHit = false
+      let _rateLimitHit = false
 
       // Make rapid requests to test rate limiting
       for (let i = 0; i < 100; i++) {
@@ -228,7 +228,7 @@ describe('Story 4.2: Professional API Integration Tests', () => {
       )
 
       // 5. Verify statistical consistency
-      const timeseriesValues = timeseriesData.data.map((d: any) => d.value)
+      const timeseriesValues = timeseriesData.data.map((d: unknown) => d.value)
       const calculatedMean = timeseriesValues.reduce((a: number, b: number) => a + b, 0) / timeseriesValues.length
 
       // Summary mean should be close to time-series calculated mean (within 5% tolerance)
@@ -255,15 +255,15 @@ describe('Story 4.2: Professional API Integration Tests', () => {
         }
       ]
 
-      for (const { endpoint, params } of restrictedEndpoints) {
+      for (const { endpoint, _params } of restrictedEndpoints) {
         // Free user should be denied access
-        const freeResponse = await callApiEndpoint(freeApiKey, endpoint, params)
+        const freeResponse = await callApiEndpoint(freeApiKey, endpoint, _params)
         expect(freeResponse.status).toBe(403)
         expect(freeResponse.body.error).toContain('Professional')
         expect(freeResponse.body.upgrade_url).toMatch(/^https:\/\//)
 
         // Professional user should have access
-        const proResponse = await callApiEndpoint(professionalApiKey, endpoint, params)
+        const proResponse = await callApiEndpoint(professionalApiKey, endpoint, _params)
         expect(proResponse.status).toBe(200)
       }
     })
@@ -436,7 +436,7 @@ describe('Story 4.2: Professional API Integration Tests', () => {
       })
 
       expect(webhookResponse.status).toBe(201)
-      const webhook = webhookResponse.body.webhook
+      const _webhook = webhookResponse.body.webhook
 
       // Clear any existing webhooks
       mockWebhookServer.clearReceivedWebhooks()
@@ -482,7 +482,7 @@ describe('Story 4.2: Professional API Integration Tests', () => {
         }
       })
 
-      const webhook = webhookResponse.body.webhook
+      const _webhook = webhookResponse.body.webhook
 
       // Trigger an event
       await simulateDataUpdate('SENSOR_001', 'HVAC')
@@ -676,13 +676,13 @@ async function setupIntegrationTestEnvironment() {
   return { database: 'test_db', redis: 'test_redis' }
 }
 
-async function cleanupIntegrationTestEnvironment(env: any) {
+async function cleanupIntegrationTestEnvironment(_env: unknown) {
   // Clean up test resources
 }
 
 async function seedBangkokDataset() {
   // Seed database with Bangkok IoT data
-  const dataset = BangkokDataFactory.generateFullBangkokDataset()
+  const _dataset = BangkokDataFactory.generateFullBangkokDataset()
   // Insert into test database
 }
 
@@ -702,7 +702,7 @@ async function createApiKey(userId: string, options: any) {
   }
 }
 
-async function createWebhook(apiKey: string, options: any) {
+async function createWebhook(_apiKey: string, options: any) {
   return {
     status: 201,
     body: {
@@ -717,7 +717,7 @@ async function createWebhook(apiKey: string, options: any) {
   }
 }
 
-async function queryTimeSeriesData(apiKey: string, params: any) {
+async function queryTimeSeriesData(_apiKey: string, _params: any) {
   // Mock time-series query
   return {
     status: 200,
@@ -746,7 +746,7 @@ async function queryTimeSeriesData(apiKey: string, params: any) {
   }
 }
 
-async function queryAnalytics(apiKey: string, params: any) {
+async function queryAnalytics(_apiKey: string, _params: any) {
   return {
     status: 200,
     body: {
@@ -759,7 +759,7 @@ async function queryAnalytics(apiKey: string, params: any) {
   }
 }
 
-async function createDataExport(apiKey: string, options: any) {
+async function createDataExport(_apiKey: string, options: any) {
   return {
     status: 202,
     body: {
@@ -770,7 +770,7 @@ async function createDataExport(apiKey: string, options: any) {
   }
 }
 
-async function checkExportProgress(apiKey: string, jobId: string) {
+async function checkExportProgress(_apiKey: string, jobId: string) {
   return {
     status: 200,
     body: {
@@ -786,7 +786,7 @@ async function checkExportProgress(apiKey: string, jobId: string) {
   }
 }
 
-async function downloadExport(apiKey: string, jobId: string) {
+async function downloadExport(_apiKey: string, jobId: string) {
   return {
     status: 200,
     body: {
@@ -796,7 +796,7 @@ async function downloadExport(apiKey: string, jobId: string) {
   }
 }
 
-async function getUsageAnalytics(apiKey: string, params: any) {
+async function getUsageAnalytics(_apiKey: string, _params: any) {
   return {
     status: 200,
     body: {
@@ -808,14 +808,14 @@ async function getUsageAnalytics(apiKey: string, params: any) {
   }
 }
 
-async function testWebhook(apiKey: string, webhookId: string) {
+async function testWebhook(_apiKey: string, _webhookId: string) {
   return {
     status: 200,
     body: { success: true }
   }
 }
 
-async function callApiEndpoint(apiKey: string, endpoint: string, params: any) {
+async function callApiEndpoint(_apiKey: string, endpoint: string, _params: any) {
   if (apiKey === freeApiKey && ['analytics', 'export', 'usage'].includes(endpoint)) {
     return {
       status: 403,
@@ -828,7 +828,7 @@ async function callApiEndpoint(apiKey: string, endpoint: string, params: any) {
   return { status: 200, body: { success: true } }
 }
 
-async function measureResponseTime(requestFn: () => Promise<any>) {
+async function measureResponseTime(requestFn: () => Promise<unknown>) {
   const startTime = Date.now()
   const response = await requestFn()
   const responseTime = Date.now() - startTime

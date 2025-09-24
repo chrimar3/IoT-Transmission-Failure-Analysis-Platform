@@ -4,16 +4,16 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from '@jest/globals'
-import { NextRequest } from 'next/server'
+import { _NextRequest } from 'next/server'
 import crypto from 'crypto'
 
 // Test utilities and mocks
 import { createMockUser, createMockApiKey, createMockRequest } from '../utils/test-helpers'
 import { validateApiKey, generateApiKey, hashApiKey } from '@/lib/api/key-management'
-import { isRateLimited, recordApiRequest } from '@/lib/api/rate-limiting'
+import { _isRateLimited, _recordApiRequest } from '@/lib/api/rate-limiting'
 
 describe('API Security Validation - Story 4.2', () => {
-  let testUser: any
+  let testUser: unknown
   let professionalApiKey: string
   let freeApiKey: string
 
@@ -91,12 +91,12 @@ describe('API Security Validation - Story 4.2', () => {
       test('enforces HTTPS for API endpoints', async () => {
         const httpRequest = createMockRequest({
           url: 'http://api.cu-bems.com/v1/data/timeseries',
-          headers: { 'x-forwarded-proto': 'http' }
+          _headers: { 'x-forwarded-proto': 'http' }
         })
 
         const response = await fetch('/api/v1/data/timeseries', {
           method: 'GET',
-          headers: httpRequest.headers
+          _headers: httpRequest._headers
         })
 
         // Should redirect to HTTPS or reject
@@ -105,14 +105,14 @@ describe('API Security Validation - Story 4.2', () => {
 
       test('validates API key authentication', async () => {
         const validRequest = createMockRequest({
-          headers: { 'Authorization': `Bearer ${professionalApiKey}` }
+          _headers: { 'Authorization': `Bearer ${professionalApiKey}` }
         })
 
         const invalidRequests = [
-          createMockRequest({ headers: {} }), // No auth header
-          createMockRequest({ headers: { 'Authorization': 'Bearer invalid_key' } }),
-          createMockRequest({ headers: { 'Authorization': 'Basic invalid' } }),
-          createMockRequest({ headers: { 'Authorization': professionalApiKey } }), // Missing Bearer
+          createMockRequest({ _headers: {} }), // No auth header
+          createMockRequest({ _headers: { 'Authorization': 'Bearer invalid_key' } }),
+          createMockRequest({ _headers: { 'Authorization': 'Basic invalid' } }),
+          createMockRequest({ _headers: { 'Authorization': professionalApiKey } }), // Missing Bearer
         ]
 
         // Valid key should authenticate
@@ -290,7 +290,7 @@ describe('API Security Validation - Story 4.2', () => {
         // Attempts to bypass should still be rate limited
         for (const attempt of bypassAttempts) {
           const response = await makeAuthenticatedRequest('/api/v1/data/timeseries', freeApiKey, {
-            headers: attempt.headers
+            _headers: attempt._headers
           })
           expect(response.status).toBe(429)
         }
@@ -299,9 +299,9 @@ describe('API Security Validation - Story 4.2', () => {
       test('implements proper rate limit headers', async () => {
         const response = await makeAuthenticatedRequest('/api/v1/data/timeseries', professionalApiKey)
 
-        expect(response.headers).toHaveProperty('x-ratelimit-limit')
-        expect(response.headers).toHaveProperty('x-ratelimit-remaining')
-        expect(response.headers).toHaveProperty('x-ratelimit-reset')
+        expect(response._headers).toHaveProperty('x-ratelimit-limit')
+        expect(response._headers).toHaveProperty('x-ratelimit-remaining')
+        expect(response._headers).toHaveProperty('x-ratelimit-reset')
 
         expect(parseInt(response.headers['x-ratelimit-limit'])).toBe(10000)
         expect(parseInt(response.headers['x-ratelimit-remaining'])).toBeGreaterThan(0)
@@ -320,7 +320,7 @@ describe('API Security Validation - Story 4.2', () => {
         for (const origin of origins) {
           const response = await fetch('/api/v1/data/timeseries', {
             method: 'OPTIONS',
-            headers: {
+            _headers: {
               'Origin': origin,
               'Access-Control-Request-Method': 'GET'
             }
@@ -353,7 +353,7 @@ describe('API Security Validation - Story 4.2', () => {
 
         // Only prefixes should be visible
         if (response.body.data) {
-          response.body.data.forEach((key: any) => {
+          response.body.data.forEach((key: unknown) => {
             expect(key.key_prefix).toMatch(/^sk_[a-f0-9]{8}$/)
             expect(key).not.toHaveProperty('key')
             expect(key).not.toHaveProperty('key_hash')
@@ -397,7 +397,7 @@ describe('API Security Validation - Story 4.2', () => {
         // Generate security events
         await makeAuthenticatedRequest('/api/v1/data/timeseries', 'invalid_key')
         await makeAuthenticatedRequest('/api/v1/data/timeseries', professionalApiKey, {
-          headers: { 'x-forwarded-for': '192.168.1.1' }
+          _headers: { 'x-forwarded-for': '192.168.1.1' }
         })
 
         const securityLogs = await getSecurityLogs({
@@ -441,7 +441,7 @@ describe('API Security Validation - Story 4.2', () => {
 
           // Should still enforce rate limiting
           const authenticatedResponse = await makeAuthenticatedRequest(endpoint, professionalApiKey)
-          expect(authenticatedResponse.headers).toHaveProperty('x-ratelimit-remaining')
+          expect(authenticatedResponse._headers).toHaveProperty('x-ratelimit-remaining')
         }
       })
     })
@@ -449,7 +449,7 @@ describe('API Security Validation - Story 4.2', () => {
 })
 
 // Test Helper Functions
-async function createMockUser(options: { tier: string }) {
+async function createMockUser(_options: { tier: string }) {
   return {
     id: crypto.randomUUID(),
     email: `test-${Date.now()}@example.com`,
@@ -458,13 +458,13 @@ async function createMockUser(options: { tier: string }) {
   }
 }
 
-async function createMockApiKey(userId: string, options: { tier?: string, scopes?: string[] } = {}) {
+async function createMockApiKey(userId: string, _options: { tier?: string, scopes?: string[] } = {}) {
   const apiKey = generateApiKey()
   // Mock API key creation in test database
   return apiKey
 }
 
-async function authenticateRequest(request: any) {
+async function authenticateRequest(request: unknown) {
   // Mock authentication logic
   const authHeader = request.headers['Authorization']
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -481,8 +481,8 @@ async function authenticateRequest(request: any) {
   return { success: true, user: testUser }
 }
 
-async function makeAuthenticatedRequest(endpoint: string, apiKey: string, options: any = {}) {
-  const headers = {
+async function makeAuthenticatedRequest(endpoint: string, apiKey: string, _options: unknown = {}) {
+  const _headers = {
     'Authorization': `Bearer ${apiKey}`,
     'Content-Type': 'application/json',
     ...options.headers
@@ -504,7 +504,7 @@ async function makeAuthenticatedRequest(endpoint: string, apiKey: string, option
   }
 }
 
-async function getAuditLogs(filters: any) {
+async function getAuditLogs(_filters: unknown) {
   // Mock audit log retrieval
   return [{
     endpoint: filters.endpoint,
@@ -516,7 +516,7 @@ async function getAuditLogs(filters: any) {
   }]
 }
 
-async function getSecurityLogs(filters: any) {
+async function getSecurityLogs(_filters: unknown) {
   // Mock security log retrieval
   return [{
     event_type: 'auth_failure',

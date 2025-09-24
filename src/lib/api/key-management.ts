@@ -4,7 +4,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { randomBytes, createHash, createHmac } from 'crypto'
+import { randomBytes, createHash, _createHmac } from 'crypto'
 import type {
   ApiKey,
   CreateApiKeyRequest,
@@ -12,6 +12,16 @@ import type {
   ApiKeyScope,
   RateLimitTier
 } from '@/types/api'
+
+export interface ApiKeyEventData {
+  api_key_id?: string
+  key_name?: string
+  scopes?: string[]
+  rate_limit_tier?: string
+  action_result?: string
+  error_message?: string
+  [key: string]: unknown
+}
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -486,7 +496,7 @@ export class ApiKeyManager {
   private static async logApiKeyEvent(
     userId: string,
     eventType: string,
-    eventData: Record<string, any>
+    eventData: ApiKeyEventData
   ): Promise<void> {
     try {
       await supabase

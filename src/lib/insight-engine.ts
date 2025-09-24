@@ -457,7 +457,7 @@ export class CUBEMSInsightEngine {
   /**
    * Generate representative sample from validation metadata
    */
-  private generateRepresentativeSample(validationReport: any): SensorRecord[] {
+  private generateRepresentativeSample(validationReport: unknown): SensorRecord[] {
     const sample: SensorRecord[] = [];
 
     // Generate sample records based on validation report statistics

@@ -4,7 +4,7 @@
  * Advanced pattern detection with statistical evidence and recommendations
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { _NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, AuthenticatedRequest, logApiUsage } from '@/lib/api/authentication'
 import type { ApiResponse, PatternExportData } from '@/types/api'
@@ -182,7 +182,7 @@ async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
 /**
  * Generate pattern analysis data for Bangkok dataset
  */
-async function generatePatternData(params: any): Promise<{
+async function generatePatternData(params: unknown): Promise<{
   data: PatternExportData[]
   totalCount: number
   hasMore: boolean

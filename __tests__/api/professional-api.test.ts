@@ -3,12 +3,12 @@
  * Comprehensive testing for Story 4.2: Professional API Access
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals'
-import { NextRequest } from 'next/server'
+import { describe, it, expect, _beforeAll, _afterAll, _beforeEach } from '@jest/globals'
+import { _NextRequest } from 'next/server'
 import { ApiKeyManager } from '@/lib/api/key-management'
-import { RateLimiter } from '@/lib/api/rate-limiting'
-import { WebhookManager } from '@/lib/api/webhook-delivery'
-import { ApiAuthentication } from '@/lib/api/authentication'
+import { _RateLimiter } from '@/lib/api/rate-limiting'
+import { _WebhookManager } from '@/lib/api/webhook-delivery'
+import { _ApiAuthentication } from '@/lib/api/authentication'
 
 // Mock Supabase client
 jest.mock('@supabase/supabase-js', () => ({
@@ -30,24 +30,24 @@ describe('Professional API Access - Story 4.2', () => {
     it('should generate secure API keys with proper format', async () => {
       // Test API key generation
       const mockUserId = 'user-123'
-      const createRequest = {
+      const _createRequest = {
         name: 'Test API Key',
         scopes: ['read:data', 'read:analytics'] as const,
         expires_at: undefined
       }
 
       // Mock the Professional subscription validation
-      jest.spyOn(ApiKeyManager, 'validateProfessionalAccess' as any)
+      jest.spyOn(ApiKeyManager, 'validateProfessionalAccess' as unknown)
         .mockResolvedValue(true)
 
-      jest.spyOn(ApiKeyManager, 'getUserApiKeyCount' as any)
+      jest.spyOn(ApiKeyManager, 'getUserApiKeyCount' as unknown)
         .mockResolvedValue(1)
 
-      jest.spyOn(ApiKeyManager, 'getMaxApiKeysForUser' as any)
+      jest.spyOn(ApiKeyManager, 'getMaxApiKeysForUser' as unknown)
         .mockResolvedValue(10)
 
       // Mock Supabase insert response
-      const mockApiKey = {
+      const _mockApiKey = {
         id: 'key-123',
         user_id: mockUserId,
         name: 'Test API Key',
@@ -72,24 +72,24 @@ describe('Professional API Access - Story 4.2', () => {
       const mockUserId = 'user-123'
 
       // Mock user at limit
-      jest.spyOn(ApiKeyManager, 'getUserApiKeyCount' as any)
+      jest.spyOn(ApiKeyManager, 'getUserApiKeyCount' as unknown)
         .mockResolvedValue(10)
 
-      jest.spyOn(ApiKeyManager, 'getMaxApiKeysForUser' as any)
+      jest.spyOn(ApiKeyManager, 'getMaxApiKeysForUser' as unknown)
         .mockResolvedValue(10)
 
-      const createRequest = {
+      const _createRequest = {
         name: 'Excess API Key',
         scopes: ['read:data'] as const
       }
 
       await expect(
-        ApiKeyManager.createApiKey(mockUserId, createRequest)
+        ApiKeyManager.createApiKey(mockUserId, _createRequest)
       ).rejects.toThrow('Maximum API keys limit reached')
     })
 
     it('should validate API key scopes based on subscription tier', async () => {
-      const mockApiKey = {
+      const _mockApiKey = {
         id: 'key-123',
         user_id: 'user-123',
         scopes: ['read:data', 'read:analytics'],
@@ -99,7 +99,7 @@ describe('Professional API Access - Story 4.2', () => {
       // Test scope validation
       const hasDataScope = mockApiKey.scopes.includes('read:data')
       const hasAnalyticsScope = mockApiKey.scopes.includes('read:analytics')
-      const hasInvalidScope = mockApiKey.scopes.includes('admin:all' as any)
+      const hasInvalidScope = mockApiKey.scopes.includes('admin:all' as unknown)
 
       expect(hasDataScope).toBe(true)
       expect(hasAnalyticsScope).toBe(true)
@@ -107,7 +107,7 @@ describe('Professional API Access - Story 4.2', () => {
     })
 
     it('should track API key usage statistics', async () => {
-      const mockApiKey = {
+      const _mockApiKey = {
         id: 'key-123',
         usage_stats: {
           total_requests: 150,
@@ -403,12 +403,12 @@ describe('Professional API Access - Story 4.2', () => {
       expect(mockWebhook.url).toMatch(/^https:\/\//)
       expect(mockWebhook.events).toBeInstanceOf(Array)
       expect(mockWebhook.events.length).toBeGreaterThan(0)
-      expect(mockWebhook.secret).toBeDefined()
+      expect(mockWebhook._secret).toBeDefined()
     })
 
     it('should implement webhook signature verification', () => {
-      const payload = { test: 'data' }
-      const secret = 'webhook_secret'
+      const _payload = { test: 'data' }
+      const _secret = 'webhook_secret'
       const expectedSignature = 'sha256=signature_hash' // Mock signature
 
       // In real implementation, this would use HMAC
@@ -628,7 +628,7 @@ describe('Professional API Performance Tests', () => {
     }
 
     // These would be actual performance tests in a real scenario
-    Object.entries(performanceRequirements).forEach(([operation, maxTime]) => {
+    Object.entries(performanceRequirements).forEach(([_operation, maxTime]) => {
       expect(maxTime).toBeGreaterThan(0)
       // In real tests: expect(actualResponseTime).toBeLessThan(maxTime)
     })

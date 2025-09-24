@@ -35,11 +35,11 @@ const mockGenerateRecommendations = jest.fn()
 
 jest.mocked(StatisticalAnomalyDetector).mockImplementation(() => ({
   detectAnomalies: mockDetectAnomalies
-} as any))
+} as unknown))
 
 jest.mocked(RecommendationEngine).mockImplementation(() => ({
   generateRecommendations: mockGenerateRecommendations
-} as any))
+} as unknown))
 
 describe('/api/patterns/detect', () => {
   beforeEach(() => {
@@ -48,7 +48,7 @@ describe('/api/patterns/detect', () => {
     // Default mock implementations
     mockGetServerSession.mockResolvedValue({
       user: { id: 'user_123', email: 'test@cu-bems.com' }
-    } as any)
+    } as unknown)
 
     mockCheckSubscription.mockResolvedValue({
       isAdvanced: true,
@@ -376,7 +376,7 @@ describe('/api/patterns/detect', () => {
         }],
         summary: {},
         analysis_metadata: {}
-      } as any)
+      } as unknown)
 
       mockGenerateRecommendations.mockResolvedValue([{
         id: 'pattern_001',
@@ -436,7 +436,7 @@ describe('/api/patterns/detect', () => {
         patterns: [{ id: 'pattern_001', recommendations: [] }],
         summary: {},
         analysis_metadata: {}
-      } as any)
+      } as unknown)
 
       mockGenerateRecommendations.mockRejectedValue(new Error('Recommendation engine error'))
 

@@ -4,6 +4,29 @@ const { TextEncoder, TextDecoder } = require('util')
 // Import testing library setup
 require('@testing-library/jest-dom')
 
+// Mock @faker-js/faker to handle ES module issues
+jest.mock('@faker-js/faker', () => ({
+  faker: {
+    datatype: {
+      number: jest.fn(() => Math.floor(Math.random() * 1000)),
+      boolean: jest.fn(() => Math.random() > 0.5),
+      uuid: jest.fn(() => 'test-uuid-123'),
+    },
+    date: {
+      recent: jest.fn(() => new Date()),
+      between: jest.fn(() => new Date()),
+    },
+    lorem: {
+      sentence: jest.fn(() => 'Test sentence'),
+      word: jest.fn(() => 'test'),
+    },
+    internet: {
+      email: jest.fn(() => 'test@example.com'),
+      url: jest.fn(() => 'https://example.com'),
+    },
+  },
+}))
+
 // Mock Next.js modules
 jest.mock('next/navigation', () => ({
   useRouter: () => ({

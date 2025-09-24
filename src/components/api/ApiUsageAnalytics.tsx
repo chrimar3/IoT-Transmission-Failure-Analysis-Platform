@@ -3,7 +3,7 @@
  * Displays comprehensive API usage statistics and performance metrics
  */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -32,8 +32,8 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  Calendar,
-  Filter
+  _Calendar,
+  _Filter
 } from 'lucide-react'
 import type { ApiUsageStats } from '@/types/api'
 
@@ -60,9 +60,9 @@ export function ApiUsageAnalytics({ className }: ApiUsageAnalyticsProps) {
 
   useEffect(() => {
     fetchUsageData()
-  }, [timeRange])
+  }, [fetchUsageData])
 
-  const fetchUsageData = async () => {
+  const fetchUsageData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -85,12 +85,12 @@ export function ApiUsageAnalytics({ className }: ApiUsageAnalyticsProps) {
       } else {
         setError(data.error.message)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to fetch usage analytics')
     } finally {
       setLoading(false)
     }
-  }
+  }, [timeRange])
 
   const calculateSuccessRate = () => {
     if (!usageData) return 0
@@ -420,7 +420,7 @@ export function ApiUsageAnalytics({ className }: ApiUsageAnalyticsProps) {
                     <Alert>
                       <AlertTriangle className="h-4 w-4" />
                       <AlertDescription>
-                        You're approaching your rate limit. Consider optimizing your API usage or upgrading your plan.
+                        You&apos;re approaching your rate limit. Consider optimizing your API usage or upgrading your plan.
                       </AlertDescription>
                     </Alert>
                   )}

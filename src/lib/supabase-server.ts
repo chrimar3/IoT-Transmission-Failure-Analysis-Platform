@@ -23,3 +23,6 @@ export const supabaseServer = createClient(
     }
   }
 )
+
+// Export createServerClient function for compatibility
+export const createServerClient = () => supabaseServer

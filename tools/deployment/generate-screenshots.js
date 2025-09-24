@@ -12,8 +12,8 @@
  * node scripts/generate-screenshots.js
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 async function generateScreenshots() {
     console.log('🚀 Starting screenshot generation...');
@@ -21,13 +21,15 @@ async function generateScreenshots() {
     // Check if puppeteer is available
     let puppeteer;
     try {
-        puppeteer = require('puppeteer');
-    } catch (error) {
+        const puppeteerModule = await import('puppeteer');
+        puppeteer = puppeteerModule.default;
+    } catch (_error) {
         console.log('📦 Installing Puppeteer...');
-        const { execSync } = require('child_process');
+        const { execSync } = await import('child_process');
         try {
             execSync('npm install puppeteer', { stdio: 'inherit' });
-            puppeteer = require('puppeteer');
+            const puppeteerModule = await import('puppeteer');
+            puppeteer = puppeteerModule.default;
             console.log('✅ Puppeteer installed successfully');
         } catch (installError) {
             console.error('❌ Failed to install Puppeteer:', installError.message);
@@ -206,9 +208,9 @@ process.on('SIGINT', () => {
 // Check if application is running
 async function checkServerRunning() {
     try {
-        const http = require('http');
+        const http = await import('http');
         return new Promise((resolve) => {
-            const req = http.get('http://localhost:3000', (res) => {
+            const req = http.get('http://localhost:3000', (_res) => {
                 resolve(true);
             });
             req.on('error', () => resolve(false));
@@ -217,7 +219,7 @@ async function checkServerRunning() {
                 resolve(false);
             });
         });
-    } catch (error) {
+    } catch (_error) {
         return false;
     }
 }
@@ -240,8 +242,10 @@ async function main() {
     await generateScreenshots();
 }
 
-if (require.main === module) {
+// ES module exports
+export { generateScreenshots };
+
+// Run main if this is the entry point
+if (import.meta.url === `file://${process.argv[1]}`) {
     main().catch(console.error);
 }
-
-module.exports = { generateScreenshots };

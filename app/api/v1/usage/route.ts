@@ -120,7 +120,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 /**
  * Get comprehensive usage analytics for a user
  */
-async function getUsageAnalytics(userId: string, params: any): Promise<ApiUsageStats> {
+interface UsageAnalyticsParams {
+  period?: '7d' | '30d' | '90d' | '1y';
+  endpoint?: string;
+  detailed?: boolean;
+  start_date?: string;
+  end_date?: string;
+}
+
+async function getUsageAnalytics(userId: string, params: UsageAnalyticsParams): Promise<ApiUsageStats> {
   try {
     // Base query for user's API usage
     let baseQuery = supabase
@@ -201,7 +209,7 @@ async function getUsageAnalytics(userId: string, params: any): Promise<ApiUsageS
  * Group requests by time period
  */
 function groupRequestsByPeriod(
-  usageData: any[],
+  usageData: unknown[],
   groupBy: 'day' | 'week' | 'month'
 ): Array<{ date: string; count: number }> {
   const groups: Record<string, number> = {}
@@ -238,7 +246,7 @@ function groupRequestsByPeriod(
 /**
  * Get top errors from usage data
  */
-function getTopErrors(usageData: any[]): Array<{ error: string; count: number }> {
+function getTopErrors(usageData: unknown[]): Array<{ error: string; count: number }> {
   const errorCounts: Record<string, number> = {}
 
   // Count errors by status code and message

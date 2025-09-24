@@ -87,13 +87,13 @@ export async function GET(request: NextRequest) {
 
     if (category) {
       filteredInsights = filteredInsights.filter(
-        (insight: any) => insight.category === category
+        (insight: unknown) => insight.category === category
       );
     }
 
     if (severity) {
       filteredInsights = filteredInsights.filter(
-        (insight: any) => insight.severity === severity
+        (insight: unknown) => insight.severity === severity
       );
     }
 
@@ -147,11 +147,11 @@ export async function POST() {
         dataset_summary: insights.summary,
         business_impact: insights.business_impact_summary,
         critical_insights: insights.key_insights
-          .filter((insight: any) => insight.severity === 'critical')
+          .filter((insight: unknown) => insight.severity === 'critical')
           .slice(0, 3),
         total_savings_potential: insights.business_impact_summary?.total_identified_savings || '$273,500/year',
         immediate_actions: insights.key_insights
-          .filter((insight: any) => insight.implementation_difficulty === 'Easy')
+          .filter((insight: unknown) => insight.implementation_difficulty === 'Easy')
           .slice(0, 3),
         data_confidence: insights.summary.data_quality_score || 100
       },

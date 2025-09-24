@@ -10,9 +10,9 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { _Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Copy, ChevronDown, ChevronRight, Play, Book, Code, Zap } from 'lucide-react'
+import { Copy, _ChevronDown, ChevronRight, Play, Book, Code, Zap } from 'lucide-react'
 
 interface ApiDocumentationProps {
   className?: string
@@ -30,9 +30,9 @@ interface EndpointExample {
     type: string
     required: boolean
     description: string
-    example?: any
+    example?: unknown
   }>
-  response_example: any
+  response_example: unknown
   curl_example: string
 }
 

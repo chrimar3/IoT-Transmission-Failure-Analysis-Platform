@@ -6,9 +6,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
 
 export default function Navigation() {
   const pathname = usePathname()
+  const { data: session, status } = useSession()
 
   const navItems = [
     { href: '/', label: 'Home', icon: '🏠' },
@@ -43,12 +45,48 @@ export default function Navigation() {
             ))}
           </div>
 
-          {/* Status Indicator */}
-          <div className="flex items-center">
+          {/* Authentication Section */}
+          <div className="flex items-center space-x-4">
+            {/* Status Indicator */}
             <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
               <span className="inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>
               124.9M Records Analyzed
             </div>
+
+            {/* User Authentication */}
+            {status === 'loading' ? (
+              <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+            ) : session ? (
+              <div className="flex items-center space-x-3">
+                <div className="text-sm text-gray-600">
+                  <span className="font-medium">{session.user?.name || session.user?.email}</span>
+                  <div className="text-xs text-gray-400 capitalize">
+                    {session.user?.subscriptionTier || 'free'} plan
+                  </div>
+                </div>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1 rounded-md text-sm transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link
+                  href="/auth/signin"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-1 rounded-md text-sm transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

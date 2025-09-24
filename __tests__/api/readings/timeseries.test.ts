@@ -234,7 +234,7 @@ describe('/api/readings/timeseries', () => {
 
       // Check that sensors have realistic equipment types
       const series = data.data.series
-      const equipmentTypes = series.map((s: any) => s.equipment_type)
+      const equipmentTypes = series.map((s: unknown) => s.equipment_type)
       const validTypes = ['HVAC', 'Lighting', 'Power', 'Water', 'Security']
 
       equipmentTypes.forEach((type: string) => {
@@ -242,14 +242,14 @@ describe('/api/readings/timeseries', () => {
       })
 
       // Check that floor numbers are realistic
-      const floorNumbers = series.map((s: any) => s.floor_number)
+      const floorNumbers = series.map((s: unknown) => s.floor_number)
       floorNumbers.forEach((floor: number) => {
         expect(floor).toBeGreaterThanOrEqual(1)
         expect(floor).toBeLessThanOrEqual(7)
       })
 
       // Check that units are appropriate
-      const units = series.map((s: any) => s.unit)
+      const units = series.map((s: unknown) => s.unit)
       units.forEach((unit: string) => {
         expect(['kWh', 'kW', 'L/min', 'L/h', 'lux', '°C', '%']).toContain(unit)
       })
@@ -446,7 +446,7 @@ describe('/api/readings/timeseries', () => {
       expect(response.status).toBe(200)
 
       const series = data.data.series[0]
-      const timestamps = series.data.map((point: any) => new Date(point.timestamp).getTime())
+      const timestamps = series.data.map((point: unknown) => new Date(point.timestamp).getTime())
 
       // Check if timestamps are in ascending order
       for (let i = 1; i < timestamps.length; i++) {

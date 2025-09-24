@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getServerSession } from 'next-auth/next'
 import { ApiKeyManager } from '@/lib/api/key-management'
-import type { ApiResponse, CreateApiKeyRequest, ApiKey } from '@/types/api'
+import type { ApiResponse, _CreateApiKeyRequest, ApiKey } from '@/types/api'
 
 // Validation schemas
 const CreateKeyRequestSchema = z.object({
@@ -29,7 +29,7 @@ const UpdateKeyRequestSchema = z.object({
 /**
  * GET /api/v1/keys - List user's API keys
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(_request: NextRequest): Promise<NextResponse> {
   try {
     // Get authenticated user session
     const session = await getServerSession()
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 /**
  * POST /api/v1/keys - Create new API key
  */
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(_request: NextRequest): Promise<NextResponse> {
   try {
     // Get authenticated user session
     const session = await getServerSession()
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 /**
  * PUT /api/v1/keys/{id} - Update API key
  */
-export async function PUT(request: NextRequest): Promise<NextResponse> {
+export async function PUT(_request: NextRequest): Promise<NextResponse> {
   try {
     // Get authenticated user session
     const session = await getServerSession()
@@ -250,7 +250,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 /**
  * DELETE /api/v1/keys/{id} - Delete API key
  */
-export async function DELETE(request: NextRequest): Promise<NextResponse> {
+export async function DELETE(_request: NextRequest): Promise<NextResponse> {
   try {
     // Get authenticated user session
     const session = await getServerSession()

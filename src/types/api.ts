@@ -59,7 +59,7 @@ export interface ApiUsage {
   user_agent?: string
   timestamp: string
   error_message?: string
-  request_params?: Record<string, any>
+  request_params?: Record<string, unknown>
 }
 
 export interface ApiUsageStats {
@@ -133,7 +133,7 @@ export interface WebhookDelivery {
   id: string
   webhook_endpoint_id: string
   event_type: WebhookEvent
-  payload: Record<string, any>
+  payload: Record<string, unknown>
   response_status?: number
   response_body?: string
   delivery_attempts: number
@@ -145,7 +145,7 @@ export interface WebhookDelivery {
 
 export interface WebhookTestRequest {
   event_type: WebhookEvent
-  test_payload?: Record<string, any>
+  test_payload?: Record<string, unknown>
 }
 
 // Export Jobs
@@ -216,7 +216,7 @@ export interface ApiError {
   error: {
     code: string
     message: string
-    details?: any
+    details?: unknown
     suggestions?: string[]
   }
   meta: {
@@ -294,12 +294,12 @@ export interface ApiEndpoint {
     required: boolean
     type: string
     description: string
-    example?: any
+    example?: unknown
   }>
   responses: Record<string, {
     description: string
-    schema?: any
-    example?: any
+    schema?: unknown
+    example?: unknown
   }>
   scopes_required: ApiKeyScope[]
   rate_limit_cost: number
@@ -318,8 +318,8 @@ export interface ApiDocumentation {
   webhook_events: Array<{
     event: WebhookEvent
     description: string
-    payload_schema: any
-    example_payload: any
+    payload_schema: unknown
+    example_payload: unknown
   }>
   error_codes: Record<string, {
     description: string

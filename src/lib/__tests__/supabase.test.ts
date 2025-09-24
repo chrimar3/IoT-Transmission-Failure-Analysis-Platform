@@ -256,7 +256,7 @@ describe('Error Scenario Testing', () => {
 
       const serverClient = createServerClient()
       const { data, error } = await serverClient
-        .from('non_existent_table' as any)
+        .from('non_existent_table' as unknown)
         .select('*')
         .limit(1)
 
@@ -313,7 +313,7 @@ describe('Error Scenario Testing', () => {
           equipment_type: 'HVAC',
           unit: 'kW',
           status: 'normal'
-        } as any)
+        } as unknown)
 
       expect(data).toBeNull()
       expect(error).toBeDefined()
@@ -394,7 +394,7 @@ describe('Error Scenario Testing', () => {
           equipment_type: 'HVAC',
           unit: 'kW',
           status: 'normal'
-        } as any)
+        } as unknown)
 
       expect(data).toBeNull()
       expect(error).toBeDefined()
@@ -425,7 +425,7 @@ describe('Error Scenario Testing', () => {
           equipment_type: 'HVAC',
           unit: 'kW',
           status: 'normal'
-        } as any)
+        } as unknown)
 
       expect(data).toBeNull()
       expect(error).toBeDefined()
@@ -573,7 +573,7 @@ describe('Database Schema Types', () => {
     
     const query = supabase.rpc('get_user_subscription_tier', {
       user_uuid: userId
-    } as any)
+    } as unknown)
 
     expect(query).toBeDefined()
   })

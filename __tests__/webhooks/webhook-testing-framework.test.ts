@@ -5,14 +5,14 @@
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals'
 import crypto from 'crypto'
-import { WebhookTestFactory, ApiKeyTestFactory, UserTestFactory } from '../utils/api-test-factory'
+import { _WebhookTestFactory, ApiKeyTestFactory, UserTestFactory } from '../utils/api-test-factory'
 import { MockWebhookServer, createTestWebhookEndpoint, validateWebhookSignature } from '../utils/webhook-test-helpers'
 
 describe('Webhook System Testing - Story 4.2 AC7', () => {
   let mockWebhookServer: MockWebhookServer
-  let professionalUser: any
+  let _professionalUser: unknown
   let professionalApiKey: string
-  let testWebhookEndpoint: any
+  let _testWebhookEndpoint: unknown
 
   beforeAll(async () => {
     // Start mock webhook server
@@ -55,7 +55,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
         expect(response.status).toBe(201)
         expect(response.body).toMatchObject({
           success: true,
-          webhook: expect.objectContaining({
+          _webhook: expect.objectContaining({
             id: expect.stringMatching(/^webhook_[a-f0-9\-]{36}$/),
             url: webhookData.url,
             events: webhookData.events,
@@ -133,7 +133,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
           })
 
           expect(response.status).toBe(201)
-          webhooks.push(response.body.webhook)
+          webhooks.push(response.body._webhook)
         }
 
         // 11th webhook should be rejected
@@ -151,7 +151,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
     describe('Event-Driven Notifications', () => {
       test('delivers data.updated events when sensor data changes', async () => {
         // Register webhook for data.updated events
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/data-updates`,
           events: ['data.updated']
         })
@@ -204,7 +204,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
       })
 
       test('delivers alert.triggered events for threshold breaches', async () => {
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/alerts`,
           events: ['alert.triggered']
         })
@@ -227,7 +227,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
         const webhookPayload = receivedWebhooks[0]
         expect(webhookPayload).toMatchObject({
           event_type: 'alert.triggered',
-          data: {
+          _data: {
             alert: {
               id: expect.any(String),
               sensor_id: 'SENSOR_001',
@@ -246,7 +246,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
       })
 
       test('delivers export.completed events when data exports finish', async () => {
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/exports`,
           events: ['export.completed']
         })
@@ -268,7 +268,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
         const webhookPayload = receivedWebhooks[0]
         expect(webhookPayload).toMatchObject({
           event_type: 'export.completed',
-          data: {
+          _data: {
             export_job: {
               id: 'export_12345',
               status: 'completed',
@@ -284,7 +284,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
       })
 
       test('supports custom event filtering and payload customization', async () => {
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/filtered-events`,
           events: ['data.updated'],
           filters: {
@@ -328,7 +328,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
 
     describe('Webhook Signature Verification', () => {
       test('generates HMAC-SHA256 signatures for payload verification', async () => {
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/signature-test`,
           events: ['data.updated']
         })
@@ -389,7 +389,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
         // Configure webhook server to fail first few attempts
         mockWebhookServer.setFailurePattern([500, 500, 200]) // Fail twice, then succeed
 
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/retry-test`,
           events: ['data.updated'],
           retry_policy: {
@@ -476,7 +476,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
         // Set up a webhook that will initially fail
         mockWebhookServer.setFailurePattern([500])
 
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/manual-retry`,
           events: ['data.updated']
         })
@@ -508,7 +508,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
 
     describe('Webhook Delivery Monitoring and Analytics', () => {
       test('tracks comprehensive delivery statistics', async () => {
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/analytics-test`,
           events: ['data.updated', 'alert.triggered']
         })
@@ -597,7 +597,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
 
     describe('Webhook Management Operations', () => {
       test('allows updating webhook configuration', async () => {
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/original`,
           events: ['data.updated']
         })
@@ -610,7 +610,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
         })
 
         expect(updateResponse.status).toBe(200)
-        expect(updateResponse.body.webhook).toMatchObject({
+        expect(updateResponse.body._webhook).toMatchObject({
           id: webhook.body.webhook.id,
           url: `${mockWebhookServer.url}/updated`,
           events: ['data.updated', 'alert.triggered'],
@@ -619,7 +619,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
       })
 
       test('supports webhook testing with ping events', async () => {
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/ping-test`,
           events: ['data.updated']
         })
@@ -644,7 +644,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
 
         expect(pingEvent).toMatchObject({
           event_type: 'webhook.test',
-          data: {
+          _data: {
             message: 'This is a test webhook delivery',
             webhook_id: webhook.body.webhook.id,
             timestamp: expect.any(String)
@@ -653,7 +653,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
       })
 
       test('allows pausing and resuming webhook deliveries', async () => {
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/pause-test`,
           events: ['data.updated']
         })
@@ -680,7 +680,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
       })
 
       test('supports webhook deletion with confirmation', async () => {
-        const webhook = await registerWebhook(professionalApiKey, {
+        const _webhook = await registerWebhook(professionalApiKey, {
           url: `${mockWebhookServer.url}/delete-test`,
           events: ['data.updated']
         })
@@ -706,7 +706,7 @@ describe('Webhook System Testing - Story 4.2 AC7', () => {
 
 // Helper Functions for Webhook Testing
 
-async function registerWebhook(apiKey: string, webhookData: any) {
+async function registerWebhook(_apiKey: string, webhookData: any) {
   // Mock webhook registration API call
   return {
     status: 201,
@@ -733,17 +733,17 @@ async function registerWebhook(apiKey: string, webhookData: any) {
   }
 }
 
-async function triggerDataUpdate(data: any) {
+async function triggerDataUpdate(_data: unknown) {
   // Mock data update trigger
-  // In real implementation, this would update sensor data
+  // In real implementation, this would update sensor _data
 }
 
-async function triggerThresholdBreach(data: any) {
+async function triggerThresholdBreach(_data: unknown) {
   // Mock threshold breach trigger
   // In real implementation, this would trigger an alert
 }
 
-async function triggerExportCompletion(data: any) {
+async function triggerExportCompletion(_data: unknown) {
   // Mock export completion trigger
   // In real implementation, this would complete an export job
 }
@@ -758,7 +758,7 @@ async function getWebhookDeliveries() {
   return []
 }
 
-async function retryWebhookDelivery(deliveryId: string, apiKey: string) {
+async function retryWebhookDelivery(_deliveryId: string, _apiKey: string) {
   // Mock webhook delivery retry
   return {
     status: 200,
@@ -766,10 +766,10 @@ async function retryWebhookDelivery(deliveryId: string, apiKey: string) {
   }
 }
 
-async function getWebhookAnalytics(webhookId: string) {
+async function getWebhookAnalytics(_webhookId: string) {
   // Mock webhook analytics
   return {
-    webhook_id: webhookId,
+    webhook_id: _webhookId,
     total_deliveries: 3,
     successful_deliveries: 3,
     failed_deliveries: 0,
@@ -778,7 +778,7 @@ async function getWebhookAnalytics(webhookId: string) {
   }
 }
 
-async function getWebhookHealth(apiKey: string) {
+async function getWebhookHealth(_apiKey: string) {
   // Mock webhook health check
   return {
     status: 200,
@@ -795,7 +795,7 @@ async function getWebhookHealth(apiKey: string) {
   }
 }
 
-async function generateWebhookReport(apiKey: string, options: any) {
+async function generateWebhookReport(_apiKey: string, _options: any) {
   // Mock webhook report generation
   return {
     status: 200,
@@ -815,27 +815,27 @@ async function generateWebhookReport(apiKey: string, options: any) {
   }
 }
 
-async function updateWebhook(webhookId: string, apiKey: string, updates: any) {
+async function updateWebhook(_webhookId: string, _apiKey: string, updates: any) {
   // Mock webhook update
   return {
     status: 200,
     body: {
       webhook: {
-        id: webhookId,
+        id: _webhookId,
         ...updates
       }
     }
   }
 }
 
-async function pingWebhook(webhookId: string, apiKey: string) {
+async function pingWebhook(_webhookId: string, _apiKey: string) {
   // Mock webhook ping test
   return {
     status: 200,
     body: {
       success: true,
       test_delivery: {
-        webhook_id: webhookId,
+        webhook_id: _webhookId,
         status: 'delivered',
         response_status: 200,
         response_time_ms: 150
@@ -844,29 +844,29 @@ async function pingWebhook(webhookId: string, apiKey: string) {
   }
 }
 
-async function pauseWebhook(webhookId: string, apiKey: string) {
+async function pauseWebhook(_webhookId: string, _apiKey: string) {
   // Mock webhook pause
   return { status: 200, body: { success: true } }
 }
 
-async function resumeWebhook(webhookId: string, apiKey: string) {
+async function resumeWebhook(_webhookId: string, _apiKey: string) {
   // Mock webhook resume
   return { status: 200, body: { success: true } }
 }
 
-async function deleteWebhook(webhookId: string, apiKey: string, options: any) {
+async function deleteWebhook(_webhookId: string, _apiKey: string, _options: any) {
   // Mock webhook deletion
   return {
     status: 200,
     body: {
       success: true,
       message: 'Webhook deleted successfully',
-      webhook_id: webhookId
+      webhook_id: _webhookId
     }
   }
 }
 
-async function getWebhook(webhookId: string, apiKey: string) {
+async function getWebhook(_webhookId: string, _apiKey: string) {
   // Mock webhook retrieval
   return { status: 404 }
 }

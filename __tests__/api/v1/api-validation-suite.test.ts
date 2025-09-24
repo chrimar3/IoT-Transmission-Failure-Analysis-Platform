@@ -3,37 +3,37 @@
  * Comprehensive validation testing for all v1 API endpoints
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals'
+import { describe, test, expect, beforeAll, afterAll, _beforeEach } from '@jest/globals'
 import {
   ApiKeyTestFactory,
   UserTestFactory,
   BangkokDataFactory,
-  WebhookTestFactory,
-  ApiUsageTestFactory
+  _WebhookTestFactory,
+  _ApiUsageTestFactory
 } from '../../utils/api-test-factory'
 import { mockApiRequest, createTestEnvironment, cleanupTestEnvironment } from '../../utils/test-helpers'
 
 describe('Professional API v1 Validation Suite - Story 4.2', () => {
-  let testEnvironment: any
-  let professionalUser: any
+  let testEnvironment: unknown
+  let _professionalUser: unknown
   let professionalApiKey: string
-  let freeUser: any
+  let _freeUser: unknown
   let freeApiKey: string
-  let bangkokDataset: any
+  let _bangkokDataset: unknown
 
   beforeAll(async () => {
     // Set up comprehensive test environment
     testEnvironment = await createTestEnvironment()
 
     // Create test users and API keys
-    professionalUser = UserTestFactory.createUser({ subscription_tier: 'professional' })
+    _professionalUser = UserTestFactory.createUser({ subscription_tier: 'professional' })
     professionalApiKey = ApiKeyTestFactory.generateApiKey()
 
-    freeUser = UserTestFactory.createUser({ subscription_tier: 'free' })
+    _freeUser = UserTestFactory.createUser({ subscription_tier: 'free' })
     freeApiKey = ApiKeyTestFactory.generateApiKey()
 
     // Generate Bangkok dataset for testing
-    bangkokDataset = BangkokDataFactory.generateFullBangkokDataset()
+    _bangkokDataset = BangkokDataFactory.generateFullBangkokDataset()
   })
 
   afterAll(async () => {
@@ -157,7 +157,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
         })
 
         expect(floorResponse.status).toBe(200)
-        expect(floorResponse.body.data.series.every((s: any) => [1, 2].includes(s.floor_number))).toBe(true)
+        expect(floorResponse.body.data.series.every((s: unknown) => [1, 2].includes(s.floor_number))).toBe(true)
 
         // Test equipment-specific filtering
         const equipmentResponse = await mockApiRequest('/v1/data/timeseries', professionalApiKey, {
@@ -170,7 +170,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
         })
 
         expect(equipmentResponse.status).toBe(200)
-        expect(equipmentResponse.body.data.series.every((s: any) => ['HVAC', 'Power'].includes(s.equipment_type))).toBe(true)
+        expect(equipmentResponse.body.data.series.every((s: unknown) => ['HVAC', 'Power'].includes(s.equipment_type))).toBe(true)
       })
 
       test('implements proper data decimation for large datasets', async () => {
@@ -833,88 +833,3 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
     })
   })
 })
-
-// Helper function to mock API requests
-async function mockApiRequest(endpoint: string, apiKey: string, options: any = {}) {
-  // Mock implementation that simulates API behavior
-  // In real tests, this would make actual HTTP requests
-
-  const baseUrl = process.env.API_BASE_URL || 'https://api.cu-bems.com'
-  const url = `${baseUrl}${endpoint}`
-
-  // Simulate authentication check
-  if (!apiKey || !apiKey.startsWith('sk_')) {
-    return {
-      status: 401,
-      headers: {},
-      body: {
-        success: false,
-        error: 'Authentication failed',
-        message: 'Invalid API key format',
-        error_code: 'INVALID_API_KEY'
-      }
-    }
-  }
-
-  // Simulate successful response
-  return {
-    status: 200,
-    headers: {
-      'content-type': 'application/json',
-      'x-ratelimit-limit': '10000',
-      'x-ratelimit-remaining': '9999',
-      'x-ratelimit-reset': new Date(Date.now() + 3600000).toISOString(),
-      'x-response-time': '250ms',
-      'cache-control': 'public, max-age=300',
-      'etag': '"abc123"'
-    },
-    body: {
-      success: true,
-      data: generateMockResponseData(endpoint),
-      meta: {
-        request_id: `req_${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        processing_time_ms: Math.floor(Math.random() * 200) + 50,
-        rate_limit: {
-          remaining: 9999,
-          reset_at: new Date(Date.now() + 3600000).toISOString(),
-          limit: 10000
-        }
-      }
-    }
-  }
-}
-
-function generateMockResponseData(endpoint: string) {
-  // Generate appropriate mock data based on endpoint
-  if (endpoint.includes('timeseries')) {
-    return {
-      series: [
-        {
-          sensor_id: 'SENSOR_001',
-          equipment_type: 'HVAC',
-          floor_number: 1,
-          unit: 'kWh',
-          color: '#3B82F6',
-          data: [
-            {
-              timestamp: '2024-09-23T00:00:00Z',
-              value: 850.5,
-              sensor_id: 'SENSOR_001',
-              status: 'normal'
-            }
-          ]
-        }
-      ],
-      metadata: {
-        total_points: 100,
-        decimated: false,
-        query_time_ms: 150,
-        cache_hit: false
-      }
-    }
-  }
-
-  // Add more mock data generators for other endpoints
-  return {}
-}

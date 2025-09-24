@@ -18,7 +18,7 @@ jest.mock('@/lib/supabase-server', () => ({
 const mockSupabaseServer = supabaseServer as jest.Mocked<typeof supabaseServer>
 
 describe('GET /api/readings/patterns', () => {
-  let mockQueryChain: any
+  let mockQueryChain: unknown
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -98,7 +98,7 @@ describe('GET /api/readings/patterns', () => {
       // Should detect HVAC failure pattern
       expect(result.data.patterns.length).toBeGreaterThanOrEqual(0)
       if (result.data.patterns.length > 0) {
-        const hvacPattern = result.data.patterns.find((p: any) => p.equipment_type === 'HVAC')
+        const hvacPattern = result.data.patterns.find((p: unknown) => p.equipment_type === 'HVAC')
         if (hvacPattern) {
           expect(hvacPattern).toMatchObject({
             pattern_id: expect.any(String),
@@ -140,7 +140,7 @@ describe('GET /api/readings/patterns', () => {
       expect(result.success).toBe(true)
       
       if (result.data.patterns.length > 0) {
-        const lightingPattern = result.data.patterns.find((p: any) => p.equipment_type === 'Lighting')
+        const lightingPattern = result.data.patterns.find((p: unknown) => p.equipment_type === 'Lighting')
         if (lightingPattern) {
           expect(lightingPattern.equipment_type).toBe('Lighting')
           expect(lightingPattern.sensor_id).toBe('SENSOR_002')
@@ -540,7 +540,7 @@ describe('GET /api/readings/patterns', () => {
 
       expect(response.status).toBe(200)
       if (result.data.patterns.length > 0) {
-        const pattern = result.data.patterns.find((p: any) => p.sensor_id === 'SENSOR_CALC')
+        const pattern = result.data.patterns.find((p: unknown) => p.sensor_id === 'SENSOR_CALC')
         if (pattern) {
           expect(pattern.failure_frequency).toBeCloseTo(0.2, 1) // 20% failure rate
         }

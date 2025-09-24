@@ -20,7 +20,7 @@ describe('Supabase API Integration Error Scenarios', () => {
   const mockSupabaseServer = mockSupabase.supabaseServer
 
   // Helper to create complete mock query chain
-  const createMockQueryChain = (result: any) => ({
+  const createMockQueryChain = (result: unknown) => ({
     select: jest.fn().mockReturnThis(),
     gte: jest.fn().mockReturnThis(),
     lte: jest.fn().mockReturnThis(),

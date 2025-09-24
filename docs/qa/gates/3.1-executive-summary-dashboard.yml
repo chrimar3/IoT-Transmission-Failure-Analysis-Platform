@@ -1,0 +1,28 @@
+schema: 1
+story: '3.1'
+gate: CONCERNS
+status_reason: 'Dashboard implementation is feature-complete but lacks comprehensive test coverage and has performance optimization gaps.'
+reviewer: 'Quinn'
+updated: '2025-09-22T18:30:00Z'
+top_issues:
+  - id: 'TEST-001'
+    severity: high
+    finding: 'No dedicated dashboard component tests exist despite complex functionality'
+    suggested_action: 'Create test suites for ExecutiveSummary, AlertsPanel, RealTimeMetrics components with 85%+ coverage'
+  - id: 'TEST-002'
+    severity: medium
+    finding: 'Jest configuration exists but test discovery pattern fails to locate tests'
+    suggested_action: 'Fix jest testMatch patterns and add dashboard-specific test files'
+  - id: 'PERF-001'
+    severity: medium
+    finding: 'Multiple API calls on dashboard load without proper caching strategy'
+    suggested_action: 'Implement API response caching and optimize data fetching patterns'
+  - id: 'REQ-001'
+    severity: low
+    finding: 'Statistical confidence visualization implemented with mock data only'
+    suggested_action: 'Connect confidence indicators to actual Bangkok dataset statistical calculations'
+  - id: 'ARCH-001'
+    severity: low
+    finding: 'Dashboard personalization features implemented but not persisted across sessions'
+    suggested_action: 'Add database persistence for user dashboard configurations'
+waiver: { active: false }

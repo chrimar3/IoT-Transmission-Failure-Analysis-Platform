@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import { createHmac } from 'crypto'
 import type {
   WebhookEndpoint,
-  WebhookDelivery,
+  _WebhookDelivery,
   CreateWebhookRequest,
   WebhookEvent,
   WebhookTestRequest
@@ -22,7 +22,7 @@ const supabase = createClient(
 interface WebhookPayload {
   event: WebhookEvent
   timestamp: string
-  data: Record<string, any>
+  data: Record<string, unknown>
   source: string
 }
 
@@ -34,19 +34,19 @@ export class WebhookManager {
    * Create a new webhook endpoint
    */
   static async createWebhook(
-    userId: string,
+    _userId: string,
     request: CreateWebhookRequest
   ): Promise<WebhookEndpoint> {
     try {
       // Validate user has Professional subscription
-      const hasAccess = await this.validateWebhookAccess(userId)
+      const hasAccess = await this.validateWebhookAccess(_userId)
       if (!hasAccess) {
         throw new Error('Webhook creation requires Professional subscription')
       }
 
       // Check webhook limit
-      const webhookCount = await this.getUserWebhookCount(userId)
-      const maxWebhooks = await this.getMaxWebhooksForUser(userId)
+      const webhookCount = await this.getUserWebhookCount(_userId)
+      const maxWebhooks = await this.getMaxWebhooksForUser(_userId)
 
       if (webhookCount >= maxWebhooks) {
         throw new Error(`Maximum webhook endpoints limit reached (${maxWebhooks})`)
@@ -62,7 +62,7 @@ export class WebhookManager {
       const { data: webhook, error } = await supabase
         .from('webhook_endpoints')
         .insert({
-          user_id: userId,
+          user_id: _userId,
           url: request.url,
           events: request.events,
           secret,
@@ -82,7 +82,7 @@ export class WebhookManager {
       }
 
       // Log webhook creation
-      await this.logWebhookEvent(userId, 'webhook_created', {
+      await this.logWebhookEvent(_userId, 'webhook_created', {
         webhook_id: webhook.id,
         url: request.url,
         events: request.events
@@ -99,12 +99,12 @@ export class WebhookManager {
   /**
    * Get user's webhook endpoints
    */
-  static async getUserWebhooks(userId: string): Promise<WebhookEndpoint[]> {
+  static async getUserWebhooks(_userId: string): Promise<WebhookEndpoint[]> {
     try {
       const { data, error } = await supabase
         .from('webhook_endpoints')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', _userId)
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -124,14 +124,14 @@ export class WebhookManager {
    * Update webhook endpoint
    */
   static async updateWebhook(
-    userId: string,
+    _userId: string,
     webhookId: string,
     updates: Partial<Pick<WebhookEndpoint, 'url' | 'events' | 'is_active'>>
   ): Promise<WebhookEndpoint> {
     try {
       // Validate user owns the webhook
       const existingWebhook = await this.getWebhookById(webhookId)
-      if (!existingWebhook || existingWebhook.user_id !== userId) {
+      if (!existingWebhook || existingWebhook.user_id !== _userId) {
         throw new Error('Webhook endpoint not found or access denied')
       }
 
@@ -144,7 +144,7 @@ export class WebhookManager {
         .from('webhook_endpoints')
         .update(updates)
         .eq('id', webhookId)
-        .eq('user_id', userId)
+        .eq('user_id', _userId)
         .select()
         .single()
 
@@ -154,7 +154,7 @@ export class WebhookManager {
       }
 
       // Log update event
-      await this.logWebhookEvent(userId, 'webhook_updated', {
+      await this.logWebhookEvent(_userId, 'webhook_updated', {
         webhook_id: webhookId,
         updates
       })
@@ -170,11 +170,11 @@ export class WebhookManager {
   /**
    * Delete webhook endpoint
    */
-  static async deleteWebhook(userId: string, webhookId: string): Promise<void> {
+  static async deleteWebhook(_userId: string, webhookId: string): Promise<void> {
     try {
       // Validate user owns the webhook
       const existingWebhook = await this.getWebhookById(webhookId)
-      if (!existingWebhook || existingWebhook.user_id !== userId) {
+      if (!existingWebhook || existingWebhook.user_id !== _userId) {
         throw new Error('Webhook endpoint not found or access denied')
       }
 
@@ -182,7 +182,7 @@ export class WebhookManager {
         .from('webhook_endpoints')
         .delete()
         .eq('id', webhookId)
-        .eq('user_id', userId)
+        .eq('user_id', _userId)
 
       if (error) {
         console.error('Failed to delete webhook:', error)
@@ -190,7 +190,7 @@ export class WebhookManager {
       }
 
       // Log deletion event
-      await this.logWebhookEvent(userId, 'webhook_deleted', {
+      await this.logWebhookEvent(_userId, 'webhook_deleted', {
         webhook_id: webhookId,
         url: existingWebhook.url
       })
@@ -205,14 +205,14 @@ export class WebhookManager {
    * Test webhook delivery
    */
   static async testWebhook(
-    userId: string,
+    _userId: string,
     webhookId: string,
     testRequest: WebhookTestRequest
-  ): Promise<{ success: boolean; response?: any; error?: string }> {
+  ): Promise<{ success: boolean; response?: unknown; error?: string }> {
     try {
       // Get webhook endpoint
       const webhook = await this.getWebhookById(webhookId)
-      if (!webhook || webhook.user_id !== userId) {
+      if (!webhook || webhook.user_id !== _userId) {
         throw new Error('Webhook endpoint not found or access denied')
       }
 
@@ -252,7 +252,7 @@ export class WebhookManager {
   static async deliverWebhook(
     webhook: WebhookEndpoint,
     payload: WebhookPayload
-  ): Promise<{ success: boolean; response?: any; error?: string }> {
+  ): Promise<{ success: boolean; response?: unknown; error?: string }> {
     try {
       // Generate signature
       const signature = this.generateSignature(payload, webhook.secret)
@@ -308,8 +308,8 @@ export class WebhookManager {
    */
   static async triggerWebhookEvent(
     event: WebhookEvent,
-    eventData: Record<string, any>,
-    userId?: string
+    eventData: Record<string, unknown>,
+    _userId?: string
   ): Promise<void> {
     try {
       // Get all active webhooks for this event
@@ -319,8 +319,8 @@ export class WebhookManager {
         .eq('is_active', true)
         .contains('events', [event])
 
-      if (userId) {
-        query = query.eq('user_id', userId)
+      if (_userId) {
+        query = query.eq('user_id', _userId)
       }
 
       const { data: webhooks, error } = await query
@@ -435,12 +435,12 @@ export class WebhookManager {
   /**
    * Validate user has webhook access (Professional tier)
    */
-  private static async validateWebhookAccess(userId: string): Promise<boolean> {
+  private static async validateWebhookAccess(_userId: string): Promise<boolean> {
     try {
       const { data, error } = await supabase
         .from('subscriptions')
         .select('tier, status')
-        .eq('user_id', userId)
+        .eq('user_id', _userId)
         .eq('status', 'active')
         .single()
 
@@ -459,11 +459,11 @@ export class WebhookManager {
   /**
    * Get user's current webhook count
    */
-  private static async getUserWebhookCount(userId: string): Promise<number> {
+  private static async getUserWebhookCount(_userId: string): Promise<number> {
     const { count, error } = await supabase
       .from('webhook_endpoints')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
+      .eq('user_id', _userId)
       .eq('is_active', true)
 
     if (error) {
@@ -477,7 +477,7 @@ export class WebhookManager {
   /**
    * Get maximum webhooks allowed for user
    */
-  private static async getMaxWebhooksForUser(userId: string): Promise<number> {
+  private static async getMaxWebhooksForUser(_userId: string): Promise<number> {
     // For Professional tier users
     return 10
   }
@@ -575,21 +575,21 @@ export class WebhookManager {
    * Log webhook management events
    */
   private static async logWebhookEvent(
-    userId: string,
+    _userId: string,
     eventType: string,
-    eventData: Record<string, any>
+    eventData: Record<string, unknown>
   ): Promise<void> {
     try {
       await supabase
         .from('user_activity')
         .insert({
-          user_id: userId,
+          user_id: _userId,
           action_type: eventType,
           resource_accessed: 'webhook_management',
           timestamp: new Date().toISOString()
         })
 
-      console.log(`Webhook event logged: ${eventType}`, { userId, eventData })
+      console.log(`Webhook event logged: ${eventType}`, { _userId, eventData })
 
     } catch (error) {
       console.error('Failed to log webhook event:', error)

@@ -433,7 +433,7 @@ export class RateLimitMiddleware {
     userId: string,
     tier: RateLimitTier,
     endpoint: string
-  ): Promise<{ allowed: boolean; headers: Record<string, string>; errorResponse?: any }> {
+  ): Promise<{ allowed: boolean; headers: Record<string, string>; errorResponse?: unknown }> {
     try {
       // Check main rate limit
       const rateLimitResult = await RateLimiter.checkRateLimit(apiKeyId, userId, tier, endpoint)

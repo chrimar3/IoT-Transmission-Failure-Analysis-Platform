@@ -26,7 +26,7 @@ describe('R2StorageClient', () => {
       json: jest.fn(),
       blob: jest.fn(),
       arrayBuffer: jest.fn()
-    } as any)
+    } as unknown)
   })
 
   describe('Constructor', () => {
@@ -78,7 +78,7 @@ describe('R2StorageClient', () => {
         ok: false,
         status: 404,
         statusText: 'Not Found'
-      } as any)
+      } as unknown)
 
       const query = { startDate: '2024-01-01' }
       const result = await client.fetchSensorData(query)
@@ -104,7 +104,7 @@ describe('R2StorageClient', () => {
         ok: true,
         status: 200,
         text: jest.fn().mockResolvedValue('invalid,csv,data\nwith,broken,lines')
-      } as any)
+      } as unknown)
 
       const query = { startDate: '2024-01-01' }
       const result = await client.fetchSensorData(query)
@@ -118,7 +118,7 @@ describe('R2StorageClient', () => {
         ok: true,
         status: 200,
         text: jest.fn().mockResolvedValue('')
-      } as any)
+      } as unknown)
 
       const query = { startDate: '2024-01-01' }
       const result = await client.fetchSensorData(query)
@@ -132,7 +132,7 @@ describe('R2StorageClient', () => {
         ok: true,
         status: 200,
         text: jest.fn().mockResolvedValue('sensor_id,timestamp,value')
-      } as any)
+      } as unknown)
 
       const query = { startDate: '2024-01-01' }
       const result = await client.fetchSensorData(query)
@@ -154,7 +154,7 @@ SENSOR_001,2024-01-01T00:00:00Z,25.5,1,HVAC,°C,normal
 SENSOR_002,2024-01-01T01:00:00Z,24.2,1,HVAC,°C,normal
 SENSOR_003,2024-01-01T02:00:00Z,23.8,2,Lighting,°C,degraded
 SENSOR_004,2024-01-01T03:00:00Z,26.1,2,HVAC,°C,normal`)
-      } as any)
+      } as unknown)
     })
 
     it('should calculate basic metrics', async () => {
@@ -175,7 +175,7 @@ SENSOR_004,2024-01-01T03:00:00Z,26.1,2,HVAC,°C,normal`)
         ok: true,
         status: 200,
         text: jest.fn().mockResolvedValue('sensor_id,timestamp,reading_value,floor_number,equipment_type,unit,status')
-      } as any)
+      } as unknown)
 
       const result = await client.getMetrics()
       
@@ -264,7 +264,7 @@ SENSOR_004,2024-01-01T03:00:00Z,26.1,2,HVAC,°C,normal`)
         ok: false,
         status: 500,
         statusText: 'Internal Server Error'
-      } as any)
+      } as unknown)
 
       const result = await client.fetchSensorData({ startDate: '2024-01-01' })
       
@@ -283,7 +283,7 @@ SENSOR_002,2024-01-01T01:00:00Z,24.2,2,Lighting,°C,normal,extra2`
         ok: true,
         status: 200,
         text: jest.fn().mockResolvedValue(csvData)
-      } as any)
+      } as unknown)
 
       const result = await client.fetchSensorData({ startDate: '2024-01-01' })
       
@@ -302,7 +302,7 @@ SENSOR_003,30.0,3`
         ok: true,
         status: 200,
         text: jest.fn().mockResolvedValue(csvData)
-      } as any)
+      } as unknown)
 
       const result = await client.fetchSensorData({ startDate: '2024-01-01' })
       
@@ -336,7 +336,7 @@ SENSOR_003,30.0,3`
         ok: true,
         status: 200,
         text: jest.fn().mockResolvedValue(`sensor_id,timestamp,value\n${largeCsv}`)
-      } as any)
+      } as unknown)
 
       const startTime = Date.now()
       const result = await client.fetchSensorData({ startDate: '2024-01-01' })

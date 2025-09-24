@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getServerSession } from 'next-auth/next'
 import { WebhookManager } from '@/lib/api/webhook-delivery'
-import type { ApiResponse, WebhookEndpoint, CreateWebhookRequest, WebhookTestRequest } from '@/types/api'
+import type { ApiResponse, WebhookEndpoint, _CreateWebhookRequest, _WebhookTestRequest } from '@/types/api'
 
 // Validation schemas
 const CreateWebhookSchema = z.object({
@@ -25,7 +25,7 @@ const UpdateWebhookSchema = z.object({
   is_active: z.boolean().optional()
 })
 
-const TestWebhookSchema = z.object({
+const _TestWebhookSchema = z.object({
   event_type: z.enum(['data.updated', 'alert.triggered', 'export.completed', 'pattern.detected']),
   test_payload: z.record(z.any()).optional()
 })
@@ -33,7 +33,7 @@ const TestWebhookSchema = z.object({
 /**
  * GET /api/v1/webhooks - List user's webhooks
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(_request: NextRequest): Promise<NextResponse> {
   try {
     // Get authenticated user session
     const session = await getServerSession()
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 /**
  * POST /api/v1/webhooks - Create new webhook
  */
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(_request: NextRequest): Promise<NextResponse> {
   try {
     // Get authenticated user session
     const session = await getServerSession()
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 /**
  * PUT /api/v1/webhooks/{id} - Update webhook
  */
-export async function PUT(request: NextRequest): Promise<NextResponse> {
+export async function PUT(_request: NextRequest): Promise<NextResponse> {
   try {
     // Get authenticated user session
     const session = await getServerSession()
@@ -256,7 +256,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 /**
  * DELETE /api/v1/webhooks/{id} - Delete webhook
  */
-export async function DELETE(request: NextRequest): Promise<NextResponse> {
+export async function DELETE(_request: NextRequest): Promise<NextResponse> {
   try {
     // Get authenticated user session
     const session = await getServerSession()

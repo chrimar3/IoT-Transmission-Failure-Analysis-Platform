@@ -10,8 +10,8 @@ import crypto from 'crypto'
 export class MockWebhookServer {
   private app: express.Application
   private server?: Server
-  private receivedWebhooks: any[] = []
-  private deliveryAttempts: any[] = []
+  private receivedWebhooks: unknown[] = []
+  private deliveryAttempts: unknown[] = []
   private responseDelay: number = 0
   private failurePattern: number[] = []
   private currentFailureIndex: number = 0
@@ -46,7 +46,7 @@ export class MockWebhookServer {
         if (shouldFail) {
           const statusCode = this.failurePattern[this.currentFailureIndex] || 500
           this.currentFailureIndex = (this.currentFailureIndex + 1) % this.failurePattern.length
-          res.status(statusCode).json({ error: 'Simulated failure' })
+          res.status(statusCode).json({ _error: 'Simulated failure' })
           return
         }
 
@@ -110,15 +110,15 @@ export class MockWebhookServer {
     })
   }
 
-  getReceivedWebhooks(): any[] {
+  getReceivedWebhooks(): unknown[] {
     return this.receivedWebhooks
   }
 
-  getDeliveryAttempts(): any[] {
+  getDeliveryAttempts(): unknown[] {
     return this.deliveryAttempts
   }
 
-  getLastWebhookHeaders(): any {
+  getLastWebhookHeaders(): unknown {
     const lastAttempt = this.deliveryAttempts[this.deliveryAttempts.length - 1]
     return lastAttempt ? lastAttempt.headers : {}
   }
@@ -137,7 +137,7 @@ export class MockWebhookServer {
     this.currentFailureIndex = 0
   }
 
-  async waitForWebhook(timeoutMs: number = 5000): Promise<any> {
+  async waitForWebhook(timeoutMs: number = 5000): Promise<unknown> {
     const startTime = Date.now()
     const initialCount = this.receivedWebhooks.length
 
@@ -172,7 +172,7 @@ export function validateWebhookSignature(payload: string, signature: string, sec
       Buffer.from(cleanSignature, 'hex'),
       Buffer.from(expectedSignature, 'hex')
     )
-  } catch (error) {
+  } catch (_error) {
     return false
   }
 }
@@ -182,7 +182,7 @@ export function generateWebhookSignature(payload: string, secret: string): strin
   return `sha256=${signature}`
 }
 
-export async function createTestWebhookEndpoint(baseUrl: string, path: string = '/webhook'): Promise<any> {
+export async function createTestWebhookEndpoint(baseUrl: string, path: string = '/webhook'): Promise<unknown> {
   return {
     url: `${baseUrl}${path}`,
     events: ['data.updated', 'alert.triggered'],
@@ -194,7 +194,7 @@ export async function createTestWebhookEndpoint(baseUrl: string, path: string = 
 export class WebhookEventSimulator {
   private static eventId = 0
 
-  static createDataUpdateEvent(data: any): any {
+  static createDataUpdateEvent(data: unknown): unknown {
     return {
       event_type: 'data.updated',
       event_id: `evt_${++this.eventId}_${Date.now()}`,
@@ -215,7 +215,7 @@ export class WebhookEventSimulator {
     }
   }
 
-  static createAlertEvent(data: any): any {
+  static createAlertEvent(data: unknown): unknown {
     return {
       event_type: 'alert.triggered',
       event_id: `evt_${++this.eventId}_${Date.now()}`,
@@ -238,7 +238,7 @@ export class WebhookEventSimulator {
     }
   }
 
-  static createExportCompletedEvent(data: any): any {
+  static createExportCompletedEvent(data: unknown): unknown {
     return {
       event_type: 'export.completed',
       event_id: `evt_${++this.eventId}_${Date.now()}`,
@@ -258,7 +258,7 @@ export class WebhookEventSimulator {
     }
   }
 
-  static createTestEvent(): any {
+  static createTestEvent(): unknown {
     return {
       event_type: 'webhook.test',
       event_id: `evt_test_${Date.now()}`,
@@ -273,7 +273,7 @@ export class WebhookEventSimulator {
 }
 
 export class WebhookRetrySimulator {
-  private attempts: any[] = []
+  private attempts: unknown[] = []
 
   addAttempt(statusCode: number, responseTimeMs: number): void {
     this.attempts.push({
@@ -285,11 +285,11 @@ export class WebhookRetrySimulator {
     })
   }
 
-  getAttempts(): any[] {
+  getAttempts(): unknown[] {
     return this.attempts
   }
 
-  getSuccessfulAttempt(): any | null {
+  getSuccessfulAttempt(): unknown | null {
     return this.attempts.find(a => a.success) || null
   }
 
@@ -329,7 +329,7 @@ export class WebhookSecurityTester {
     return !validateWebhookSignature(tamperedPayload, signature, secret)
   }
 
-  static testMaliciousPayloads(): any[] {
+  static testMaliciousPayloads(): unknown[] {
     return [
       {
         name: 'XSS attempt in event data',
@@ -385,9 +385,9 @@ export interface WebhookTestResult {
 
 export async function performWebhookDeliveryTest(
   webhookUrl: string,
-  payload: any,
+  payload: unknown,
   secret: string,
-  options: {
+  _options: {
     timeout?: number
     maxRetries?: number
     backoffType?: 'linear' | 'exponential'
@@ -439,7 +439,7 @@ export async function performWebhookDeliveryTest(
         await new Promise(resolve => setTimeout(resolve, delay))
       }
 
-    } catch (error) {
+    } catch (_error) {
       const responseTime = Date.now() - Date.now() // This would be calculated properly
       retrySimulator.addAttempt(0, responseTime) // 0 status for network errors
 
@@ -464,7 +464,7 @@ export async function performWebhookDeliveryTest(
   }
 }
 
-async function simulateWebhookRequest(url: string, options: any): Promise<{ status: number }> {
+async function simulateWebhookRequest(_url: string, _options: any): Promise<{ status: number }> {
   // Mock HTTP request - in real implementation, this would use fetch or similar
   // Simulate success for most requests
   if (Math.random() > 0.1) {

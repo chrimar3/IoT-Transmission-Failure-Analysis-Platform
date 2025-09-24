@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getServerSession } from 'next-auth/next'
 import { WebhookManager } from '@/lib/api/webhook-delivery'
-import type { ApiResponse, WebhookTestRequest } from '@/types/api'
+import type { ApiResponse, _WebhookTestRequest } from '@/types/api'
 
 // Validation schema
 const TestWebhookSchema = z.object({
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const response: ApiResponse<{
       test_result: {
         success: boolean
-        response?: any
+        response?: unknown
         error?: string
         delivered_at: string
       }

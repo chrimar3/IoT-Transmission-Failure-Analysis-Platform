@@ -6,6 +6,11 @@
 import crypto from 'crypto'
 import { faker } from '@faker-js/faker'
 
+// Helper function for array element selection (faker compatibility)
+const getRandomArrayElement = <T>(array: T[]): T => {
+  return array[Math.floor(Math.random() * array.length)]
+}
+
 // Bangkok IoT Dataset Configuration
 export const BANGKOK_DATASET_CONFIG = {
   building_floors: 7,
@@ -112,9 +117,9 @@ export class UserTestFactory {
     return {
       id: crypto.randomUUID(),
       email: options.email || faker.internet.email(),
-      name: options.name || faker.person.fullName(),
+      name: options.name || faker.name?.fullName() || `${faker.name?.firstName()} ${faker.name?.lastName()}` || 'Test User',
       subscription_tier: options.subscription_tier || 'professional',
-      stripe_customer_id: options.stripe_customer_id || `cus_${faker.string.alphanumeric(14)}`,
+      stripe_customer_id: options.stripe_customer_id || `cus_${faker.datatype?.string?.(14) || faker.random?.alphaNumeric?.(14) || Math.random().toString(36).substring(2, 16)}`,
       created_at: options.created_at || new Date().toISOString(),
       updated_at: options.updated_at || new Date().toISOString(),
       is_active: options.is_active ?? true,
@@ -159,15 +164,15 @@ export class BangkokDataFactory {
       location: {
         building: 'Bangkok Office Complex',
         floor: floorNumber,
-        zone: faker.helpers.arrayElement(['North', 'South', 'East', 'West', 'Central']),
-        room: faker.helpers.arrayElement(['Office', 'Conference', 'Lobby', 'Storage', 'Utility'])
+        zone: getRandomArrayElement(['North', 'South', 'East', 'West', 'Central']),
+        room: getRandomArrayElement(['Office', 'Conference', 'Lobby', 'Storage', 'Utility'])
       },
       installation_date: faker.date.between({
         from: '2023-01-01',
         to: '2024-01-01'
       }).toISOString(),
       calibration_date: faker.date.recent({ days: 90 }).toISOString(),
-      status: faker.helpers.arrayElement(['active', 'maintenance', 'error']) as 'active' | 'maintenance' | 'error',
+      status: getRandomArrayElement(['active', 'maintenance', 'error']) as 'active' | 'maintenance' | 'error',
       unit: this.getUnitForEquipmentType(equipmentType),
       thresholds: this.getThresholdsForEquipmentType(equipmentType)
     }
@@ -617,7 +622,7 @@ export interface WebhookDelivery {
   id: string
   webhook_id: string
   event_type: string
-  payload: any
+  payload: unknown
   signature: string
   delivery_attempts: number
   status: 'pending' | 'delivered' | 'failed'

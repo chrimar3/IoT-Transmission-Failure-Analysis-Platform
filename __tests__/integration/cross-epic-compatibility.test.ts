@@ -150,7 +150,7 @@ describe('Cross-Epic Compatibility Integration Tests', () => {
 
       it('should provide rate-limiting compatible error responses', async () => {
         // Mock a scenario that would trigger rate limiting
-        const mockR2Client = require('@/lib/r2-client').r2Client
+        const { r2Client: mockR2Client } = await import('@/lib/r2-client')
         mockR2Client.getMetrics.mockRejectedValueOnce(new Error('Rate limited'))
 
         const request = new NextRequest('http://localhost:3000/api/readings/summary')
@@ -266,7 +266,7 @@ describe('Cross-Epic Compatibility Integration Tests', () => {
         // All requests should complete quickly for production readiness
         expect(endTime - startTime).toBeLessThan(5000) // 5 second timeout
         
-        responses.forEach((response, index) => {
+        responses.forEach((response, _index) => {
           expect(response.status).toBeLessThan(400) // No client/server errors
         })
       })

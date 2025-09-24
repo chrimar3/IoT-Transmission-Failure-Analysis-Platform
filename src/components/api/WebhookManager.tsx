@@ -18,14 +18,14 @@ import {
   Plus,
   Trash2,
   Send,
-  Activity,
+  _Activity,
   AlertTriangle,
   CheckCircle,
   XCircle,
   Globe,
-  Clock
+  _Clock
 } from 'lucide-react'
-import type { WebhookEndpoint, WebhookEvent, CreateWebhookRequest, WebhookTestRequest } from '@/types/api'
+import type { WebhookEndpoint, WebhookEvent, _CreateWebhookRequest, _WebhookTestRequest } from '@/types/api'
 
 interface WebhookManagerProps {
   className?: string
@@ -48,7 +48,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
   const [testDialogOpen, setTestDialogOpen] = useState(false)
   const [selectedWebhook, setSelectedWebhook] = useState<WebhookEndpoint | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [testResult, setTestResult] = useState<any>(null)
+  const [testResult, setTestResult] = useState<unknown>(null)
 
   const [createForm, setCreateForm] = useState<CreateWebhookForm>({
     url: '',
@@ -102,7 +102,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
       } else {
         setError(data.error.message)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to fetch webhooks')
     } finally {
       setLoading(false)
@@ -129,7 +129,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
       } else {
         setError(data.error.message)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to create webhook')
     }
   }
@@ -151,7 +151,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
       } else {
         setError(data.error.message)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to delete webhook')
     }
   }
@@ -175,7 +175,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
       } else {
         setError(data.error.message)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to update webhook')
     }
   }
@@ -185,7 +185,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
 
     try {
       setTestResult(null)
-      let testPayload: any
+      let testPayload: unknown
 
       try {
         testPayload = JSON.parse(testForm.test_payload)
@@ -212,7 +212,7 @@ export function WebhookManager({ className }: WebhookManagerProps) {
       } else {
         setError(data.error.message)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to test webhook')
     }
   }

@@ -1,18 +1,176 @@
-# CU-BEMS IoT Transmission Failure Analysis Platform - Ultra-Lean Architecture
+# CU-BEMS IoT Transmission Failure Analysis Platform - Fullstack Architecture Document
 
 ## Executive Summary
 
-**Project**: Independent Commercial IoT Analytics Service using Bangkok CU-BEMS Dataset  
-**Approach**: Ultra-lean serverless startup architecture  
-**Target Cost**: $0-20/month for MVP launch  
-**Dataset**: 700MB CSV files, 4-6M data points, 7 floors, 18-month study, 134 sensors
+**Project**: Independent Commercial IoT Analytics Service using Bangkok CU-BEMS Dataset
+**Approach**: Ultra-lean serverless startup architecture with proven backend foundation
+**Target Cost**: $0-20/month (achieved: $0-5/month operational)
+**Dataset**: 124.9M sensor records (700MB), 7 floors, 18-month study (2018-2019), 144 sensors
+
+## Introduction
+
+This document outlines the complete fullstack architecture for **CU-BEMS IoT Transmission Failure Analysis Platform**, including backend systems, frontend implementation, and their integration. It serves as the single source of truth for AI-driven development, ensuring consistency across the entire technology stack.
+
+### Starter Template or Existing Project
+
+**Status**: Existing project with proven backend implementation and fixed historical dataset
+
+The CU-BEMS platform works with a **fixed, complete dataset**:
+- **Dataset**: 124.9M Bangkok sensor records (2018-2019) - This is the ONLY data we will ever have
+- **Backend Status**: R2 + Supabase hybrid architecture (operational with 85/85 tests passing)
+- **API Foundation**: Three core endpoints implemented (/summary, /timeseries, /patterns)
+- **Performance**: Sub-500ms API responses with comprehensive caching
+- **No Real-time Requirements**: Architecture optimized for historical analysis, not live data ingestion
+
+**Key Architectural Implications**:
+- ✅ Can heavily optimize for read-only access patterns
+- ✅ Can pre-compute all statistical analyses and cache aggressively
+- ✅ No need for data ingestion pipelines or real-time processing
+- ✅ Frontend can assume data is static and immutable
+- ❌ No need for WebSocket connections or live updates
+- ❌ No need for data validation or cleaning pipelines (already done)
+
+### Data Architecture Constraints & Opportunities
+
+**Fixed Dataset Advantages:**
+- 100% predictable performance (no data growth)
+- Complete statistical significance (full population, not sample)
+- Unlimited pre-computation possibilities
+- Zero data quality degradation over time
+
+**Design Decisions Based on Fixed Data:**
+1. **Read-Optimized Storage**: No write paths needed (except user preferences)
+2. **Aggressive Caching**: Computation results never invalidate
+3. **Static Deployment Options**: Could even generate static site for certain views
+4. **Simplified Security**: No data modification endpoints needed
+
+**Resilience Patterns:**
+- Backup copies in multiple R2 regions
+- Local development dataset subset for testing
+- Graceful degradation if specific analyses unavailable
+- Clear data quality indicators for gap handling
+
+### Architectural Philosophy
+
+Building a **timeless analysis platform** where the Bangkok dataset serves as a proving ground for methodologies applicable to any building dataset. The value lies not in the data's recency but in the validation of analytical approaches that facility managers can trust.
+
+### Change Log
+
+| Date | Version | Description | Author |
+|------|---------|-------------|---------|
+| 2024-09-19 | v2.0 | Fullstack architecture with fixed dataset constraints | Architect (Winston) |
+| 2024-09-19 | v1.2 | Added stress-tested constraints and data architecture clarity | Architect (Winston) |
+| 2024-09-19 | v1.1 | Clarified fixed dataset constraint - no real-time capabilities needed | Architect (Winston) |
+| 2024-09-19 | v1.0 | Initial fullstack architecture from existing backend | Architect (Winston) |
 
 ## 1. Bangkok Dataset Integration Pipeline
+
+## High Level Architecture
+
+### Technical Summary
+
+The CU-BEMS platform employs a **serverless fullstack architecture** leveraging Next.js 14 for the frontend and proven R2+Supabase hybrid storage for the backend. The system achieves sub-500ms API response times through aggressive caching of the fixed Bangkok dataset. Frontend and backend communicate via RESTful APIs with comprehensive error handling and fallback patterns. The platform is deployed on Vercel's edge network for global performance, with Cloudflare R2 providing cost-effective bulk storage and Supabase handling metadata and user management. This architecture delivers regulatory-grade statistical analysis capabilities while maintaining operational costs under $5/month.
+
+### Platform and Infrastructure Choice
+
+**Selected Platform**: **Vercel + Cloudflare R2 + Supabase**
+
+**Key Services**:
+- **Vercel**: Next.js hosting, edge functions, analytics
+- **Cloudflare R2**: Bulk sensor data storage (700MB Bangkok dataset)
+- **Supabase**: PostgreSQL for metadata, authentication, user management
+- **Stripe**: Payment processing (future implementation)
+
+**Deployment Host and Regions**:
+- Primary: Vercel Global Edge Network with regional failover plan
+- R2 Storage: Automatic global replication with multi-region backup
+- Database: Supabase US-East (primary) with documented migration path
+
+**Platform Portability Strategy**:
+- Deployment abstraction layer enables migration to AWS/Azure if needed
+- Docker containerization options for multi-platform deployment
+- Vendor-agnostic API design prevents lock-in
+
+### Repository Structure
+
+**Structure**: Monorepo with deployment abstraction
+**Monorepo Tool**: npm workspaces with migration-ready structure
+**Package Organization**: Apps (web, api) + Shared packages (types, utils) + Platform adapters
+
+### High Level Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "User Layer"
+        U[Facility Manager]
+        M[Mobile Device]
+        D[Desktop Browser]
+    end
+
+    subgraph "Frontend - Vercel Edge"
+        N[Next.js 14 App]
+        S[Static Assets CDN]
+        E[Edge Middleware]
+    end
+
+    subgraph "API Layer"
+        A[API Routes]
+        C[Caching Layer]
+        V[Validation]
+        T[Request Throttling]
+    end
+
+    subgraph "Data Layer"
+        R2[Cloudflare R2<br/>Bangkok Dataset<br/>700MB]
+        SB[Supabase<br/>Metadata & Users]
+        RC[R2Client<br/>with Fallbacks]
+    end
+
+    subgraph "Resilience & Fallback"
+        FB[Fallback Data Generator]
+        BC[Background Cache Warmer]
+        MR[Multi-Region Backup]
+        CM[Cost Monitoring]
+    end
+
+    subgraph "External Services"
+        ST[Stripe<br/>Payments]
+        AU[Auth Providers<br/>Google/Email]
+    end
+
+    U --> M & D
+    M & D --> N
+    N --> S
+    N --> E --> A
+    A --> V --> C
+    A --> T
+    C --> RC
+    RC --> R2
+    RC --> SB
+    RC --> FB
+    A --> BC
+    R2 --> MR
+    SB --> CM
+    N --> AU
+    A --> ST
+```
+
+### Architectural Patterns
+
+- **Jamstack Architecture:** Static generation with serverless APIs - *Rationale:* Optimal performance and cost for fixed dataset
+- **Component-Based UI:** Reusable React components with TypeScript - *Rationale:* Maintainability and type safety across large codebase
+- **Repository Pattern:** Abstract data access through R2Client - *Rationale:* Enables fallback patterns and testing flexibility
+- **Cache-First Strategy:** Aggressive caching for immutable data - *Rationale:* Fixed dataset allows infinite cache TTL
+- **Progressive Enhancement:** Core features work without JavaScript - *Rationale:* Ensures accessibility during emergencies
+- **Offline-First Design:** Local storage for critical insights - *Rationale:* Emergency access requirement from PRD
+- **Graceful Degradation Pattern:** Multi-tier fallback system - *Rationale:* Fixed dataset allows pre-computed fallbacks at multiple fidelity levels
+- **Circuit Breaker Pattern:** Request throttling and queue management - *Rationale:* Prevents resource exhaustion under concurrent load
+- **Cost Monitoring Pattern:** Automated tier upgrades with user notification - *Rationale:* Prevents service disruption from usage spikes
 
 ### Hybrid Storage Architecture (R2 + Supabase)
 ```
 CU-BEMS Dataset/ (Local)
-├── 2018_energy_data.csv (215MB) 
+├── 2018_energy_data.csv (215MB)
 ├── 2019_energy_data.csv (483MB)
 └── metadata/
     ├── sensor_mappings.csv
@@ -24,6 +182,341 @@ Hybrid Processing Pipeline:
 2. Bulk Data → Cloudflare R2 Storage (partitioned by month)
 3. Metadata & Aggregates → Supabase PostgreSQL
 4. R2Client with Supabase fallback patterns
+5. Multi-region backup and cost monitoring
+```
+
+## Tech Stack
+
+This is the DEFINITIVE technology selection for the entire project. Based on our proven backend foundation and user-validated requirements:
+
+### Technology Stack Table
+
+| Category | Technology | Version | Purpose | Rationale |
+|----------|------------|---------|---------|-----------|
+| **Frontend Language** | TypeScript | ^5.0 | Type-safe frontend development | Shared types with backend, reduces runtime errors |
+| **Frontend Framework** | Next.js | ^14.0 | React-based web application | App Router, edge optimization, Vercel integration |
+| **UI Component Library** | Tailwind CSS | ^3.3 | Utility-first CSS framework | Rapid development, consistent design, small bundle |
+| **State Management** | React Context + localStorage + IndexedDB | Latest | User session persistence across devices | Emergency access requires cross-device state |
+| **Backend Language** | TypeScript | ^5.0 | API development and data processing | Already implemented, type safety across stack |
+| **Backend Framework** | Next.js API Routes | ^14.0 | Serverless API endpoints | Unified deployment, edge optimization |
+| **API Style** | REST + Web Push API | - | HTTP API + push notifications | Existing REST + emergency alert capability |
+| **Database** | PostgreSQL (Supabase) | ^15 | Metadata and user management | Proven integration, 500MB free tier sufficient |
+| **Cache** | Vercel Edge Cache | Built-in | Response caching | Fixed data allows aggressive caching |
+| **File Storage** | Cloudflare R2 | - | Bulk sensor data storage | Cost-optimized, proven with 700MB dataset |
+| **Authentication** | NextAuth.js | ^4.24 | User authentication | Google OAuth, email/password support |
+| **Data Visualization** | Recharts | ^2.8 | Interactive charts and graphs | Executives need professional data presentation |
+| **Statistical Charts** | Victory.js | ^37.0 | Confidence interval visualization | Users need to see statistical significance visually |
+| **Offline Storage** | IndexedDB + Workbox | Latest | Emergency data caching | 24-hour offline access during network failures |
+| **Push Notifications** | Web Push API | Native | Critical alert delivery | Instant notification for facility emergencies |
+| **PDF Generation** | React-PDF | ^3.1 | Executive report export | Stakeholder presentations require formal reports |
+| **Frontend Testing** | Jest + Testing Library | ^29.0 | Component and unit testing | React-first testing approach |
+| **Backend Testing** | Jest + Supertest | ^29.0 | API endpoint testing | Already implemented, 85/85 tests passing |
+| **E2E Testing** | Playwright | ^1.40 | End-to-end user testing | Cross-browser testing for critical workflows |
+| **Build Tool** | Next.js | ^14.0 | Bundling and optimization | Integrated toolchain, zero config |
+| **Bundler** | Turbopack | Built-in | Fast development builds | Next.js 14 default bundler |
+| **IaC Tool** | Vercel CLI | Latest | Infrastructure as Code | Simple deployment configuration |
+| **CI/CD** | GitHub Actions | - | Continuous integration | Free for public repos, Vercel integration |
+| **Monitoring** | Vercel Analytics + Sentry | Free tiers | Error tracking and performance | Cost-effective monitoring stack |
+| **Logging** | Console + Vercel Logs | Built-in | Application logging | Serverless-optimized logging |
+| **CSS Framework** | Tailwind CSS | ^3.3 | Styling system | Utility-first, responsive design |
+
+### User-Driven Technology Decisions
+
+**Emergency Response Optimizations:**
+- **IndexedDB + Workbox**: Enables 24-hour offline access to critical building data during network failures
+- **Web Push API**: Delivers instant notifications to facility managers during crises
+- **Service Worker**: Caches essential data for emergency scenarios
+
+**Executive Presentation Requirements:**
+- **Recharts**: Professional interactive charts for stakeholder presentations
+- **React-PDF**: Executive-grade report generation with statistical backing
+- **Victory.js**: Statistical significance visualization with confidence intervals
+
+**Cross-Device Reliability:**
+- **localStorage + sessionStorage**: Critical state persistence between mobile emergency access and desktop planning
+- **Progressive Enhancement**: Core functionality accessible even if advanced features fail
+
+## Data Models
+
+Based on our PRD requirements and the existing R2+Supabase implementation, here are the core data models that will be shared between frontend and backend:
+
+### SensorReading Model
+
+**Purpose:** Core sensor data from the Bangkok dataset - the foundation of all analytics
+
+**Key Attributes:**
+- timestamp: ISO string - When the reading was taken
+- sensor_id: string - Unique identifier for the sensor
+- floor_number: number - Building floor (1-7)
+- equipment_type: string - Type of equipment being monitored
+- reading_value: number - The actual sensor measurement
+- unit: string - Unit of measurement (kWh, temperature, etc.)
+- status: string - Operational status (normal, warning, error)
+
+#### TypeScript Interface
+```typescript
+interface SensorReading {
+  id: string;
+  timestamp: string; // ISO 8601 format
+  sensor_id: string;
+  floor_number: number;
+  equipment_type: 'HVAC_COOLING' | 'HVAC_HEATING' | 'HVAC_VENTILATION'
+                 | 'LIGHTING_LED' | 'LIGHTING_FLUORESCENT'
+                 | 'POWER_MAIN' | 'POWER_UPS' | 'POWER_EMERGENCY'
+                 | 'SECURITY_CAMERAS' | 'SECURITY_ACCESS'
+                 | 'ELEVATOR_SYSTEM' | 'WATER_PUMP';
+  reading_value: number;
+  unit: string;
+  status: 'normal' | 'warning' | 'error' | 'offline';
+  confidence_score?: number;
+  anomaly_detected?: boolean;
+}
+
+// Real Bangkok dataset example
+const exampleReading: SensorReading = {
+  id: "bangkok_2018_07_15_sensor_ac_201_14:30",
+  timestamp: "2018-07-15T14:30:00.000Z",
+  sensor_id: "AC_UNIT_201",
+  floor_number: 2,
+  equipment_type: "HVAC_COOLING",
+  reading_value: 15.4,
+  unit: "kWh",
+  status: "normal",
+  confidence_score: 0.94,
+  anomaly_detected: false
+};
+```
+
+#### Relationships
+- Belongs to Building Floor (1:many) - 144 sensors across 7 floors
+- Belongs to Equipment Type (1:many) - ~20 sensors per floor average
+- Used in Analytics Calculations (1:many) - 124.9M total records
+
+#### Data Structure Details
+- **Total Records**: 124,903,795 sensor readings
+- **Time Range**: 2018-01-01 to 2019-06-30 (18 months)
+- **Frequency**: 5-minute intervals
+- **File Structure**: Monthly partitioned CSV files (700MB total)
+
+### ValidationResult Model
+
+**Purpose:** Statistical validation results with confidence intervals and p-values for regulatory compliance
+
+**Key Attributes:**
+- metric_name: string - Name of the metric being validated
+- metric_value: number - Calculated metric value
+- confidence_level: number - Statistical confidence percentage
+- p_value: number - Statistical significance
+- sample_size: number - Number of data points used
+
+#### TypeScript Interface
+```typescript
+interface ValidationResult {
+  id: string;
+  session_id: string;
+  metric_name: string;
+  metric_value: number;
+  confidence_level: number;
+  confidence_interval: {
+    lower: number;
+    upper: number;
+  };
+  p_value: number;
+  sample_size: number;
+  analysis_method: 'two_sample_t_test' | 'mann_whitney_u' | 'anova'
+                 | 'bootstrap_ci' | 'bonferroni_correction';
+  created_at: string;
+}
+
+// Real statistical analysis example
+const validationExample: ValidationResult = {
+  id: "validation_floor2_efficiency_2024_09_19",
+  session_id: "session_bangkok_full_analysis_001",
+  metric_name: "Floor 2 Energy Efficiency vs Baseline",
+  metric_value: 67.3, // 67.3% efficiency
+  confidence_level: 94.7,
+  confidence_interval: {
+    lower: 65.1, // 95% confidence interval
+    upper: 69.5
+  },
+  p_value: 0.0001, // Highly significant
+  sample_size: 2847392, // ~2.8M data points
+  analysis_method: "two_sample_t_test",
+  created_at: "2024-09-19T10:30:00.000Z"
+};
+```
+
+#### Relationships
+- Belongs to Validation Session (many:1)
+- References Sensor Readings (many:many) - up to millions of readings per validation
+- Used in Dashboard Displays (1:many)
+
+### User Model
+
+**Purpose:** User authentication and subscription management for facility managers
+
+#### TypeScript Interface
+```typescript
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  subscription_tier: 'free' | 'professional' | 'enterprise';
+  stripe_customer_id?: string;
+  created_at: string;
+  last_login?: string;
+  preferences: {
+    default_floor?: number;
+    notification_enabled: boolean;
+    dashboard_layout: 'emergency_focused' | 'executive_summary';
+  };
+}
+
+// Typical facility manager profile
+const facilityManagerProfile: User = {
+  id: "user_fm_johnson_bangkok_university",
+  email: "r.johnson@university.edu",
+  name: "Robert Johnson",
+  subscription_tier: "professional",
+  stripe_customer_id: "cus_bangkok_fm_001",
+  created_at: "2024-08-15T09:00:00.000Z",
+  last_login: "2024-09-19T08:15:00.000Z",
+  preferences: {
+    default_floor: 2, // Floor 2 shows most anomalies
+    notification_enabled: true,
+    dashboard_layout: "emergency_focused"
+  }
+};
+```
+
+#### Relationships
+- Has many Dashboard Sessions (1:many)
+- Has one Subscription (1:1)
+- Has many Export Requests (1:many)
+- Receives many Alerts (1:many)
+
+### Alert Model
+
+**Purpose:** System-generated alerts for facility managers during emergencies
+
+#### TypeScript Interface
+```typescript
+interface Alert {
+  id: string;
+  alert_type: 'performance' | 'efficiency' | 'maintenance' | 'financial' | 'quality';
+  severity: 'info' | 'warning' | 'critical' | 'emergency';
+  title: string;
+  message: string;
+  source: string;
+  metric_value?: number;
+  threshold_value?: number;
+  confidence_level: number;
+  recommended_action: string;
+  estimated_impact: string;
+  created_at: string;
+  acknowledged: boolean;
+  resolved: boolean;
+  user_id?: string;
+}
+
+// Critical performance alert example
+const emergencyAlert: Alert = {
+  id: "alert_critical_floor2_hvac_malfunction_001",
+  alert_type: "performance",
+  severity: "critical",
+  title: "HVAC System Performance Drop - Floor 2",
+  message: "HVAC efficiency dropped to 45% (normal: 75-85%). Immediate inspection required.",
+  source: "performance_monitor",
+  metric_value: 45.2,
+  threshold_value: 70.0,
+  confidence_level: 97.3,
+  recommended_action: "Check HVAC Unit 201-205 filters and refrigerant levels immediately",
+  estimated_impact: "Potential $2,400/month cost increase if not addressed within 48 hours",
+  created_at: "2024-09-19T14:45:00.000Z",
+  acknowledged: false,
+  resolved: false,
+  user_id: "user_fm_johnson_bangkok_university"
+};
+```
+
+#### Relationships
+- Triggered by Validation Results (many:1)
+- Belongs to User (many:1)
+- References Sensor Readings (many:many)
+
+### Database Schema Implementation
+
+#### Supabase PostgreSQL Tables
+```sql
+-- Users and subscriptions
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  subscription_tier TEXT DEFAULT 'free',
+  preferences JSONB DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Validation sessions for analytics
+CREATE TABLE validation_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_name TEXT NOT NULL,
+  dataset_version TEXT DEFAULT 'bangkok_2018_2019',
+  total_records BIGINT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  completed_at TIMESTAMP WITH TIME ZONE,
+  confidence_score DECIMAL(5,2)
+);
+
+-- Pre-computed validation results (cached analytics)
+CREATE TABLE validation_results (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID REFERENCES validation_sessions(id),
+  metric_name TEXT NOT NULL,
+  metric_value DECIMAL(10,4),
+  confidence_level DECIMAL(5,2),
+  confidence_lower DECIMAL(10,4),
+  confidence_upper DECIMAL(10,4),
+  p_value DECIMAL(15,10),
+  sample_size BIGINT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- User-specific alerts
+CREATE TABLE alerts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  alert_type TEXT NOT NULL,
+  severity TEXT NOT NULL,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  confidence_level DECIMAL(5,2),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  acknowledged_at TIMESTAMP WITH TIME ZONE,
+  resolved_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Performance indexes
+CREATE INDEX idx_validation_results_session ON validation_results(session_id);
+CREATE INDEX idx_alerts_user_unresolved ON alerts(user_id) WHERE resolved_at IS NULL;
+CREATE INDEX idx_validation_sessions_completed ON validation_sessions(completed_at DESC);
+```
+
+#### R2 Storage Structure
+```
+cu-bems-iot-data/
+├── bangkok-dataset/
+│   ├── 2018/
+│   │   ├── 01/sensor-readings.csv (18MB, ~500K records)
+│   │   ├── 02/sensor-readings.csv (17MB, ~480K records)
+│   │   └── ... (12 months)
+│   ├── 2019/
+│   │   ├── 01/sensor-readings.csv (19MB, ~520K records)
+│   │   └── ... (6 months)
+└── processed-analytics/
+    ├── floor-summaries.json (Pre-computed floor metrics)
+    ├── equipment-performance.json (Equipment analytics)
+    └── statistical-validation.json (Validation results cache)
 ```
 
 ### Storage Strategy Implementation
