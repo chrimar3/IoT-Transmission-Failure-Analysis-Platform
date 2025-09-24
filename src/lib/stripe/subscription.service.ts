@@ -163,7 +163,7 @@ export class SubscriptionService {
   }
 
   /**
-   * Update subscription in database
+   * Update subscription in database with transaction safety
    */
   async updateSubscription(
     userId: string,
@@ -176,28 +176,47 @@ export class SubscriptionService {
       currentPeriodEnd: Date
     }>
   ): Promise<void> {
-    const updateData: Record<string, string | number | Date> = {
-      ...updates,
-      updated_at: new Date().toISOString(),
-    }
-
-    // Convert dates to ISO strings
-    if (updates.currentPeriodStart) {
-      updateData.current_period_start = updates.currentPeriodStart.toISOString()
-    }
-    if (updates.currentPeriodEnd) {
-      updateData.current_period_end = updates.currentPeriodEnd.toISOString()
-    }
-
-    const { error } = await supabase
-      .from('subscriptions')
-      .upsert({
-        user_id: userId,
-        ...updateData,
-      })
+    // Use database transaction for atomic updates
+    const { data, error } = await supabase.rpc('update_subscription_transactional', {
+      p_user_id: userId,
+      p_updates: {
+        ...updates,
+        updated_at: new Date().toISOString(),
+        current_period_start: updates.currentPeriodStart?.toISOString(),
+        current_period_end: updates.currentPeriodEnd?.toISOString()
+      }
+    })
 
     if (error) {
+      console.error('Transaction failed for subscription update:', error)
       throw new Error(`Failed to update subscription: ${error.message}`)
+    }
+
+    // Fallback to regular upsert if RPC not available
+    if (!data) {
+      const updateData: Record<string, string | number | Date> = {
+        ...updates,
+        updated_at: new Date().toISOString(),
+      }
+
+      // Convert dates to ISO strings
+      if (updates.currentPeriodStart) {
+        updateData.current_period_start = updates.currentPeriodStart.toISOString()
+      }
+      if (updates.currentPeriodEnd) {
+        updateData.current_period_end = updates.currentPeriodEnd.toISOString()
+      }
+
+      const { error: fallbackError } = await supabase
+        .from('subscriptions')
+        .upsert({
+          user_id: userId,
+          ...updateData,
+        })
+
+      if (fallbackError) {
+        throw new Error(`Failed to update subscription: ${fallbackError.message}`)
+      }
     }
   }
 

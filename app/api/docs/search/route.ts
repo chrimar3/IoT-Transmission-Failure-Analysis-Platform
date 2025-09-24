@@ -152,7 +152,7 @@ async function performDocumentationSearch(
             // Apply tags filter
             if (filters.tags && filters.tags.length > 0) {
               const hasMatchingTag = filters.tags.some(tag =>
-                article.tags.some(articleTag =>
+                article.tags.some((articleTag: string) =>
                   articleTag.toLowerCase().includes(tag.toLowerCase())
                 )
               )
@@ -199,14 +199,14 @@ async function performDocumentationSearch(
 }
 
 function calculateRelevanceScore(
-  article: unknown,
+  article: any,
   searchTerms: string[]
 ): number {
   let score = 0
-  const titleLower = article.title.toLowerCase()
-  const descriptionLower = article.description.toLowerCase()
-  const contentLower = article.content.toLowerCase()
-  const tagsLower = article.tags.map((tag: string) => tag.toLowerCase())
+  const titleLower = article.title?.toLowerCase() || ''
+  const descriptionLower = article.description?.toLowerCase() || ''
+  const contentLower = article.content?.toLowerCase() || ''
+  const tagsLower = article.tags?.map((tag: string) => tag.toLowerCase()) || []
 
   for (const term of searchTerms) {
     // Title matches (highest weight)

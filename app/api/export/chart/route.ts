@@ -19,7 +19,9 @@ const ExportRequestSchema = z.object({
     start_date: z.string().datetime(),
     end_date: z.string().datetime(),
     interval: z.enum(['minute', 'hour', 'day', 'week']),
-    chart_type: z.enum(['line', 'area', 'bar'])
+    chart_type: z.enum(['line', 'area', 'bar']),
+    max_points: z.number().optional().default(1000),
+    show_legend: z.boolean().optional().default(true)
   }),
   export_options: z.object({
     format: z.enum(['png', 'pdf']),

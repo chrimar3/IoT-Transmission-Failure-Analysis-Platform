@@ -5,6 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import type { RateLimitTier, RateLimit } from '@/types/api'
+import { subscriptionService } from '@/lib/stripe/subscription.service'
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -46,16 +47,44 @@ export class RateLimiter {
   }
 
   /**
-   * Check and enforce rate limit for an API key
+   * Get user's subscription tier for rate limiting
+   */
+  static async getUserTierFromSubscription(userId: string): Promise<RateLimitTier> {
+    try {
+      const subscription = await subscriptionService.getUserSubscription(userId)
+
+      if (!subscription || subscription.status !== 'active') {
+        return 'free'
+      }
+
+      switch (subscription.tier) {
+        case 'PROFESSIONAL':
+          return 'professional'
+        case 'ENTERPRISE':
+          return 'enterprise'
+        default:
+          return 'free'
+      }
+    } catch (error) {
+      console.error('Failed to get user tier from subscription:', error)
+      return 'free' // Fail safe to most restrictive tier
+    }
+  }
+
+  /**
+   * Check and enforce rate limit for an API key with subscription-aware tiering
    */
   static async checkRateLimit(
     apiKeyId: string,
     userId: string,
-    tier: RateLimitTier,
+    tier?: RateLimitTier,
     endpoint?: string
   ): Promise<RateLimitResult> {
+    // Get actual tier from subscription if not provided
+    const actualTier = tier || await this.getUserTierFromSubscription(userId)
+
     try {
-      const config = this.CONFIG[tier]
+      const config = this.CONFIG[actualTier]
       const now = new Date()
       const windowStart = new Date(Math.floor(now.getTime() / config.windowSizeMs) * config.windowSizeMs)
       const windowEnd = new Date(windowStart.getTime() + config.windowSizeMs)
@@ -99,23 +128,26 @@ export class RateLimiter {
       // Fail open - allow request if rate limiting fails
       return {
         allowed: true,
-        limit: this.CONFIG[tier].requestsPerHour,
-        remaining: this.CONFIG[tier].requestsPerHour - 1,
-        resetTime: new Date(Date.now() + this.CONFIG[tier].windowSizeMs)
+        limit: this.CONFIG[actualTier].requestsPerHour,
+        remaining: this.CONFIG[actualTier].requestsPerHour - 1,
+        resetTime: new Date(Date.now() + this.CONFIG[actualTier].windowSizeMs)
       }
     }
   }
 
   /**
-   * Check burst rate limit for rapid successive requests
+   * Check burst rate limit for rapid successive requests with subscription awareness
    */
   static async checkBurstLimit(
     apiKeyId: string,
-    tier: RateLimitTier,
+    userId: string,
+    tier?: RateLimitTier,
     timeWindowMs: number = 60000 // 1 minute default
   ): Promise<boolean> {
+    // Get actual tier from subscription if not provided
+    const actualTier = tier || await this.getUserTierFromSubscription(userId)
     try {
-      const config = this.CONFIG[tier]
+      const config = this.CONFIG[actualTier]
       const windowStart = new Date(Date.now() - timeWindowMs)
 
       const { count, error } = await supabase
@@ -426,21 +458,30 @@ export class RateLimitMiddleware {
   }
 
   /**
-   * Check if request should be allowed based on rate limiting
+   * Get user's subscription tier for rate limiting
+   */
+  static async getUserTierFromSubscription(userId: string): Promise<RateLimitTier> {
+    return await RateLimiter.getUserTierFromSubscription(userId)
+  }
+
+  /**
+   * Check if request should be allowed based on rate limiting with subscription awareness
    */
   static async enforceRateLimit(
     apiKeyId: string,
     userId: string,
-    tier: RateLimitTier,
-    endpoint: string
-  ): Promise<{ allowed: boolean; headers: Record<string, string>; errorResponse?: unknown }> {
+    endpoint: string,
+    tier?: RateLimitTier
+  ): Promise<{ allowed: boolean; headers: Record<string, string>; errorResponse?: unknown; actualTier?: RateLimitTier }> {
+    // Get actual tier from subscription if not provided
+    const actualTier = tier || await this.getUserTierFromSubscription(userId)
     try {
       // Check main rate limit
-      const rateLimitResult = await RateLimiter.checkRateLimit(apiKeyId, userId, tier, endpoint)
+      const rateLimitResult = await RateLimiter.checkRateLimit(apiKeyId, userId, actualTier, endpoint)
 
       // Check burst limit if main rate limit passed
       if (rateLimitResult.allowed) {
-        const burstAllowed = await RateLimiter.checkBurstLimit(apiKeyId, tier)
+        const burstAllowed = await RateLimiter.checkBurstLimit(apiKeyId, userId, actualTier)
         if (!burstAllowed) {
           rateLimitResult.allowed = false
           rateLimitResult.retryAfter = 60 // 1 minute for burst limit
@@ -448,16 +489,18 @@ export class RateLimitMiddleware {
       }
 
       const headers = this.createHeaders(rateLimitResult)
+      headers['X-Subscription-Tier'] = actualTier.toUpperCase()
 
       if (!rateLimitResult.allowed) {
         return {
           allowed: false,
           headers,
-          errorResponse: this.createErrorResponse(rateLimitResult)
+          errorResponse: this.createErrorResponse(rateLimitResult),
+          actualTier
         }
       }
 
-      return { allowed: true, headers }
+      return { allowed: true, headers, actualTier }
 
     } catch (error) {
       console.error('Rate limit enforcement error:', error)
