@@ -28,6 +28,7 @@
     "format:check": "prettier --check .",
     "clean": "rm -rf .next dist coverage",
     "validate": "npm run typecheck && npm run lint && npm run test:ci",
+    "validate:production": "tsx scripts/validate-production-readiness.ts",
     "install:bmad": "node tools/deployment/install-bmad.js",
     "bmad:refresh": "bmad-method install -f -i codex",
     "bmad:list": "bmad-method list:agents",

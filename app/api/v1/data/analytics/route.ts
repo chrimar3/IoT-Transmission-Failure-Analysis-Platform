@@ -1,12 +1,17 @@
 /**
  * Professional API v1: Analytics Endpoint
  * Story 4.2: Professional API Access System
+ * PROTECTED: Requires Professional tier subscription (Story 1.3)
  *
  * Provides pre-computed analytical insights and predictive analytics
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { enforceDataAccessRestrictions, enforceTierBasedRateLimit, generateUpgradePrompt } from '@/src/lib/middleware/data-access.middleware'
+import { subscriptionService } from '@/src/lib/stripe/subscription.service'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/src/lib/auth/config'
 
 const AnalyticsRequestSchema = z.object({
   analysis_type: z.enum(['efficiency_metrics', 'predictive_analysis', 'anomaly_detection']).default('efficiency_metrics'),
@@ -19,6 +24,52 @@ const AnalyticsRequestSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    // CRITICAL REVENUE PROTECTION: Professional API requires subscription
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({
+        success: false,
+        error: 'authentication_required',
+        message: 'Professional API access requires authentication',
+        upgrade_prompt: {
+          title: 'Professional API Access',
+          message: 'Advanced analytics requires Professional tier subscription',
+          upgradeUrl: '/auth/signin?callbackUrl=/api/v1/data/analytics'
+        }
+      }, { status: 401 })
+    }
+
+    const userId = session.user.id
+    const subscription = await subscriptionService.getUserSubscription(userId)
+
+    // ENFORCE PROFESSIONAL TIER REQUIREMENT
+    if (!subscription || subscription.tier === 'FREE') {
+      return NextResponse.json({
+        success: false,
+        error: 'subscription_required',
+        message: 'Professional API endpoints require Professional tier subscription',
+        current_tier: subscription?.tier || 'FREE',
+        upgrade_prompt: {
+          title: 'Upgrade to Professional',
+          message: 'Access advanced analytics with Professional tier subscription for €29/month',
+          upgradeUrl: '/subscription/upgrade?source=api_analytics',
+          ctaText: 'Upgrade Now'
+        }
+      }, { status: 402 }) // 402 Payment Required
+    }
+
+    // Apply tier-based rate limiting (Professional gets higher limits)
+    const rateLimitCheck = await enforceTierBasedRateLimit(userId, 'analytics')
+    if (!rateLimitCheck.allowed) {
+      return NextResponse.json({
+        success: false,
+        error: 'rate_limit_exceeded',
+        message: `Analytics API rate limit exceeded. Resets at ${rateLimitCheck.resetTime.toISOString()}`,
+        remaining: rateLimitCheck.remaining,
+        reset_time: rateLimitCheck.resetTime.toISOString()
+      }, { status: 429 })
+    }
+
     const { searchParams } = new URL(request.url)
 
     const params = AnalyticsRequestSchema.parse({
@@ -30,12 +81,31 @@ export async function GET(request: NextRequest) {
       confidence_level: searchParams.get('confidence_level') || '0.95'
     })
 
-    // Generate analytical insights
-    const analyticsData = generateAnalyticsData(params)
+    // Generate analytical insights with professional-tier features
+    const analyticsData = generateAnalyticsData(params, subscription.tier)
+
+    // Track Professional API usage for revenue analytics
+    await subscriptionService.trackUserActivity(userId, 'professional_api_analytics', {
+      analysis_type: params.analysis_type,
+      equipment_type: params.equipment_type,
+      tier: subscription.tier
+    })
 
     return NextResponse.json({
       success: true,
-      data: analyticsData
+      data: {
+        ...analyticsData,
+        subscription_info: {
+          tier: subscription.tier,
+          api_access: 'professional'
+        }
+      }
+    }, {
+      headers: {
+        'X-Rate-Limit-Remaining': rateLimitCheck.remaining.toString(),
+        'X-Subscription-Tier': subscription.tier,
+        'X-API-Version': 'v1-professional'
+      }
     })
 
   } catch (error) {
@@ -58,7 +128,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateAnalyticsData(params: z.infer<typeof AnalyticsRequestSchema>) {
+function generateAnalyticsData(params: z.infer<typeof AnalyticsRequestSchema>, tier: string) {
   const { analysis_type, equipment_type, confidence_level } = params
 
   switch (analysis_type) {

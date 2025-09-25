@@ -5,7 +5,7 @@
  * Prevents revenue leakage by enforcing tier-based data access limits
  */
 
-import { getUserSubscription } from '../database/subscription-service'
+import { subscriptionService } from '../stripe/subscription.service'
 import type { _UserSubscription } from '../../types/subscription'
 
 export interface DataRequest {
@@ -40,9 +40,10 @@ export async function enforceDataAccessRestrictions(
   userId: string,
   dataRequest: DataRequest
 ): Promise<FilteredDataRequest> {
-  const subscription = await getUserSubscription(userId)
+  const subscription = await subscriptionService.getUserSubscription(userId)
+  const userTier = subscription?.tier?.toLowerCase() || 'free'
 
-  if (subscription.tier === 'professional') {
+  if (userTier === 'professional') {
     // Professional tier gets full access to Bangkok dataset competitive advantage
     return {
       ...dataRequest,
@@ -190,13 +191,14 @@ export async function enforceTierBasedRateLimit(
     upgradeUrl: string
   }
 }> {
-  const subscription = await getUserSubscription(userId)
-  const limits = TIER_RATE_LIMITS[subscription.tier]
+  const subscription = await subscriptionService.getUserSubscription(userId)
+  const userTier = (subscription?.tier?.toLowerCase() || 'free') as keyof typeof TIER_RATE_LIMITS
+  const limits = TIER_RATE_LIMITS[userTier]
 
   // Implementation would integrate with rate limiting service (Redis/etc)
   const rateLimitResult = await checkRateLimit(userId, endpoint, limits)
 
-  if (!rateLimitResult.allowed && subscription.tier === 'free') {
+  if (!rateLimitResult.allowed && userTier === 'free') {
     return {
       ...rateLimitResult,
       upgradePrompt: {

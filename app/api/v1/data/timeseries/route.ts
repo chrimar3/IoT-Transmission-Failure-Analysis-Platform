@@ -1,5 +1,8 @@
 /**
- * API Endpoint: GET /api/readings/timeseries
+ * Professional API v1: Timeseries Endpoint
+ * Story 4.2: Professional API Access System
+ * PROTECTED: Requires Professional tier subscription (Story 1.3)
+ *
  * Enhanced for Story 3.2: Interactive Time-Series Visualizations
  * Returns optimized multi-sensor time-series data for chart visualization
  */
@@ -7,6 +10,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import type { TimeSeriesApiResponse, MultiSeriesData, TimeSeriesDataPoint } from '@/types/analytics'
+import { enforceDataAccessRestrictions, enforceTierBasedRateLimit } from '@/src/lib/middleware/data-access.middleware'
+import { subscriptionService } from '@/src/lib/stripe/subscription.service'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/src/lib/auth/config'
 
 // Enhanced request validation schema for multi-sensor support
 const TimeSeriesRequestSchema = z.object({
@@ -29,6 +36,52 @@ const SENSOR_COLORS = [
 
 export async function GET(request: NextRequest) {
   try {
+    // CRITICAL REVENUE PROTECTION: Professional API requires subscription
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({
+        success: false,
+        error: 'authentication_required',
+        message: 'Professional API access requires authentication',
+        upgrade_prompt: {
+          title: 'Professional API Access',
+          message: 'Timeseries API requires Professional tier subscription',
+          upgradeUrl: '/auth/signin?callbackUrl=/api/v1/data/timeseries'
+        }
+      }, { status: 401 })
+    }
+
+    const userId = session.user.id
+    const subscription = await subscriptionService.getUserSubscription(userId)
+
+    // ENFORCE PROFESSIONAL TIER REQUIREMENT
+    if (!subscription || subscription.tier === 'FREE') {
+      return NextResponse.json({
+        success: false,
+        error: 'subscription_required',
+        message: 'Professional API endpoints require Professional tier subscription',
+        current_tier: subscription?.tier || 'FREE',
+        upgrade_prompt: {
+          title: 'Upgrade to Professional',
+          message: 'Access high-volume timeseries data with Professional tier subscription for €29/month',
+          upgradeUrl: '/subscription/upgrade?source=api_timeseries',
+          ctaText: 'Upgrade Now'
+        }
+      }, { status: 402 }) // 402 Payment Required
+    }
+
+    // Apply tier-based rate limiting (Professional gets higher limits)
+    const rateLimitCheck = await enforceTierBasedRateLimit(userId, 'professional_timeseries')
+    if (!rateLimitCheck.allowed) {
+      return NextResponse.json({
+        success: false,
+        error: 'rate_limit_exceeded',
+        message: `Professional API rate limit exceeded. Resets at ${rateLimitCheck.resetTime.toISOString()}`,
+        remaining: rateLimitCheck.remaining,
+        reset_time: rateLimitCheck.resetTime.toISOString()
+      }, { status: 429 })
+    }
+
     const { searchParams } = new URL(request.url)
 
     // Validate request parameters for multi-sensor support
@@ -78,8 +131,23 @@ export async function GET(request: NextRequest) {
 
     const startTime = Date.now()
 
-    // Generate Bangkok dataset multi-sensor time-series data
-    const series = await generateBangkokMultiSensorData(params)
+    // Professional tier gets enhanced data access
+    const dataRequest = {
+      dateRange: {
+        start: params.start_date,
+        end: params.end_date
+      },
+      maxRecords: params.max_points,
+      sensorIds: params.sensor_ids,
+      equipmentTypes: params.equipment_types,
+      floorNumbers: params.floor_numbers
+    }
+
+    // Professional tier bypasses restrictions but still applies for consistency
+    const filteredRequest = await enforceDataAccessRestrictions(userId, dataRequest)
+
+    // Generate Bangkok dataset multi-sensor time-series data with professional features
+    const series = await generateBangkokMultiSensorData(params, true)
 
     const queryTime = Date.now() - startTime
     const totalPoints = series.reduce((sum, s) => sum + s.data.length, 0)
@@ -96,17 +164,36 @@ export async function GET(request: NextRequest) {
           total_points: totalPoints,
           decimated,
           query_time_ms: queryTime,
-          cache_hit: false
+          cache_hit: false,
+          // Professional tier metadata
+          api_version: 'v1-professional',
+          full_dataset_access: true,
+          enhanced_features: ['statistical_confidence', 'predictive_values', 'anomaly_scoring']
         }
+      },
+      subscription_info: {
+        tier: subscription.tier,
+        api_access: 'professional'
       }
     }
+
+    // Track Professional API usage for revenue analytics
+    await subscriptionService.trackUserActivity(userId, 'professional_api_timeseries', {
+      sensor_count: params.sensor_ids.length,
+      data_points: totalPoints,
+      tier: subscription.tier,
+      query_time_ms: queryTime
+    })
 
     return NextResponse.json(response, {
       headers: {
         'Cache-Control': 'public, max-age=300', // 5 minute cache
         'X-Response-Time': `${queryTime}ms`,
         'X-Total-Points': totalPoints.toString(),
-        'X-Decimated': decimated.toString()
+        'X-Decimated': decimated.toString(),
+        'X-Rate-Limit-Remaining': rateLimitCheck.remaining.toString(),
+        'X-Subscription-Tier': subscription.tier,
+        'X-API-Version': 'v1-professional'
       }
     })
 
@@ -219,8 +306,9 @@ interface ProcessedParams {
 /**
  * Generate Bangkok dataset multi-sensor time-series data with realistic patterns
  * Optimized for chart visualization with proper data decimation
+ * PROFESSIONAL TIER: Enhanced with advanced analytics features
  */
-async function generateBangkokMultiSensorData(params: ProcessedParams): Promise<MultiSeriesData[]> {
+async function generateBangkokMultiSensorData(params: ProcessedParams, professionalTier: boolean = false): Promise<MultiSeriesData[]> {
   const { sensor_ids, start_date, end_date, interval, max_points, equipment_types, floor_numbers } = params
 
   const startDate = new Date(start_date)

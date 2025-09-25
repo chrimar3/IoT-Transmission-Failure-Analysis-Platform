@@ -1,13 +1,14 @@
 /**
  * API Endpoint: GET /api/readings/patterns
+ * PROTECTED: Subscription-based access with revenue protection (Story 1.3)
  * Returns detected failure patterns and anomalies
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabase-server'
-import { 
-  PatternDetectionResponse, 
-  FailurePattern, 
+import {
+  PatternDetectionResponse,
+  FailurePattern,
   ApiResponse,
   PatternsQueryParams,
   validateDateString,
@@ -15,10 +16,53 @@ import {
   validateFloatParam,
   isValidEquipmentType
 } from '@/lib/types/api'
+import { enforceDataAccessRestrictions, enforceTierBasedRateLimit, generateUpgradePrompt } from '@/src/lib/middleware/data-access.middleware'
+import { subscriptionService } from '@/src/lib/stripe/subscription.service'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/src/lib/auth/config'
 
 export async function GET(request: NextRequest) {
   try {
     const startTime = Date.now()
+
+    // CRITICAL REVENUE PROTECTION: Validate subscription and apply rate limiting
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          error: 'authentication_required',
+          message: 'Please sign in to access pattern detection',
+          timestamp: new Date().toISOString(),
+          status: 401
+        },
+        upgrade_prompt: {
+          title: 'Sign In Required',
+          message: 'Advanced pattern detection requires authentication',
+          upgradeUrl: '/auth/signin?callbackUrl=/api/readings/patterns'
+        }
+      } as ApiResponse<never>, { status: 401 })
+    }
+
+    const userId = session.user.id
+
+    // Apply tier-based rate limiting
+    const rateLimitCheck = await enforceTierBasedRateLimit(userId, 'patterns')
+    if (!rateLimitCheck.allowed) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          error: 'rate_limit_exceeded',
+          message: `Pattern analysis rate limit exceeded. Resets at ${rateLimitCheck.resetTime.toISOString()}`,
+          timestamp: new Date().toISOString(),
+          status: 429
+        },
+        remaining: rateLimitCheck.remaining,
+        reset_time: rateLimitCheck.resetTime.toISOString(),
+        upgrade_prompt: rateLimitCheck.upgradePrompt
+      } as ApiResponse<never>, { status: 429 })
+    }
+
     const { searchParams } = new URL(request.url)
 
     // Parse and validate query parameters
@@ -85,7 +129,22 @@ export async function GET(request: NextRequest) {
       failureQuery = failureQuery.eq('floor_number', floorNumber)
     }
 
-    const { data: rawData, error } = await failureQuery.limit(10000)
+    // REVENUE PROTECTION: Apply subscription-based data access restrictions
+    const dataRequest = {
+      dateRange: {
+        start: startDate,
+        end: endDate
+      },
+      maxRecords: 10000, // Base limit for pattern analysis
+      equipmentTypes: equipmentType ? [equipmentType] : undefined,
+      floorNumbers: floorNumber !== undefined ? [floorNumber] : undefined
+    }
+
+    const filteredRequest = await enforceDataAccessRestrictions(userId, dataRequest)
+
+    // Apply tier-based query limits
+    const queryLimit = Math.min(filteredRequest.maxRecords || 10000, 10000)
+    const { data: rawData, error } = await failureQuery.limit(queryLimit)
 
     if (error) {
       console.error('Error fetching pattern data:', error)
@@ -194,26 +253,46 @@ export async function GET(request: NextRequest) {
     const response: PatternDetectionResponse = {
       patterns,
       analysis_period: {
-        start: startDate as string,
-        end: endDate as string
+        start: filteredRequest.dateRange?.start || startDate,
+        end: filteredRequest.dateRange?.end || endDate
       },
       total_patterns_found: patterns.length,
-      total_estimated_impact: Math.round(totalEstimatedImpact)
+      total_estimated_impact: Math.round(totalEstimatedImpact),
+      // Revenue protection metadata
+      tier_restrictions: filteredRequest.revenueProtection.tierRestricted ? {
+        applied_restrictions: filteredRequest.appliedRestrictions,
+        data_limit_applied: queryLimit < 10000,
+        upgrade_available: filteredRequest.showUpgradePrompt
+      } : undefined
     }
 
     const executionTime = Date.now() - startTime
     console.log(`🔍 Pattern analysis completed in ${executionTime}ms (${patterns.length} patterns found)`)
 
+    // Track API usage for revenue analytics
+    await subscriptionService.trackUserActivity(userId, 'api_patterns_access', {
+      patterns_found: patterns.length,
+      analysis_time_ms: executionTime,
+      tier_restricted: filteredRequest.revenueProtection.tierRestricted
+    })
+
+    const apiResponse = {
+      success: true,
+      data: response,
+      // Include upgrade prompt if user hit data restrictions
+      upgrade_prompt: filteredRequest.showUpgradePrompt ? generateUpgradePrompt(filteredRequest.appliedRestrictions) : undefined
+    } as ApiResponse<PatternDetectionResponse> & { upgrade_prompt?: any }
+
     return NextResponse.json(
+      apiResponse,
       {
-        success: true,
-        data: response
-      } as ApiResponse<PatternDetectionResponse>,
-      { 
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+          'Cache-Control': filteredRequest.revenueProtection.tierRestricted ? 'no-cache' : 'public, s-maxage=300, stale-while-revalidate=600',
+          'X-Rate-Limit-Remaining': rateLimitCheck.remaining.toString(),
+          'X-Subscription-Tier': (await subscriptionService.getUserSubscription(userId))?.tier || 'FREE',
+          'X-Execution-Time': `${executionTime}ms`
         }
       }
     )

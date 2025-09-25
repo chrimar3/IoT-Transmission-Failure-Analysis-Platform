@@ -1,12 +1,17 @@
 /**
  * API Endpoint: GET /api/readings/timeseries
  * Enhanced for Story 3.2: Interactive Time-Series Visualizations
+ * PROTECTED: Subscription-based access with revenue protection (Story 1.3)
  * Returns optimized multi-sensor time-series data for chart visualization
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import type { TimeSeriesApiResponse, MultiSeriesData, TimeSeriesDataPoint } from '@/types/analytics'
+import { enforceDataAccessRestrictions, enforceTierBasedRateLimit, generateUpgradePrompt } from '@/src/lib/middleware/data-access.middleware'
+import { subscriptionService } from '@/src/lib/stripe/subscription.service'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/src/lib/auth/config'
 
 // Enhanced request validation schema for multi-sensor support
 const TimeSeriesRequestSchema = z.object({
@@ -29,6 +34,36 @@ const SENSOR_COLORS = [
 
 export async function GET(request: NextRequest) {
   try {
+    // CRITICAL REVENUE PROTECTION: Validate subscription and apply rate limiting
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({
+        success: false,
+        error: 'Authentication required',
+        message: 'Please sign in to access Bangkok dataset',
+        upgrade_prompt: {
+          title: 'Sign In Required',
+          message: 'Access to professional IoT analytics requires authentication',
+          upgradeUrl: '/auth/signin?callbackUrl=/api/readings/timeseries'
+        }
+      }, { status: 401 })
+    }
+
+    const userId = session.user.id
+
+    // Apply tier-based rate limiting
+    const rateLimitCheck = await enforceTierBasedRateLimit(userId, 'timeseries')
+    if (!rateLimitCheck.allowed) {
+      return NextResponse.json({
+        success: false,
+        error: 'Rate limit exceeded',
+        message: `API rate limit exceeded. Resets at ${rateLimitCheck.resetTime.toISOString()}`,
+        remaining: rateLimitCheck.remaining,
+        reset_time: rateLimitCheck.resetTime.toISOString(),
+        upgrade_prompt: rateLimitCheck.upgradePrompt
+      }, { status: 429 })
+    }
+
     const { searchParams } = new URL(request.url)
 
     // Validate request parameters for multi-sensor support
@@ -78,8 +113,33 @@ export async function GET(request: NextRequest) {
 
     const startTime = Date.now()
 
-    // Generate Bangkok dataset multi-sensor time-series data
-    const series = await generateBangkokMultiSensorData(params)
+    // REVENUE PROTECTION: Apply subscription-based data access restrictions
+    const dataRequest = {
+      dateRange: {
+        start: params.start_date,
+        end: params.end_date
+      },
+      maxRecords: params.max_points,
+      sensorIds: params.sensor_ids,
+      equipmentTypes: params.equipment_types,
+      floorNumbers: params.floor_numbers
+    }
+
+    const filteredRequest = await enforceDataAccessRestrictions(userId, dataRequest)
+
+    // Update params with tier-restricted data access
+    const restrictedParams = {
+      ...params,
+      start_date: filteredRequest.dateRange?.start || params.start_date,
+      end_date: filteredRequest.dateRange?.end || params.end_date,
+      max_points: filteredRequest.maxRecords || params.max_points,
+      sensor_ids: params.sensor_ids, // Allow all sensors but restrict data volume
+      equipment_types: params.equipment_types,
+      floor_numbers: params.floor_numbers
+    }
+
+    // Generate Bangkok dataset with subscription-aware restrictions
+    const series = await generateBangkokMultiSensorData(restrictedParams, filteredRequest.revenueProtection)
 
     const queryTime = Date.now() - startTime
     const totalPoints = series.reduce((sum, s) => sum + s.data.length, 0)
@@ -96,17 +156,34 @@ export async function GET(request: NextRequest) {
           total_points: totalPoints,
           decimated,
           query_time_ms: queryTime,
-          cache_hit: false
+          cache_hit: false,
+          // Revenue protection metadata
+          tier_restrictions: filteredRequest.revenueProtection.tierRestricted ? {
+            applied_restrictions: filteredRequest.appliedRestrictions,
+            restricted_fields: filteredRequest.restrictedFields,
+            upgrade_available: filteredRequest.showUpgradePrompt
+          } : undefined
         }
-      }
+      },
+      // Include upgrade prompt if user hit data restrictions
+      upgrade_prompt: filteredRequest.showUpgradePrompt ? generateUpgradePrompt(filteredRequest.appliedRestrictions) : undefined
     }
+
+    // Track API usage for revenue analytics
+    await subscriptionService.trackUserActivity(userId, 'api_timeseries_access', {
+      sensor_count: params.sensor_ids.length,
+      data_points: totalPoints,
+      tier_restricted: filteredRequest.revenueProtection.tierRestricted
+    })
 
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'public, max-age=300', // 5 minute cache
+        'Cache-Control': filteredRequest.revenueProtection.tierRestricted ? 'no-cache' : 'public, max-age=300',
         'X-Response-Time': `${queryTime}ms`,
         'X-Total-Points': totalPoints.toString(),
-        'X-Decimated': decimated.toString()
+        'X-Decimated': decimated.toString(),
+        'X-Rate-Limit-Remaining': rateLimitCheck.remaining.toString(),
+        'X-Subscription-Tier': (await subscriptionService.getUserSubscription(userId))?.tier || 'FREE'
       }
     })
 
@@ -219,8 +296,12 @@ interface ProcessedParams {
 /**
  * Generate Bangkok dataset multi-sensor time-series data with realistic patterns
  * Optimized for chart visualization with proper data decimation
+ * REVENUE PROTECTED: Respects subscription tier data access restrictions
  */
-async function generateBangkokMultiSensorData(params: ProcessedParams): Promise<MultiSeriesData[]> {
+async function generateBangkokMultiSensorData(
+  params: ProcessedParams,
+  revenueProtection?: { tierRestricted: boolean; originalRecordLimit?: number; restrictedDateRange?: { start: string; end: string } }
+): Promise<MultiSeriesData[]> {
   const { sensor_ids, start_date, end_date, interval, max_points, equipment_types, floor_numbers } = params
 
   const startDate = new Date(start_date)
