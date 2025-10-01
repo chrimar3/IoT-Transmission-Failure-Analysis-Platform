@@ -8,6 +8,7 @@ module.exports = {
     '^@/app/(.*)$': '<rootDir>/app/$1',
     '^@/components/(.*)$': '<rootDir>/components/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '^fs$': '<rootDir>/__mocks__/fs.js',
   },
   testMatch: [
     '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
@@ -48,6 +49,7 @@ module.exports = {
         '^@/lib/(.*)$': '<rootDir>/lib/$1',
         '^@/app/(.*)$': '<rootDir>/app/$1',
         '^@/components/(.*)$': '<rootDir>/components/$1',
+        '^fs$': '<rootDir>/__mocks__/fs.js',
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -68,6 +70,7 @@ module.exports = {
         '^@/app/(.*)$': '<rootDir>/app/$1',
         '^@/components/(.*)$': '<rootDir>/components/$1',
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+        '^fs$': '<rootDir>/__mocks__/fs.js',
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -91,6 +94,7 @@ module.exports = {
         '^@/lib/(.*)$': '<rootDir>/lib/$1',
         '^@/app/(.*)$': '<rootDir>/app/$1',
         '^@/src/(.*)$': '<rootDir>/src/$1',
+        '^fs$': '<rootDir>/__mocks__/fs.js',
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -111,6 +115,7 @@ module.exports = {
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+        '^fs$': '<rootDir>/__mocks__/fs.js',
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {

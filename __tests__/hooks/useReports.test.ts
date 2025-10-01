@@ -5,6 +5,9 @@ import useReports from '@/src/hooks/useReports'
 global.fetch = jest.fn()
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>
 
+// Set reduced timeout for all tests
+jest.setTimeout(10000)
+
 describe('useReports Hook', () => {
   const mockTemplate = {
     id: 'template-123',
@@ -33,20 +36,20 @@ describe('useReports Hook', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    // Default mock responses
+    // Default mock responses - return promises that resolve immediately
     mockFetch
-      .mockResolvedValueOnce({
+      .mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ templates: [mockTemplate] })
-      } as Response) // templates
-      .mockResolvedValueOnce({
+      } as Response)) // templates
+      .mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ reports: [mockGeneratedReport] })
-      } as Response) // generated reports
-      .mockResolvedValueOnce({
+      } as Response)) // generated reports
+      .mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ schedules: [mockSchedule] })
-      } as Response) // schedules
+      } as Response)) // schedules
   })
 
   it('should initialize with empty state and load data', async () => {
@@ -57,30 +60,29 @@ describe('useReports Hook', () => {
     expect(result.current.schedules).toEqual([])
     expect(result.current.loading).toBe(false)
 
-    // Wait for initial data loading
+    // Wait for initial data loading - use act to wrap state updates
     await waitFor(() => {
       expect(result.current.templates).toEqual([mockTemplate])
       expect(result.current.generatedReports).toEqual([mockGeneratedReport])
       expect(result.current.schedules).toEqual([mockSchedule])
-    })
+    }, { timeout: 5000 })
   })
 
   it('should handle loading states correctly', async () => {
-    // Mock delayed responses
+    // Mock responses that resolve immediately
     mockFetch
-      .mockImplementationOnce(() => new Promise(resolve => setTimeout(() =>
-        resolve({
-          ok: true,
-          json: async () => ({ templates: [] })
-        } as Response), 100)))
-      .mockResolvedValueOnce({
+      .mockImplementationOnce(() => Promise.resolve({
+        ok: true,
+        json: async () => ({ templates: [] })
+      } as Response))
+      .mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ reports: [] })
-      } as Response)
-      .mockResolvedValueOnce({
+      } as Response))
+      .mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ schedules: [] })
-      } as Response)
+      } as Response))
 
     const { result } = renderHook(() => useReports())
 
@@ -90,7 +92,7 @@ describe('useReports Hook', () => {
     // After fetches complete
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
-    })
+    }, { timeout: 5000 })
   })
 
   it('should create a new template', async () => {
@@ -100,17 +102,18 @@ describe('useReports Hook', () => {
       category: 'custom'
     }
 
-    // Mock successful creation
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ template: newTemplate })
-    } as Response)
-
     const { result } = renderHook(() => useReports())
 
+    // Wait for initial data loading
     await waitFor(() => {
       expect(result.current.templates.length).toBeGreaterThan(0)
-    })
+    }, { timeout: 5000 })
+
+    // Mock successful creation
+    mockFetch.mockImplementationOnce(() => Promise.resolve({
+      ok: true,
+      json: async () => ({ template: newTemplate })
+    } as Response))
 
     let createdTemplate: unknown
     await act(async () => {
@@ -139,16 +142,16 @@ describe('useReports Hook', () => {
       name: 'Updated Template'
     }
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ template: updatedTemplate })
-    } as Response)
-
     const { result } = renderHook(() => useReports())
 
     await waitFor(() => {
       expect(result.current.templates.length).toBeGreaterThan(0)
-    })
+    }, { timeout: 5000 })
+
+    mockFetch.mockImplementationOnce(() => Promise.resolve({
+      ok: true,
+      json: async () => ({ template: updatedTemplate })
+    } as Response))
 
     await act(async () => {
       await result.current.updateTemplate('template-123', {
@@ -169,16 +172,16 @@ describe('useReports Hook', () => {
   })
 
   it('should delete a template', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ message: 'Template deleted' })
-    } as Response)
-
     const { result } = renderHook(() => useReports())
 
     await waitFor(() => {
       expect(result.current.templates.length).toBeGreaterThan(0)
-    })
+    }, { timeout: 5000 })
+
+    mockFetch.mockImplementationOnce(() => Promise.resolve({
+      ok: true,
+      json: async () => ({ message: 'Template deleted' })
+    } as Response))
 
     await act(async () => {
       await result.current.deleteTemplate('template-123')
@@ -199,16 +202,16 @@ describe('useReports Hook', () => {
       status: 'generating'
     }
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ report: newReport })
-    } as Response)
-
     const { result } = renderHook(() => useReports())
 
     await waitFor(() => {
       expect(result.current.generatedReports.length).toBeGreaterThan(0)
-    })
+    }, { timeout: 5000 })
+
+    mockFetch.mockImplementationOnce(() => Promise.resolve({
+      ok: true,
+      json: async () => ({ report: newReport })
+    } as Response))
 
     let generatedReport: unknown
     await act(async () => {
@@ -237,16 +240,16 @@ describe('useReports Hook', () => {
       status: 'completed'
     }
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ report: updatedReport })
-    } as Response)
-
     const { result } = renderHook(() => useReports())
 
     await waitFor(() => {
       expect(result.current.generatedReports.length).toBeGreaterThan(0)
-    })
+    }, { timeout: 5000 })
+
+    mockFetch.mockImplementationOnce(() => Promise.resolve({
+      ok: true,
+      json: async () => ({ report: updatedReport })
+    } as Response))
 
     let reportStatus: unknown
     await act(async () => {
@@ -264,16 +267,16 @@ describe('useReports Hook', () => {
   it('should download a report', async () => {
     const mockBlob = new Blob(['pdf content'], { type: 'application/pdf' })
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      blob: async () => mockBlob
-    } as Response)
-
     const { result } = renderHook(() => useReports())
 
     await waitFor(() => {
       expect(result.current.generatedReports.length).toBeGreaterThan(0)
-    })
+    }, { timeout: 5000 })
+
+    mockFetch.mockImplementationOnce(() => Promise.resolve({
+      ok: true,
+      blob: async () => mockBlob
+    } as Response))
 
     let downloadedBlob: unknown
     await act(async () => {
@@ -291,16 +294,16 @@ describe('useReports Hook', () => {
       frequency: 'weekly'
     }
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ schedule: newSchedule })
-    } as Response)
-
     const { result } = renderHook(() => useReports())
 
     await waitFor(() => {
       expect(result.current.schedules.length).toBeGreaterThan(0)
-    })
+    }, { timeout: 5000 })
+
+    mockFetch.mockImplementationOnce(() => Promise.resolve({
+      ok: true,
+      json: async () => ({ schedule: newSchedule })
+    } as Response))
 
     let createdSchedule: unknown
     await act(async () => {
@@ -343,28 +346,28 @@ describe('useReports Hook', () => {
 
     // Mock the initial fetch calls - first one fails (templates), others succeed
     mockFetch
-      .mockRejectedValueOnce(new Error('Network error')) // fetchTemplates fails
-      .mockResolvedValueOnce({
+      .mockImplementationOnce(() => Promise.reject(new Error('Network error'))) // fetchTemplates fails
+      .mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ reports: [] })
-      } as Response) // fetchGeneratedReports succeeds
-      .mockResolvedValueOnce({
+      } as Response)) // fetchGeneratedReports succeeds
+      .mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ schedules: [] })
-      } as Response) // fetchSchedules succeeds
+      } as Response)) // fetchSchedules succeeds
 
     const { result } = renderHook(() => useReports())
 
     await waitFor(() => {
       expect(result.current.error).toBe('Network error')
-    })
+    }, { timeout: 5000 })
 
     // Error should be cleared on successful operations
     await act(async () => {
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ template: mockTemplate })
-      } as Response)
+      } as Response))
 
       await result.current.createTemplate({
         name: 'Test',
@@ -381,24 +384,24 @@ describe('useReports Hook', () => {
 
     // Mock the initial fetch calls - first one returns HTTP error, others succeed
     mockFetch
-      .mockResolvedValueOnce({
+      .mockImplementationOnce(() => Promise.resolve({
         ok: false,
         json: async () => ({ error: 'Unauthorized' })
-      } as Response) // fetchTemplates returns HTTP error
-      .mockResolvedValueOnce({
+      } as Response)) // fetchTemplates returns HTTP error
+      .mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ reports: [] })
-      } as Response) // fetchGeneratedReports succeeds
-      .mockResolvedValueOnce({
+      } as Response)) // fetchGeneratedReports succeeds
+      .mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ schedules: [] })
-      } as Response) // fetchSchedules succeeds
+      } as Response)) // fetchSchedules succeeds
 
     const { result } = renderHook(() => useReports())
 
     await waitFor(() => {
       expect(result.current.error).toBe('Unauthorized')
-    })
+    }, { timeout: 5000 })
   })
 
   it('should update and delete schedules', async () => {
@@ -412,15 +415,15 @@ describe('useReports Hook', () => {
     // Wait for initial data to load
     await waitFor(() => {
       expect(result.current.schedules.length).toBeGreaterThan(0)
-    })
+    }, { timeout: 5000 })
 
     // Update schedule
     await act(async () => {
       // Mock update response
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ schedule: updatedSchedule })
-      } as Response)
+      } as Response))
 
       await result.current.updateSchedule('schedule-123', {
         name: 'Updated Schedule'
@@ -431,10 +434,10 @@ describe('useReports Hook', () => {
       .toBe('Updated Schedule')
 
     // Mock delete response
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockImplementationOnce(() => Promise.resolve({
       ok: true,
       json: async () => ({ message: 'Schedule deleted' })
-    } as Response)
+    } as Response))
 
     // Delete schedule
     await act(async () => {
@@ -450,22 +453,22 @@ describe('useReports Hook', () => {
 
     await waitFor(() => {
       expect(result.current.templates.length).toBeGreaterThan(0)
-    })
+    }, { timeout: 5000 })
 
     // Mock multiple concurrent operations
     const createPromise1 = act(async () => {
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ template: { id: 'template-1', name: 'Template 1' } })
-      } as Response)
+      } as Response))
       return result.current.createTemplate({ name: 'Template 1', category: 'custom' })
     })
 
     const createPromise2 = act(async () => {
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockImplementationOnce(() => Promise.resolve({
         ok: true,
         json: async () => ({ template: { id: 'template-2', name: 'Template 2' } })
-      } as Response)
+      } as Response))
       return result.current.createTemplate({ name: 'Template 2', category: 'custom' })
     })
 

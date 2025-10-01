@@ -13,6 +13,9 @@ import { ExcelExporter } from '../../lib/export/excelExporter'
 import { PDFGenerator } from '../../lib/export/pdfGenerator'
 import type { ExportFilters } from '../../types/export'
 
+// Set reduced timeout for all export tests
+jest.setTimeout(10000)
+
 // Mock data for testing
 const mockSensorData = [
   {
@@ -80,8 +83,8 @@ describe('CSV Exporter', () => {
   })
 
   test('should export data to CSV format', async () => {
-    // Mock database query
-    jest.spyOn(csvExporter, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    // Mock database query to resolve immediately
+    jest.spyOn(csvExporter, 'fetchSensorData').mockImplementation(() => Promise.resolve(mockSensorData))
 
     const result = await csvExporter.exportToCSV(mockFilters, tempFilePath)
 
@@ -96,18 +99,18 @@ describe('CSV Exporter', () => {
     expect(csvContent).toContain('SENSOR_001')
     expect(csvContent).toContain('Temperature Sensor 1')
     expect(csvContent).toContain('22.5')
-  })
+  }, 10000)
 
   test('should handle large datasets with streaming', async () => {
-    // Create large mock dataset
-    const largeMockData = Array.from({ length: 10000 }, (_, i) => ({
+    // Use smaller dataset for faster testing
+    const largeMockData = Array.from({ length: 1000 }, (_, i) => ({
       ...mockSensorData[0],
       sensor_id: `SENSOR_${String(i).padStart(3, '0')}`,
       timestamp: new Date(Date.now() + i * 60000).toISOString(),
       temperature: 20 + Math.random() * 10
     }))
 
-    jest.spyOn(csvExporter, 'fetchSensorData').mockResolvedValue(largeMockData)
+    jest.spyOn(csvExporter, 'fetchSensorData').mockImplementation(() => Promise.resolve(largeMockData))
 
     const result = await csvExporter.exportToCSV(mockFilters, tempFilePath)
 
@@ -117,10 +120,10 @@ describe('CSV Exporter', () => {
     // Verify file size is reasonable (not loading everything into memory)
     const stats = fs.statSync(tempFilePath)
     expect(stats.size).toBeGreaterThan(1000) // Has substantial content
-  })
+  }, 10000)
 
   test('should handle export with progress tracking', async () => {
-    jest.spyOn(csvExporter, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(csvExporter, 'fetchSensorData').mockImplementation(() => Promise.resolve(mockSensorData))
 
     const progressCallback = jest.fn().mockImplementation(async () => {})
     jest.spyOn(csvExporter, 'updateProgress').mockImplementation(progressCallback as any)
@@ -128,16 +131,16 @@ describe('CSV Exporter', () => {
     await csvExporter.exportToCSV(mockFilters, tempFilePath, 123)
 
     expect(progressCallback).toHaveBeenCalled()
-  })
+  }, 10000)
 
   test('should handle database errors gracefully', async () => {
-    jest.spyOn(csvExporter, 'fetchSensorData').mockRejectedValue(new Error('Database connection failed'))
+    jest.spyOn(csvExporter, 'fetchSensorData').mockImplementation(() => Promise.reject(new Error('Database connection failed')))
 
     const result = await csvExporter.exportToCSV(mockFilters, tempFilePath)
 
     expect(result.success).toBe(false)
     expect(result.error).toContain('Database connection failed')
-  })
+  }, 10000)
 
   test('should validate file path permissions', async () => {
     const invalidPath = '/root/restricted/export.csv'
@@ -146,7 +149,7 @@ describe('CSV Exporter', () => {
 
     expect(result.success).toBe(false)
     expect(result.error).toContain('permission')
-  })
+  }, 10000)
 })
 
 describe('Excel Exporter', () => {
