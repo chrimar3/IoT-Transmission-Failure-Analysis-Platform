@@ -127,7 +127,8 @@ describe('ChartExportButton', () => {
       const exportButton = screen.getByRole('button', { name: /export/i })
       fireEvent.click(exportButton)
 
-      expect(screen.getByText('Export Chart')).toBeInTheDocument()
+      // Check for modal heading (h3) specifically
+      expect(screen.getByRole('heading', { name: /export chart/i })).toBeInTheDocument()
     })
 
     test('allows enterprise users to access export modal', () => {
@@ -147,7 +148,8 @@ describe('ChartExportButton', () => {
       const exportButton = screen.getByRole('button', { name: /export/i })
       fireEvent.click(exportButton)
 
-      expect(screen.getByText('Export Chart')).toBeInTheDocument()
+      // Check for modal heading (h3) specifically
+      expect(screen.getByRole('heading', { name: /export chart/i })).toBeInTheDocument()
     })
   })
 
@@ -159,7 +161,8 @@ describe('ChartExportButton', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /export/i }))
 
-      expect(screen.getByText('Export Chart')).toBeInTheDocument()
+      // Check for modal heading (h3) specifically
+      expect(screen.getByRole('heading', { name: /export chart/i })).toBeInTheDocument()
       expect(screen.getByText('Export Format')).toBeInTheDocument()
       expect(screen.getByText('Chart Title')).toBeInTheDocument()
       expect(screen.getByText('Quality')).toBeInTheDocument()
@@ -172,12 +175,12 @@ describe('ChartExportButton', () => {
       )
 
       fireEvent.click(screen.getByRole('button', { name: /export/i }))
-      expect(screen.getByText('Export Chart')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /export chart/i })).toBeInTheDocument()
 
-      const closeButton = screen.getByRole('button', { name: '' }) // X button
+      const closeButton = screen.getByRole('button', { name: /close modal/i })
       fireEvent.click(closeButton)
 
-      expect(screen.queryByText('Export Chart')).not.toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: /export chart/i })).not.toBeInTheDocument()
     })
 
     test('closes modal when Cancel button clicked', () => {
@@ -188,7 +191,7 @@ describe('ChartExportButton', () => {
       fireEvent.click(screen.getByRole('button', { name: /export/i }))
       fireEvent.click(screen.getByText('Cancel'))
 
-      expect(screen.queryByText('Export Chart')).not.toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: /export chart/i })).not.toBeInTheDocument()
     })
   })
 

@@ -199,6 +199,7 @@ export default function ChartExportButton({
                 <button
                   onClick={() => setShowExportModal(false)}
                   className="text-gray-400 hover:text-gray-600"
+                  aria-label="Close modal"
                 >
                   <X className="h-5 w-5" />
                 </button>

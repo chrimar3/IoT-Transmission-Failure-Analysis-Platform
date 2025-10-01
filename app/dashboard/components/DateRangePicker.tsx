@@ -210,6 +210,7 @@ export default function DateRangePicker({
       <button
         onClick={() => setShowCustomPicker(!showCustomPicker)}
         disabled={disabled}
+        aria-label="Select date range"
         className={`flex items-center space-x-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
           disabled
             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -287,8 +288,9 @@ export default function DateRangePicker({
                 </label>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">Start Date & Time</label>
+                    <label htmlFor="custom-start-date" className="block text-xs text-gray-600 mb-1">Start Date & Time</label>
                     <input
+                      id="custom-start-date"
                       type="datetime-local"
                       value={customStartDate}
                       onChange={(e) => setCustomStartDate(e.target.value)}
@@ -298,8 +300,9 @@ export default function DateRangePicker({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">End Date & Time</label>
+                    <label htmlFor="custom-end-date" className="block text-xs text-gray-600 mb-1">End Date & Time</label>
                     <input
+                      id="custom-end-date"
                       type="datetime-local"
                       value={customEndDate}
                       onChange={(e) => setCustomEndDate(e.target.value)}

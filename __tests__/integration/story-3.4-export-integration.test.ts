@@ -6,63 +6,11 @@
 import { ExportManager } from '@/src/lib/export/export-manager'
 import { ExportStorageService } from '@/src/lib/export/storage-service'
 import { ExportUsageTrackingService } from '@/src/lib/export/usage-tracking-service'
+import { SupabaseMockFactory } from '../utils/mock-factory'
 
-// Mock Supabase
+// Mock Supabase using factory pattern
 jest.mock('@/src/lib/supabase', () => ({
-  createServiceClient: jest.fn(() => ({
-    storage: {
-      listBuckets: jest.fn(() => ({ data: [], error: null })),
-      createBucket: jest.fn(() => ({ error: null })),
-      from: jest.fn(() => ({
-        upload: jest.fn(() => ({
-          data: { path: 'user123/job123/report.pdf' },
-          error: null
-        })),
-        createSignedUrl: jest.fn(() => ({
-          data: { signedUrl: 'https://storage.example.com/signed-url' },
-          error: null
-        })),
-        remove: jest.fn(() => ({ error: null })),
-        list: jest.fn(() => ({ data: [], error: null }))
-      }))
-    },
-    rpc: jest.fn((funcName: string) => {
-      if (funcName === 'can_user_export') {
-        return Promise.resolve({
-          data: [{
-            can_export: true,
-            current_count: 10,
-            limit_count: 100,
-            percentage_used: 10.0,
-            resets_at: new Date('2025-11-01').toISOString()
-          }],
-          error: null
-        })
-      }
-      return Promise.resolve({ data: null, error: null })
-    }),
-    from: jest.fn(() => ({
-      insert: jest.fn(() => ({ error: null })),
-      update: jest.fn(() => ({ eq: jest.fn(() => ({ error: null })) })),
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          single: jest.fn(() => ({
-            data: {
-              tier: 'PROFESSIONAL',
-              exports_per_month: 100,
-              max_file_size_mb: 50,
-              max_recipients_per_email: 10,
-              scheduled_reports_limit: 10,
-              share_links_per_month: 50,
-              formats_allowed: ['csv', 'excel', 'pdf'],
-              features_enabled: ['basic_export', 'excel_export', 'pdf_export']
-            },
-            error: null
-          }))
-        }))
-      }))
-    }))
-  }))
+  createServiceClient: jest.fn(() => SupabaseMockFactory.createMock())
 }))
 
 describe('Story 3.4: Export Integration Tests', () => {
@@ -71,6 +19,8 @@ describe('Story 3.4: Export Integration Tests', () => {
   let trackingService: ExportUsageTrackingService
 
   beforeEach(() => {
+    // Reset mock factory to default state
+    SupabaseMockFactory.reset()
     jest.clearAllMocks()
     exportManager = ExportManager.getInstance()
     storageService = ExportStorageService.getInstance()
@@ -126,19 +76,8 @@ describe('Story 3.4: Export Integration Tests', () => {
     }, 10000)
 
     it('should enforce tier limits and reject exports when quota exceeded', async () => {
-      // Mock exceeded quota
-      const { createServiceClient } = require('@/src/lib/supabase')
-      const mockSupabase = createServiceClient()
-      mockSupabase.rpc.mockResolvedValue({
-        data: [{
-          can_export: false,
-          current_count: 100,
-          limit_count: 100,
-          percentage_used: 100.0,
-          resets_at: new Date('2025-11-01').toISOString()
-        }],
-        error: null
-      })
+      // Configure mock to simulate exceeded quota
+      SupabaseMockFactory.setExportQuota(false, 100, 100)
 
       const usageCheck = await trackingService.canUserExport('user123', 'PROFESSIONAL')
 
@@ -148,16 +87,8 @@ describe('Story 3.4: Export Integration Tests', () => {
     })
 
     it('should reject disallowed formats for tier', async () => {
-      // Mock FREE tier limits
-      const { createServiceClient } = require('@/src/lib/supabase')
-      const mockSupabase = createServiceClient()
-      mockSupabase.from().select().eq().single.mockResolvedValue({
-        data: {
-          tier: 'FREE',
-          formats_allowed: ['csv']
-        },
-        error: null
-      })
+      // Configure mock for FREE tier with limited formats
+      SupabaseMockFactory.setTierLimits('FREE', ['csv'])
 
       const formatAllowed = await trackingService.isFormatAllowed('FREE', 'pdf')
 
@@ -215,24 +146,8 @@ describe('Story 3.4: Export Integration Tests', () => {
     })
 
     it('should retry upload on transient failures', async () => {
-      const { createServiceClient } = require('@/src/lib/supabase')
-      const mockSupabase = createServiceClient()
-
-      // Mock first attempt fails, second succeeds
-      let attemptCount = 0
-      mockSupabase.storage.from().upload.mockImplementation(() => {
-        attemptCount++
-        if (attemptCount === 1) {
-          return Promise.resolve({
-            data: null,
-            error: { message: 'Network timeout' }
-          })
-        }
-        return Promise.resolve({
-          data: { path: 'user123/job456/report.pdf' },
-          error: null
-        })
-      })
+      // Configure mock to fail on first attempt, succeed on second
+      SupabaseMockFactory.setStorageUploadSuccessOnAttempt(2)
 
       const mockBuffer = Buffer.from('test content')
       const result = await storageService.uploadExportFile(
@@ -245,18 +160,11 @@ describe('Story 3.4: Export Integration Tests', () => {
 
       expect(result.success).toBe(true)
       expect(result.retryAttempts).toBe(2) // Failed once, succeeded on second attempt
-      expect(attemptCount).toBe(2)
     })
 
     it('should fail after max retry attempts', async () => {
-      const { createServiceClient } = require('@/src/lib/supabase')
-      const mockSupabase = createServiceClient()
-
-      // Mock all attempts fail
-      mockSupabase.storage.from().upload.mockResolvedValue({
-        data: null,
-        error: { message: 'Persistent storage error' }
-      })
+      // Configure mock to fail all attempts
+      SupabaseMockFactory.setStorageUploadError('Persistent storage error')
 
       const mockBuffer = Buffer.from('test content')
       const result = await storageService.uploadExportFile(
@@ -273,22 +181,8 @@ describe('Story 3.4: Export Integration Tests', () => {
     })
 
     it('should cleanup partial uploads on signed URL generation failure', async () => {
-      const { createServiceClient } = require('@/src/lib/supabase')
-      const mockSupabase = createServiceClient()
-      const mockRemove = jest.fn(() => ({ error: null }))
-
-      // Mock upload succeeds but signed URL fails
-      mockSupabase.storage.from().upload.mockResolvedValue({
-        data: { path: 'user123/job456/report.pdf' },
-        error: null
-      })
-
-      mockSupabase.storage.from().createSignedUrl.mockResolvedValue({
-        data: null,
-        error: { message: 'Unable to generate signed URL' }
-      })
-
-      mockSupabase.storage.from().remove = mockRemove
+      // Configure mock: upload succeeds but signed URL fails
+      SupabaseMockFactory.setStorageSignedUrlError('Unable to generate signed URL')
 
       const mockBuffer = Buffer.from('test content')
       const result = await storageService.uploadExportFile(
@@ -299,25 +193,13 @@ describe('Story 3.4: Export Integration Tests', () => {
         'application/pdf'
       )
 
-      // Should attempt cleanup (note: cleanup happens but may fail silently)
+      // Should attempt cleanup and fail since signed URL generation failed
       expect(result.success).toBe(false)
     })
 
     it('should handle duplicate file errors gracefully', async () => {
-      const { createServiceClient } = require('@/src/lib/supabase')
-      const mockSupabase = createServiceClient()
-
-      // Mock file already exists error
-      mockSupabase.storage.from().upload.mockResolvedValue({
-        data: null,
-        error: { message: 'File already exists' }
-      })
-
-      // But signed URL generation works
-      mockSupabase.storage.from().createSignedUrl.mockResolvedValue({
-        data: { signedUrl: 'https://storage.example.com/existing-file' },
-        error: null
-      })
+      // Configure mock to simulate file already exists scenario
+      SupabaseMockFactory.setDuplicateFileMode(true, 'https://storage.example.com/existing-file')
 
       const mockBuffer = Buffer.from('test content')
       const result = await storageService.uploadExportFile(
@@ -376,12 +258,8 @@ describe('Story 3.4: Export Integration Tests', () => {
     })
 
     it('should handle storage upload failures', async () => {
-      const { createServiceClient } = require('@/src/lib/supabase')
-      const mockSupabase = createServiceClient()
-      mockSupabase.storage.from().upload.mockResolvedValue({
-        data: null,
-        error: { message: 'Storage quota exceeded' }
-      })
+      // Configure mock to fail with storage quota error
+      SupabaseMockFactory.setStorageUploadError('Storage quota exceeded')
 
       const mockBuffer = Buffer.from('test content')
       const result = await storageService.uploadExportFile(
