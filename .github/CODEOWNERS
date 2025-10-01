@@ -1,0 +1,37 @@
+# CODEOWNERS file for automatic PR review assignment
+# Each line is a file pattern followed by one or more owners.
+
+# Default owner for everything in the repo
+* @chrimar3
+
+# Documentation
+/docs/ @chrimar3
+*.md @chrimar3
+
+# Core application code
+/app/ @chrimar3
+/src/ @chrimar3
+/lib/ @chrimar3
+
+# Configuration files
+/.github/ @chrimar3
+/config/ @chrimar3
+*.config.js @chrimar3
+*.config.ts @chrimar3
+
+# Tests
+/__tests__/ @chrimar3
+*.test.ts @chrimar3
+*.test.tsx @chrimar3
+
+# Database
+/supabase/ @chrimar3
+/migrations/ @chrimar3
+*.sql @chrimar3
+
+# CI/CD
+/.github/workflows/ @chrimar3
+
+# Security
+SECURITY.md @chrimar3
+/.github/dependabot.yml @chrimar3

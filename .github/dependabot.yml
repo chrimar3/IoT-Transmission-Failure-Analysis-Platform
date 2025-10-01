@@ -1,0 +1,57 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "chrimar3"
+    assignees:
+      - "chrimar3"
+    labels:
+      - "dependencies"
+      - "automated"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    # Group updates for React ecosystem
+    groups:
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      nextjs:
+        patterns:
+          - "next"
+          - "@next/*"
+      testing:
+        patterns:
+          - "jest*"
+          - "@testing-library/*"
+          - "@types/jest"
+      supabase:
+        patterns:
+          - "@supabase/*"
+          - "supabase"
+      stripe:
+        patterns:
+          - "stripe"
+          - "@stripe/*"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    reviewers:
+      - "chrimar3"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
