@@ -9,7 +9,23 @@ import { StatisticalAnomalyDetector } from '@/lib/algorithms/StatisticalAnomalyD
 import { RecommendationEngine } from '@/src/lib/algorithms/RecommendationEngine';
 import { PatternCorrelationAnalyzer } from '@/src/lib/algorithms/PatternCorrelationAnalyzer';
 import { NotificationService } from '@/src/lib/services/NotificationService';
-import type { DetectedPattern, TimeSeriesData } from '@/types/patterns';
+import type { DetectedPattern } from '@/types/patterns';
+
+// Local TimeSeriesData interface for test data generation
+interface TimeSeriesData {
+  sensor_id: string;
+  data_points: Array<{
+    timestamp: string;
+    value: number;
+    metadata: {
+      quality?: string;
+      source?: string;
+      equipment?: string;
+    };
+  }>;
+  equipment_type: string;
+  floor_number: number;
+}
 
 describe('Story 3.3: Failure Pattern Detection Engine - Integration Tests', () => {
   let anomalyDetector: StatisticalAnomalyDetector;
@@ -61,8 +77,8 @@ describe('Story 3.3: Failure Pattern Detection Engine - Integration Tests', () =
 
       expect(detectionResult.success).toBe(true);
       expect(detectionResult.patterns).toBeDefined();
-      expect(detectionResult.summary).toBeDefined();
-      expect(detectionResult.analysis_metadata).toBeDefined();
+      expect(detectionResult.statistical_summary).toBeDefined();
+      expect(detectionResult.performance_metrics).toBeDefined();
 
       // Step 3: Generate recommendations
       const patternsWithRecommendations =
@@ -135,9 +151,17 @@ describe('Story 3.3: Failure Pattern Detection Engine - Integration Tests', () =
 
       const startTime = performance.now();
 
+      // Transform TimeSeriesData to TimeSeriesPoint[] array
+      const dataPoints = largeTimeSeriesData.data_points.map((dp) => ({
+        sensor_id: largeTimeSeriesData.sensor_id,
+        timestamp: dp.timestamp,
+        value: dp.value,
+        equipment_type: largeTimeSeriesData.equipment_type,
+      }));
+
       // Process large dataset
       const result = await anomalyDetector.detectAnomalies(
-        largeTimeSeriesData,
+        dataPoints,
         {
           start_time: new Date(
             Date.now() - 7 * 24 * 60 * 60 * 1000
@@ -151,16 +175,15 @@ describe('Story 3.3: Failure Pattern Detection Engine - Integration Tests', () =
 
       expect(result.success).toBe(true);
       expect(processingTime).toBeLessThan(5000); // Should complete within 5 seconds
-      expect(result.analysis_metadata.data_points_processed).toBeGreaterThan(
+      expect(result.statistical_summary.total_points_analyzed).toBeGreaterThan(
         1000
       );
 
       console.log('📊 High-volume test results:', {
-        data_points: result.analysis_metadata.data_points_processed,
+        data_points: result.statistical_summary.total_points_analyzed,
         processing_time_ms: processingTime,
         patterns_found: result.patterns.length,
-        memory_usage_mb:
-          result.analysis_metadata.performance_metrics.memory_peak_mb,
+        memory_usage_mb: result.performance_metrics.memory_usage_mb,
       });
     });
 
@@ -171,7 +194,15 @@ describe('Story 3.3: Failure Pattern Detection Engine - Integration Tests', () =
       for (const equipmentType of equipmentTypes) {
         const testData = generateEquipmentSpecificData(equipmentType);
 
-        const result = await anomalyDetector.detectAnomalies(testData, {
+        // Transform TimeSeriesData to TimeSeriesPoint[] array
+        const dataPoints = testData.data_points.map((dp) => ({
+          sensor_id: testData.sensor_id,
+          timestamp: dp.timestamp,
+          value: dp.value,
+          equipment_type: testData.equipment_type,
+        }));
+
+        const result = await anomalyDetector.detectAnomalies(dataPoints, {
           start_time: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
           end_time: new Date().toISOString(),
           granularity: '1h',
@@ -214,7 +245,15 @@ describe('Story 3.3: Failure Pattern Detection Engine - Integration Tests', () =
         floor_number: -1,
       };
 
-      const result = await anomalyDetector.detectAnomalies(malformedData, {
+      // Transform TimeSeriesData to TimeSeriesPoint[] array
+      const dataPoints = malformedData.data_points.map((dp) => ({
+        sensor_id: malformedData.sensor_id,
+        timestamp: dp.timestamp,
+        value: dp.value,
+        equipment_type: malformedData.equipment_type,
+      }));
+
+      const result = await anomalyDetector.detectAnomalies(dataPoints, {
         start_time: '2025-01-15T09:00:00Z',
         end_time: '2025-01-15T11:00:00Z',
         granularity: '1h',
@@ -231,7 +270,16 @@ describe('Story 3.3: Failure Pattern Detection Engine - Integration Tests', () =
       // Simulate multiple concurrent pattern detection requests
       const promises = Array.from({ length: 10 }, () => {
         const testData = generateTestTimeSeriesData();
-        return anomalyDetector.detectAnomalies(testData, {
+
+        // Transform TimeSeriesData to TimeSeriesPoint[] array
+        const dataPoints = testData.data_points.map((dp) => ({
+          sensor_id: testData.sensor_id,
+          timestamp: dp.timestamp,
+          value: dp.value,
+          equipment_type: testData.equipment_type,
+        }));
+
+        return anomalyDetector.detectAnomalies(dataPoints, {
           start_time: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
           end_time: new Date().toISOString(),
           granularity: '5m',

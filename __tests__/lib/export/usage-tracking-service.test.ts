@@ -5,16 +5,32 @@
 
 import { ExportUsageTrackingService, getDefaultTierLimits } from '@/src/lib/export/usage-tracking-service'
 
-// Mock Supabase
+// Mock Supabase with proper method chaining support
 const mockRpc = jest.fn()
 const mockFrom = jest.fn()
 const mockInsert = jest.fn().mockReturnValue({ error: null })
-const mockUpdate = jest.fn().mockReturnValue({ eq: jest.fn().mockReturnValue({ error: null }) })
-const mockSelect = jest.fn().mockReturnValue({
-  eq: jest.fn().mockReturnValue({
-    single: jest.fn().mockReturnValue({ data: null, error: null })
-  })
-})
+
+// Create a chainable mock for update().eq()
+const createUpdateChain = () => {
+  const chain = {
+    eq: jest.fn().mockReturnValue({ error: null })
+  }
+  return chain
+}
+
+// Create a chainable mock for select().eq().eq().single()
+const createSelectChain = () => {
+  const chain = {
+    single: jest.fn().mockReturnValue({ data: null, error: null }),
+    eq: jest.fn()
+  }
+  // Make eq() return the chain itself to support multiple .eq() calls
+  chain.eq.mockReturnValue(chain)
+  return chain
+}
+
+const mockUpdate = jest.fn(() => createUpdateChain())
+const mockSelect = jest.fn(() => createSelectChain())
 
 mockFrom.mockReturnValue({
   insert: mockInsert,
@@ -40,18 +56,15 @@ describe('ExportUsageTrackingService', () => {
     mockUpdate.mockReset()
     mockSelect.mockReset()
 
-    // Re-setup default mock behavior
+    // Re-setup default mock behavior with proper chaining
+    mockInsert.mockReturnValue({ error: null })
+    mockUpdate.mockImplementation(() => createUpdateChain())
+    mockSelect.mockImplementation(() => createSelectChain())
+
     mockFrom.mockReturnValue({
       insert: mockInsert,
       update: mockUpdate,
       select: mockSelect
-    })
-    mockInsert.mockReturnValue({ error: null })
-    mockUpdate.mockReturnValue({ eq: jest.fn().mockReturnValue({ error: null }) })
-    mockSelect.mockReturnValue({
-      eq: jest.fn().mockReturnValue({
-        single: jest.fn().mockReturnValue({ data: null, error: null })
-      })
     })
 
     trackingService = ExportUsageTrackingService.getInstance()
@@ -165,9 +178,7 @@ describe('ExportUsageTrackingService', () => {
 
   describe('updateExportJobStatus', () => {
     it('should update job status successfully', async () => {
-      const mockEq = jest.fn(() => ({ error: null }))
-      mockFrom().update.mockReturnValue({ eq: mockEq })
-
+      // No need to mock here, the default chain should work
       const result = await trackingService.updateExportJobStatus('job123', 'completed', {
         progressPercent: 100,
         fileUrl: 'https://example.com/file.pdf'
@@ -175,16 +186,14 @@ describe('ExportUsageTrackingService', () => {
 
       expect(result).toBe(true)
       expect(mockFrom).toHaveBeenCalledWith('export_jobs')
+      expect(mockUpdate).toHaveBeenCalled()
     })
 
     it('should automatically set completedAt for completed status', async () => {
-      const mockEq = jest.fn(() => ({ error: null }))
-      mockFrom().update.mockReturnValue({ eq: mockEq })
-
       await trackingService.updateExportJobStatus('job123', 'completed', {})
 
       // Should have called update with completed_at
-      expect(mockFrom().update).toHaveBeenCalled()
+      expect(mockUpdate).toHaveBeenCalled()
     })
   })
 
@@ -233,10 +242,13 @@ describe('ExportUsageTrackingService', () => {
         features_enabled: ['basic_export', 'excel_export', 'pdf_export']
       }
 
-      mockFrom().select().eq().single.mockResolvedValue({
+      // Create a custom chain for this test with resolved data
+      const customChain = createSelectChain()
+      customChain.single.mockResolvedValue({
         data: mockLimits,
         error: null
       })
+      mockSelect.mockReturnValue(customChain)
 
       const result = await trackingService.getTierLimits('PROFESSIONAL')
 
@@ -246,10 +258,13 @@ describe('ExportUsageTrackingService', () => {
     })
 
     it('should return null for invalid tier', async () => {
-      mockFrom().select().eq().single.mockResolvedValue({
+      // Create a custom chain for this test with error
+      const customChain = createSelectChain()
+      customChain.single.mockResolvedValue({
         data: null,
         error: { message: 'Not found' }
       })
+      mockSelect.mockReturnValue(customChain)
 
       const result = await trackingService.getTierLimits('INVALID')
 
@@ -264,10 +279,13 @@ describe('ExportUsageTrackingService', () => {
         formats_allowed: ['csv', 'excel', 'pdf']
       }
 
-      mockFrom().select().eq().single.mockResolvedValue({
+      // Create a custom chain for this test
+      const customChain = createSelectChain()
+      customChain.single.mockResolvedValue({
         data: mockLimits,
         error: null
       })
+      mockSelect.mockReturnValue(customChain)
 
       const result = await trackingService.isFormatAllowed('PROFESSIONAL', 'pdf')
 
@@ -280,10 +298,13 @@ describe('ExportUsageTrackingService', () => {
         formats_allowed: ['csv']
       }
 
-      mockFrom().select().eq().single.mockResolvedValue({
+      // Create a custom chain for this test
+      const customChain = createSelectChain()
+      customChain.single.mockResolvedValue({
         data: mockLimits,
         error: null
       })
+      mockSelect.mockReturnValue(customChain)
 
       const result = await trackingService.isFormatAllowed('FREE', 'pdf')
 
@@ -299,16 +320,13 @@ describe('ExportUsageTrackingService', () => {
         tier: 'PROFESSIONAL'
       }
 
-      const mockSingle = jest.fn().mockResolvedValue({
+      // Create a custom chain with proper data
+      const customChain = createSelectChain()
+      customChain.single.mockResolvedValue({
         data: mockUsage,
         error: null
       })
-      const mockEqChain = { single: mockSingle }
-      const mockEq1 = jest.fn().mockReturnValue(mockEqChain)
-      const mockEq2 = jest.fn().mockReturnValue(mockEqChain)
-      mockEqChain.eq = mockEq2
-      const mockSelect = jest.fn().mockReturnValue({ eq: mockEq1 })
-      mockFrom.mockReturnValue({ select: mockSelect })
+      mockSelect.mockReturnValue(customChain)
 
       const result = await trackingService.getCurrentMonthUsage('user123')
 
@@ -319,16 +337,13 @@ describe('ExportUsageTrackingService', () => {
     })
 
     it('should return zero usage for new user', async () => {
-      const mockSingle = jest.fn().mockResolvedValue({
+      // Create a custom chain with error (no usage found)
+      const customChain = createSelectChain()
+      customChain.single.mockResolvedValue({
         data: null,
         error: { message: 'Not found' }
       })
-      const mockEqChain = { single: mockSingle }
-      const mockEq1 = jest.fn().mockReturnValue(mockEqChain)
-      const mockEq2 = jest.fn().mockReturnValue(mockEqChain)
-      mockEqChain.eq = mockEq2
-      const mockSelect = jest.fn().mockReturnValue({ eq: mockEq1 })
-      mockFrom.mockReturnValue({ select: mockSelect })
+      mockSelect.mockReturnValue(customChain)
 
       const result = await trackingService.getCurrentMonthUsage('user123')
 

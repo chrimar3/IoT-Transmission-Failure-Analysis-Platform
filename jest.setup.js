@@ -201,6 +201,13 @@ if (typeof window === 'undefined') {
   if (!global.Response) global.Response = MockResponse
 }
 
+// Mock ResizeObserver for component tests
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}))
+
 // Global console setup - reduce verbosity for tests
 global.console = {
   ...console,
