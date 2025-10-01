@@ -4,15 +4,18 @@
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "types": ["jest", "@testing-library/jest-dom", "node"],
+    "types": ["jest", "@testing-library/jest-dom", "@jest/globals", "node"],
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "typeRoots": ["../node_modules/@types", "./types"]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     "**/*.d.ts",
     "types/*.d.ts",
+    "setup.d.ts",
+    "global.d.ts",
     "../app/**/*.tsx",
     "../lib/**/*.ts",
     "../types/**/*.ts"

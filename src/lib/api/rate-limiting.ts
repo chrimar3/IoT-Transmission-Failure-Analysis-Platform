@@ -5,7 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import type { RateLimitTier, RateLimit } from '@/types/api'
-import { subscriptionService } from '@/lib/stripe/subscription.service'
+import { subscriptionService } from '../stripe/subscription.service'
 
 // Initialize Supabase client
 const supabase = createClient(

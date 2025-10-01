@@ -87,7 +87,7 @@ describe('ExportStorageService', () => {
       )
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Upload failed')
+      expect(result.error).toBe('Upload failed after 3 attempts: Upload failed')
     })
 
     it('should handle signed URL generation errors', async () => {
@@ -113,7 +113,7 @@ describe('ExportStorageService', () => {
       )
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Signed URL generation failed')
+      expect(result.error).toBe('Signed URL generation failed: Signed URL generation failed')
     })
   })
 

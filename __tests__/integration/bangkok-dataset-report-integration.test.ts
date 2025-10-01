@@ -1,18 +1,18 @@
-import { generateReportJob } from '@/src/lib/reports/report-generator'
-import { getBangkokData } from '@/lib/data/bangkok-dataset'
-import { generatePDF } from '@/src/lib/reports/pdf-generator'
-import { generateExcel } from '@/src/lib/reports/excel-exporter'
-import { prisma } from '@/lib/database/connection'
-import { uploadToR2 } from '@/lib/r2-client'
-import { ReportTemplate } from '@/types/reports'
+import { generateReportJob } from '@/src/lib/reports/report-generator';
+import { getBangkokData } from '@/lib/data/bangkok-dataset';
+import { generatePDF } from '@/src/lib/reports/pdf-generator';
+import { generateExcel } from '@/src/lib/reports/excel-exporter';
+import { prisma } from '@/lib/database/connection';
+import { uploadToR2 } from '@/lib/r2-client';
+import { ReportTemplate } from '@/types/reports';
 
 // Mock external dependencies but test real data flow
-jest.mock('@/lib/database/connection')
-jest.mock('@/lib/r2-client')
-jest.mock('@/src/lib/reports/email-delivery')
+jest.mock('@/lib/database/connection');
+jest.mock('@/lib/r2-client');
+jest.mock('@/src/lib/reports/email-delivery');
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>
-const mockUploadToR2 = uploadToR2 as jest.MockedFunction<typeof uploadToR2>
+const mockPrisma = prisma as jest.Mocked<typeof prisma>;
+const mockUploadToR2 = uploadToR2 as jest.MockedFunction<typeof uploadToR2>;
 
 describe('Bangkok Dataset Report Integration Tests', () => {
   const mockTemplate: ReportTemplate = {
@@ -28,7 +28,7 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         header_height: 60,
         footer_height: 40,
         grid_columns: 12,
-        grid_rows: 20
+        grid_rows: 20,
       },
       components: [
         {
@@ -39,21 +39,21 @@ describe('Bangkok Dataset Report Integration Tests', () => {
             chart_type: 'line',
             title: 'Temperature Trends',
             x_axis: { label: 'Time', show_grid: true },
-            y_axis: { label: 'Temperature (°C)', show_grid: true }
+            y_axis: { label: 'Temperature (°C)', show_grid: true },
           },
           data_binding: {
             source: 'bangkok_dataset',
             query: {
               sensor_ids: ['temp_01', 'temp_02'],
               equipment_types: ['hvac'],
-              aggregation: 'hour'
+              aggregation: 'hour',
             },
             transformation: {
               type: 'aggregate',
               operation: 'average',
-              parameters: { field: 'temperature' }
-            }
-          }
+              parameters: { field: 'temperature' },
+            },
+          },
         },
         {
           id: 'energy-table',
@@ -63,18 +63,28 @@ describe('Bangkok Dataset Report Integration Tests', () => {
             title: 'Energy Consumption by Floor',
             columns: [
               { key: 'floor', label: 'Floor', align: 'center' },
-              { key: 'consumption', label: 'kWh', align: 'right', format: '0.2f' },
-              { key: 'efficiency', label: 'Efficiency %', align: 'right', format: '0.1f' }
-            ]
+              {
+                key: 'consumption',
+                label: 'kWh',
+                align: 'right',
+                format: '0.2f',
+              },
+              {
+                key: 'efficiency',
+                label: 'Efficiency %',
+                align: 'right',
+                format: '0.1f',
+              },
+            ],
           },
           data_binding: {
             source: 'bangkok_dataset',
             query: {
               floor_numbers: [1, 2, 3, 4, 5],
               equipment_types: ['hvac', 'lighting'],
-              aggregation: 'day'
-            }
-          }
+              aggregation: 'day',
+            },
+          },
         },
         {
           id: 'summary-metrics',
@@ -87,21 +97,21 @@ describe('Bangkok Dataset Report Integration Tests', () => {
               decimal_places: 1,
               unit: '°C',
               show_change: true,
-              change_period: '24h'
+              change_period: '24h',
             },
             threshold: {
               warning_value: 25,
               critical_value: 30,
               warning_color: '#f59e0b',
-              critical_color: '#dc2626'
-            }
+              critical_color: '#dc2626',
+            },
           },
           data_binding: {
             source: 'bangkok_dataset',
             query: {
-              equipment_types: ['hvac']
-            }
-          }
+              equipment_types: ['hvac'],
+            },
+          },
         },
         {
           id: 'floor-comparison',
@@ -111,67 +121,94 @@ describe('Bangkok Dataset Report Integration Tests', () => {
             chart_type: 'bar',
             title: 'Floor Energy Comparison',
             x_axis: { label: 'Floor Number' },
-            y_axis: { label: 'Energy (kWh)' }
+            y_axis: { label: 'Energy (kWh)' },
           },
           data_binding: {
             source: 'bangkok_dataset',
             query: {
               floor_numbers: [1, 2, 3, 4, 5],
-              aggregation: 'day'
-            }
-          }
-        }
+              aggregation: 'day',
+            },
+          },
+        },
       ],
       styling: {
         color_scheme: {
-          primary: '#2563eb', secondary: '#64748b', background: '#ffffff',
-          surface: '#f8fafc', text_primary: '#1e293b', text_secondary: '#64748b',
-          accent: '#0ea5e9', warning: '#f59e0b', error: '#dc2626', success: '#16a34a'
+          primary: '#2563eb',
+          secondary: '#64748b',
+          background: '#ffffff',
+          surface: '#f8fafc',
+          text_primary: '#1e293b',
+          text_secondary: '#64748b',
+          accent: '#0ea5e9',
+          warning: '#f59e0b',
+          error: '#dc2626',
+          success: '#16a34a',
         },
         typography: {
-          heading_font: 'Inter', body_font: 'Inter',
+          heading_font: 'Inter',
+          body_font: 'Inter',
           heading_sizes: { h1: 24, h2: 20, h3: 18, h4: 16 },
-          body_size: 14, line_height: 1.5
+          body_size: 14,
+          line_height: 1.5,
         },
-        spacing: { component_margin: 16, section_padding: 24, element_spacing: 8 },
-        borders: { default_width: 1, default_color: '#e5e7eb', default_style: 'solid' }
+        spacing: {
+          component_margin: 16,
+          section_padding: 24,
+          element_spacing: 8,
+        },
+        borders: {
+          default_width: 1,
+          default_color: '#e5e7eb',
+          default_style: 'solid',
+        },
       },
       branding: {
         company_name: 'Bangkok Building Management',
-        company_colors: { primary: '#2563eb', secondary: '#64748b', accent: '#0ea5e9' },
-        footer_text: 'Confidential - Bangkok Building Management Report'
+        company_colors: {
+          primary: '#2563eb',
+          secondary: '#64748b',
+          accent: '#0ea5e9',
+        },
+        footer_text: 'Confidential - Bangkok Building Management Report',
       },
       data_configuration: {
         refresh_interval: 3600,
         cache_duration: 1800,
-        quality_threshold: 0.95
-      }
+        quality_threshold: 0.95,
+      },
     },
     is_public: false,
     version: '1.0',
     tags: ['integration', 'bangkok', 'operational'],
     created_at: '2023-01-01T00:00:00Z',
     updated_at: '2023-01-01T00:00:00Z',
-    usage_count: 0
-  }
+    usage_count: 0,
+  };
 
   const mockUser = {
     id: 'user-123',
     email: 'test@bangkok.com',
-    name: 'Bangkok Test User'
-  }
+    name: 'Bangkok Test User',
+  };
 
   beforeEach(() => {
-    jest.clearAllMocks()
-
-    // Setup database mocks
-    (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(mockTemplate)
-    ;(mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser)
-    ;(mockPrisma.generatedReport.update as jest.Mock).mockResolvedValue({})
+    jest
+      .clearAllMocks()
+      (
+        // Setup database mocks
+        mockPrisma.reportTemplate.findUnique as jest.Mock
+      )
+      .mockResolvedValue(mockTemplate);
+    (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+    (mockPrisma.generatedReport.update as jest.Mock).mockResolvedValue({});
 
     // Setup storage mock
-    mockUploadToR2.mockResolvedValue({ url: 'https://storage.example.com/report.pdf', size: 1024 })
-  })
+    mockUploadToR2.mockResolvedValue({
+      url: 'https://storage.example.com/report.pdf',
+      size: 1024,
+    });
+  });
 
   describe('End-to-End Report Generation with Real Bangkok Data', () => {
     it('should generate a complete PDF report with Bangkok dataset integration', async () => {
@@ -182,26 +219,26 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'pdf' as const,
         dataRange: {
           start: new Date('2023-06-01T00:00:00Z'),
-          end: new Date('2023-06-30T23:59:59Z')
+          end: new Date('2023-06-30T23:59:59Z'),
         },
         customParameters: {
           title: 'Monthly Bangkok Building Report',
-          include_executive_summary: true
-        }
-      }
+          include_executive_summary: true,
+        },
+      };
 
       // This should use the real getBangkokData function
-      await expect(generateReportJob(job)).resolves.not.toThrow()
+      await expect(generateReportJob(job)).resolves.not.toThrow();
 
       // Verify database interactions
       expect(mockPrisma.reportTemplate.findUnique).toHaveBeenCalledWith({
-        where: { id: 'integration-template' }
-      })
+        where: { id: 'integration-template' },
+      });
 
       expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
         where: { id: 'user-123' },
-        select: { email: true, name: true }
-      })
+        select: { email: true, name: true },
+      });
 
       // Verify report completion
       expect(mockPrisma.generatedReport.update).toHaveBeenCalledWith({
@@ -213,11 +250,11 @@ describe('Bangkok Dataset Report Integration Tests', () => {
             data_points_included: expect.any(Number),
             charts_generated: 2, // temp-chart and floor-comparison
             tables_generated: 1, // energy-table
-            statistical_confidence: expect.any(Number)
-          })
-        })
-      })
-    }, 30000) // 30 second timeout for integration test
+            statistical_confidence: expect.any(Number),
+          }),
+        }),
+      });
+    }, 30000); // 30 second timeout for integration test
 
     it('should generate Excel report with proper data structure', async () => {
       const job = {
@@ -227,12 +264,12 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'excel' as const,
         dataRange: {
           start: new Date('2023-06-01T00:00:00Z'),
-          end: new Date('2023-06-07T23:59:59Z') // 1 week of data
+          end: new Date('2023-06-07T23:59:59Z'), // 1 week of data
         },
-        customParameters: {}
-      }
+        customParameters: {},
+      };
 
-      await expect(generateReportJob(job)).resolves.not.toThrow()
+      await expect(generateReportJob(job)).resolves.not.toThrow();
 
       // Verify the Excel generation was called and completed
       expect(mockPrisma.generatedReport.update).toHaveBeenCalledWith({
@@ -241,37 +278,39 @@ describe('Bangkok Dataset Report Integration Tests', () => {
           status: 'completed',
           metadata: expect.objectContaining({
             charts_generated: 2,
-            tables_generated: 1
-          })
-        })
-      })
-    }, 20000)
-  })
+            tables_generated: 1,
+          }),
+        }),
+      });
+    }, 20000);
+  });
 
   describe('Data Filtering and Transformation Integration', () => {
     it('should correctly filter Bangkok data by sensor IDs', async () => {
-      const filteredTemplate = {
+      const filteredTemplateData = {
         ...mockTemplate,
         template_data: {
           ...mockTemplate.template_data,
-          components: [{
-            id: 'filtered-chart',
-            type: 'chart',
-            position: { x: 0, y: 0, width: 400, height: 300 },
-            config: { chart_type: 'line' },
-            data_binding: {
-              source: 'bangkok_dataset',
-              query: {
-                sensor_ids: ['specific_sensor_001', 'specific_sensor_002'],
-                start_date: '2023-06-01T00:00:00Z',
-                end_date: '2023-06-02T00:00:00Z'
-              }
-            }
-          }]
-        }
-      }
-
-      (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(filteredTemplate)
+          components: [
+            {
+              id: 'filtered-chart',
+              type: 'chart',
+              position: { x: 0, y: 0, width: 400, height: 300 },
+              config: { chart_type: 'line' },
+              data_binding: {
+                source: 'bangkok_dataset',
+                query: {
+                  sensor_ids: ['specific_sensor_001', 'specific_sensor_002'],
+                  start_date: '2023-06-01T00:00:00Z',
+                  end_date: '2023-06-02T00:00:00Z',
+                },
+              },
+            },
+          ],
+        },
+      }(mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(
+        filteredTemplateData
+      );
 
       const job = {
         reportId: 'filtered-report-123',
@@ -280,52 +319,54 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'pdf' as const,
         dataRange: {
           start: new Date('2023-06-01T00:00:00Z'),
-          end: new Date('2023-06-02T00:00:00Z')
+          end: new Date('2023-06-02T00:00:00Z'),
         },
-        customParameters: {}
-      }
+        customParameters: {},
+      };
 
-      await expect(generateReportJob(job)).resolves.not.toThrow()
+      await expect(generateReportJob(job)).resolves.not.toThrow();
 
       // The report should complete successfully with filtered data
       expect(mockPrisma.generatedReport.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'filtered-report-123' },
           data: expect.objectContaining({
-            status: 'completed'
-          })
+            status: 'completed',
+          }),
         })
-      )
-    })
+      );
+    });
 
     it('should handle floor-based data aggregation correctly', async () => {
-      const floorTemplate = {
+      const floorTemplateData = {
         ...mockTemplate,
         template_data: {
           ...mockTemplate.template_data,
-          components: [{
-            id: 'floor-analysis',
-            type: 'table',
-            position: { x: 0, y: 0, width: 500, height: 300 },
-            config: {
-              columns: [
-                { key: 'floor_number', label: 'Floor' },
-                { key: 'avg_temperature', label: 'Avg Temp' },
-                { key: 'energy_consumption', label: 'Energy (kWh)' }
-              ]
+          components: [
+            {
+              id: 'floor-analysis',
+              type: 'table',
+              position: { x: 0, y: 0, width: 500, height: 300 },
+              config: {
+                columns: [
+                  { key: 'floor_number', label: 'Floor' },
+                  { key: 'avg_temperature', label: 'Avg Temp' },
+                  { key: 'energy_consumption', label: 'Energy (kWh)' },
+                ],
+              },
+              data_binding: {
+                source: 'bangkok_dataset',
+                query: {
+                  floor_numbers: [1, 2, 3],
+                  aggregation: 'day',
+                },
+              },
             },
-            data_binding: {
-              source: 'bangkok_dataset',
-              query: {
-                floor_numbers: [1, 2, 3],
-                aggregation: 'day'
-              }
-            }
-          }]
-        }
-      }
-
-      (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(floorTemplate)
+          ],
+        },
+      }(mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(
+        floorTemplateData
+      );
 
       const job = {
         reportId: 'floor-report-123',
@@ -334,14 +375,14 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'pdf' as const,
         dataRange: {
           start: new Date('2023-06-01T00:00:00Z'),
-          end: new Date('2023-06-07T23:59:59Z')
+          end: new Date('2023-06-07T23:59:59Z'),
         },
-        customParameters: {}
-      }
+        customParameters: {},
+      };
 
-      await expect(generateReportJob(job)).resolves.not.toThrow()
-    })
-  })
+      await expect(generateReportJob(job)).resolves.not.toThrow();
+    });
+  });
 
   describe('Statistical Analysis Integration', () => {
     it('should include statistical confidence metrics in reports', async () => {
@@ -352,30 +393,31 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'pdf' as const,
         dataRange: {
           start: new Date('2023-06-01T00:00:00Z'),
-          end: new Date('2023-06-30T23:59:59Z')
+          end: new Date('2023-06-30T23:59:59Z'),
         },
         customParameters: {
-          include_statistical_analysis: true
-        }
-      }
+          include_statistical_analysis: true,
+        },
+      };
 
-      await generateReportJob(job)
+      await generateReportJob(job);
 
       expect(mockPrisma.generatedReport.update).toHaveBeenCalledWith({
         where: { id: 'stats-report-123' },
         data: expect.objectContaining({
           metadata: expect.objectContaining({
-            statistical_confidence: expect.any(Number)
-          })
-        })
-      })
+            statistical_confidence: expect.any(Number),
+          }),
+        }),
+      });
 
       // Verify that statistical confidence is a reasonable value (0-1)
-      const updateCall = (mockPrisma.generatedReport.update as jest.Mock).mock.calls[0]
-      const metadata = updateCall[0].data.metadata as any
-      expect(metadata.statistical_confidence).toBeGreaterThanOrEqual(0)
-      expect(metadata.statistical_confidence).toBeLessThanOrEqual(1)
-    })
+      const updateCall = (mockPrisma.generatedReport.update as jest.Mock).mock
+        .calls[0];
+      const metadata = updateCall[0].data.metadata as any;
+      expect(metadata.statistical_confidence).toBeGreaterThanOrEqual(0);
+      expect(metadata.statistical_confidence).toBeLessThanOrEqual(1);
+    });
 
     it('should generate insights based on data patterns', async () => {
       const job = {
@@ -385,29 +427,31 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'pdf' as const,
         dataRange: {
           start: new Date('2023-06-01T00:00:00Z'),
-          end: new Date('2023-06-07T23:59:59Z')
+          end: new Date('2023-06-07T23:59:59Z'),
         },
-        customParameters: {}
-      }
+        customParameters: {},
+      };
 
-      await generateReportJob(job)
+      await generateReportJob(job);
 
       // The report should complete and include insights
       expect(mockPrisma.generatedReport.update).toHaveBeenCalledWith({
         where: { id: 'insights-report-123' },
         data: expect.objectContaining({
-          status: 'completed'
-        })
-      })
-    })
-  })
+          status: 'completed',
+        }),
+      });
+    });
+  });
 
   describe('Error Handling with Bangkok Dataset', () => {
     it('should handle Bangkok dataset unavailability gracefully', async () => {
       // Mock getBangkokData to simulate failure
       jest.doMock('@/lib/data/bangkok-dataset', () => ({
-        getBangkokData: jest.fn().mockRejectedValue(new Error('Dataset unavailable'))
-      }))
+        getBangkokData: jest
+          .fn()
+          .mockRejectedValue(new Error('Dataset unavailable')),
+      }));
 
       const job = {
         reportId: 'error-report-123',
@@ -416,22 +460,22 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'pdf' as const,
         dataRange: {
           start: new Date('2023-06-01T00:00:00Z'),
-          end: new Date('2023-06-02T00:00:00Z')
+          end: new Date('2023-06-02T00:00:00Z'),
         },
-        customParameters: {}
-      }
+        customParameters: {},
+      };
 
-      await expect(generateReportJob(job)).rejects.toThrow()
+      await expect(generateReportJob(job)).rejects.toThrow();
 
       // Verify error is recorded
       expect(mockPrisma.generatedReport.update).toHaveBeenCalledWith({
         where: { id: 'error-report-123' },
         data: {
           status: 'failed',
-          error_message: expect.stringContaining('Dataset unavailable')
-        }
-      })
-    })
+          error_message: expect.stringContaining('Dataset unavailable'),
+        },
+      });
+    });
 
     it('should handle partial data scenarios', async () => {
       // Mock partial data response
@@ -439,9 +483,9 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         getBangkokData: jest.fn().mockResolvedValue({
           data: [], // Empty data
           aggregations: {},
-          statistics: { confidence: 0.5 }
-        })
-      }))
+          statistics: { confidence: 0.5 },
+        }),
+      }));
 
       const job = {
         reportId: 'partial-data-report-123',
@@ -450,40 +494,40 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'pdf' as const,
         dataRange: {
           start: new Date('2023-06-01T00:00:00Z'),
-          end: new Date('2023-06-02T00:00:00Z')
+          end: new Date('2023-06-02T00:00:00Z'),
         },
-        customParameters: {}
-      }
+        customParameters: {},
+      };
 
       // Should complete but with minimal data
-      await expect(generateReportJob(job)).resolves.not.toThrow()
+      await expect(generateReportJob(job)).resolves.not.toThrow();
 
       expect(mockPrisma.generatedReport.update).toHaveBeenCalledWith({
         where: { id: 'partial-data-report-123' },
         data: expect.objectContaining({
           status: 'completed',
           metadata: expect.objectContaining({
-            data_points_included: 0
-          })
-        })
-      })
-    })
-  })
+            data_points_included: 0,
+          }),
+        }),
+      });
+    });
+  });
 
   describe('Data Quality and Validation', () => {
     it('should validate data quality meets minimum thresholds', async () => {
-      const qualityTemplate = {
+      const qualityTemplateData = {
         ...mockTemplate,
         template_data: {
           ...mockTemplate.template_data,
           data_configuration: {
             ...mockTemplate.template_data.data_configuration,
-            quality_threshold: 0.9 // High quality requirement
-          }
-        }
-      }
-
-      (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(qualityTemplate)
+            quality_threshold: 0.9, // High quality requirement
+          },
+        },
+      }(mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(
+        qualityTemplateData
+      );
 
       const job = {
         reportId: 'quality-report-123',
@@ -492,21 +536,21 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'pdf' as const,
         dataRange: {
           start: new Date('2023-06-01T00:00:00Z'),
-          end: new Date('2023-06-07T23:59:59Z')
+          end: new Date('2023-06-07T23:59:59Z'),
         },
-        customParameters: {}
-      }
+        customParameters: {},
+      };
 
-      await expect(generateReportJob(job)).resolves.not.toThrow()
+      await expect(generateReportJob(job)).resolves.not.toThrow();
 
       // Should complete with quality metrics
       expect(mockPrisma.generatedReport.update).toHaveBeenCalledWith({
         where: { id: 'quality-report-123' },
         data: expect.objectContaining({
-          status: 'completed'
-        })
-      })
-    })
+          status: 'completed',
+        }),
+      });
+    });
 
     it('should handle timezone considerations correctly', async () => {
       const job = {
@@ -516,14 +560,14 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'pdf' as const,
         dataRange: {
           start: new Date('2023-06-01T00:00:00+07:00'), // Bangkok timezone
-          end: new Date('2023-06-02T00:00:00+07:00')
+          end: new Date('2023-06-02T00:00:00+07:00'),
         },
         customParameters: {
-          timezone: 'Asia/Bangkok'
-        }
-      }
+          timezone: 'Asia/Bangkok',
+        },
+      };
 
-      await expect(generateReportJob(job)).resolves.not.toThrow()
+      await expect(generateReportJob(job)).resolves.not.toThrow();
 
       // Verify the date range is properly handled
       expect(mockPrisma.generatedReport.update).toHaveBeenCalledWith({
@@ -531,40 +575,46 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         data: expect.objectContaining({
           status: 'completed',
           data_period_start: expect.any(Date),
-          data_period_end: expect.any(Date)
-        })
-      })
-    })
-  })
+          data_period_end: expect.any(Date),
+        }),
+      });
+    });
+  });
 
   describe('Component-Specific Integration Tests', () => {
     it('should properly render chart components with Bangkok time series data', async () => {
-      const chartOnlyTemplate = {
+      const chartOnlyTemplateData = {
         ...mockTemplate,
         template_data: {
           ...mockTemplate.template_data,
-          components: [{
-            id: 'time-series-chart',
-            type: 'chart',
-            position: { x: 0, y: 0, width: 600, height: 400 },
-            config: {
-              chart_type: 'line',
-              title: 'Temperature Over Time',
-              x_axis: { label: 'Time', tick_format: 'HH:mm' },
-              y_axis: { label: 'Temperature (°C)', min_value: 20, max_value: 35 }
+          components: [
+            {
+              id: 'time-series-chart',
+              type: 'chart',
+              position: { x: 0, y: 0, width: 600, height: 400 },
+              config: {
+                chart_type: 'line',
+                title: 'Temperature Over Time',
+                x_axis: { label: 'Time', tick_format: 'HH:mm' },
+                y_axis: {
+                  label: 'Temperature (°C)',
+                  min_value: 20,
+                  max_value: 35,
+                },
+              },
+              data_binding: {
+                source: 'bangkok_dataset',
+                query: {
+                  equipment_types: ['hvac'],
+                  aggregation: 'hour',
+                },
+              },
             },
-            data_binding: {
-              source: 'bangkok_dataset',
-              query: {
-                equipment_types: ['hvac'],
-                aggregation: 'hour'
-              }
-            }
-          }]
-        }
-      }
-
-      (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(chartOnlyTemplate)
+          ],
+        },
+      }(mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(
+        chartOnlyTemplateData
+      );
 
       const job = {
         reportId: 'chart-integration-123',
@@ -573,55 +623,72 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'pdf' as const,
         dataRange: {
           start: new Date('2023-06-01T00:00:00Z'),
-          end: new Date('2023-06-01T23:59:59Z')
+          end: new Date('2023-06-01T23:59:59Z'),
         },
-        customParameters: {}
-      }
+        customParameters: {},
+      };
 
-      await expect(generateReportJob(job)).resolves.not.toThrow()
+      await expect(generateReportJob(job)).resolves.not.toThrow();
 
       expect(mockPrisma.generatedReport.update).toHaveBeenCalledWith({
         where: { id: 'chart-integration-123' },
         data: expect.objectContaining({
           status: 'completed',
           metadata: expect.objectContaining({
-            charts_generated: 1
-          })
-        })
-      })
-    })
+            charts_generated: 1,
+          }),
+        }),
+      });
+    });
 
     it('should properly render table components with aggregated Bangkok data', async () => {
-      const tableOnlyTemplate = {
+      const tableOnlyTemplateData = {
         ...mockTemplate,
         template_data: {
           ...mockTemplate.template_data,
-          components: [{
-            id: 'summary-table',
-            type: 'table',
-            position: { x: 0, y: 0, width: 600, height: 300 },
-            config: {
-              title: 'Daily Summary by Floor',
-              columns: [
-                { key: 'floor_number', label: 'Floor', align: 'center' },
-                { key: 'avg_temp', label: 'Avg Temp (°C)', align: 'right', format: '0.1f' },
-                { key: 'max_temp', label: 'Max Temp (°C)', align: 'right', format: '0.1f' },
-                { key: 'energy_kwh', label: 'Energy (kWh)', align: 'right', format: '0.2f' }
-              ],
-              sorting: { column: 'floor_number', direction: 'asc' }
+          components: [
+            {
+              id: 'summary-table',
+              type: 'table',
+              position: { x: 0, y: 0, width: 600, height: 300 },
+              config: {
+                title: 'Daily Summary by Floor',
+                columns: [
+                  { key: 'floor_number', label: 'Floor', align: 'center' },
+                  {
+                    key: 'avg_temp',
+                    label: 'Avg Temp (°C)',
+                    align: 'right',
+                    format: '0.1f',
+                  },
+                  {
+                    key: 'max_temp',
+                    label: 'Max Temp (°C)',
+                    align: 'right',
+                    format: '0.1f',
+                  },
+                  {
+                    key: 'energy_kwh',
+                    label: 'Energy (kWh)',
+                    align: 'right',
+                    format: '0.2f',
+                  },
+                ],
+                sorting: { column: 'floor_number', direction: 'asc' },
+              },
+              data_binding: {
+                source: 'bangkok_dataset',
+                query: {
+                  aggregation: 'day',
+                  floor_numbers: [1, 2, 3, 4, 5],
+                },
+              },
             },
-            data_binding: {
-              source: 'bangkok_dataset',
-              query: {
-                aggregation: 'day',
-                floor_numbers: [1, 2, 3, 4, 5]
-              }
-            }
-          }]
-        }
-      }
-
-      (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(tableOnlyTemplate)
+          ],
+        },
+      }(mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(
+        tableOnlyTemplateData
+      );
 
       const job = {
         reportId: 'table-integration-123',
@@ -630,22 +697,22 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         format: 'excel' as const, // Excel is better for tables
         dataRange: {
           start: new Date('2023-06-01T00:00:00Z'),
-          end: new Date('2023-06-07T23:59:59Z')
+          end: new Date('2023-06-07T23:59:59Z'),
         },
-        customParameters: {}
-      }
+        customParameters: {},
+      };
 
-      await expect(generateReportJob(job)).resolves.not.toThrow()
+      await expect(generateReportJob(job)).resolves.not.toThrow();
 
       expect(mockPrisma.generatedReport.update).toHaveBeenCalledWith({
         where: { id: 'table-integration-123' },
         data: expect.objectContaining({
           status: 'completed',
           metadata: expect.objectContaining({
-            tables_generated: 1
-          })
-        })
-      })
-    })
-  })
-})
+            tables_generated: 1,
+          }),
+        }),
+      });
+    });
+  });
+});
