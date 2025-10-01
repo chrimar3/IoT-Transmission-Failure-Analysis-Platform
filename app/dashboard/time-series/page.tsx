@@ -489,6 +489,7 @@ export default function InteractiveTimeSeriesAnalytics() {
               <button
                 onClick={fetchTimeSeriesData}
                 disabled={refreshing}
+                aria-label="Refresh data"
                 className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 disabled:opacity-50"
               >
                 <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />
