@@ -208,6 +208,45 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }))
 
+// Mock canvas for chart rendering
+if (typeof HTMLCanvasElement !== 'undefined') {
+  HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
+    fillRect: jest.fn(),
+    clearRect: jest.fn(),
+    getImageData: jest.fn(() => ({ data: new Uint8ClampedArray() })),
+    putImageData: jest.fn(),
+    createImageData: jest.fn(() => ({ data: new Uint8ClampedArray() })),
+    setTransform: jest.fn(),
+    drawImage: jest.fn(),
+    save: jest.fn(),
+    restore: jest.fn(),
+    beginPath: jest.fn(),
+    moveTo: jest.fn(),
+    lineTo: jest.fn(),
+    closePath: jest.fn(),
+    stroke: jest.fn(),
+    translate: jest.fn(),
+    scale: jest.fn(),
+    rotate: jest.fn(),
+    arc: jest.fn(),
+    fill: jest.fn(),
+    measureText: jest.fn(() => ({ width: 100 })),
+    transform: jest.fn(),
+    rect: jest.fn(),
+    clip: jest.fn(),
+    fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 1,
+    font: '10px sans-serif'
+  }))
+
+  HTMLCanvasElement.prototype.toDataURL = jest.fn(() => 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
+
+  HTMLCanvasElement.prototype.toBlob = jest.fn((callback) => {
+    callback(new Blob(['mock'], { type: 'image/png' }))
+  })
+}
+
 // Global console setup - reduce verbosity for tests
 global.console = {
   ...console,
