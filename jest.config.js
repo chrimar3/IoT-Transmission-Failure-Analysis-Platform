@@ -9,6 +9,8 @@ module.exports = {
     '^@/components/(.*)$': '<rootDir>/components/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^fs$': '<rootDir>/__mocks__/fs.js',
+    '^exceljs$': '<rootDir>/__mocks__/exceljs.js',
+    '^pdf-lib$': '<rootDir>/__mocks__/pdf-lib.js',
   },
   testMatch: [
     '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
@@ -50,6 +52,8 @@ module.exports = {
         '^@/app/(.*)$': '<rootDir>/app/$1',
         '^@/components/(.*)$': '<rootDir>/components/$1',
         '^fs$': '<rootDir>/__mocks__/fs.js',
+        '^exceljs$': '<rootDir>/__mocks__/exceljs.js',
+        '^pdf-lib$': '<rootDir>/__mocks__/pdf-lib.js',
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -71,6 +75,8 @@ module.exports = {
         '^@/components/(.*)$': '<rootDir>/components/$1',
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
         '^fs$': '<rootDir>/__mocks__/fs.js',
+        '^exceljs$': '<rootDir>/__mocks__/exceljs.js',
+        '^pdf-lib$': '<rootDir>/__mocks__/pdf-lib.js',
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {

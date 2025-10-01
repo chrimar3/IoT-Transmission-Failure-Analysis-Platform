@@ -536,15 +536,17 @@ describe('Alert Volume Performance Tests', () => {
       const totalNotifications = results.reduce((sum, notifications) => sum + notifications.length, 0)
 
       console.log(`Sent ${totalNotifications} notifications for 100 alerts in ${duration}ms`)
-      console.log(`Average time per notification: ${(duration / totalNotifications).toFixed(2)}ms`)
+      if (totalNotifications > 0) {
+        console.log(`Average time per notification: ${(duration / totalNotifications).toFixed(2)}ms`)
+      }
 
       // Performance assertions
       expect(duration).toBeLessThan(5000) // Should complete within 5 seconds
       expect(results).toHaveLength(100) // Should process all alerts
-      // Note: Notification service returns empty arrays in test environment
-      // This is a performance test, not a functional notification test
+      // Note: Notification service returns empty arrays in test environment without recipients
+      // This is a performance test, not a functional notification test - we only verify structure
       const allNotifications = results.flat()
-      expect(allNotifications.length).toBeGreaterThanOrEqual(0) // Verify structure
+      expect(allNotifications.length).toBeGreaterThanOrEqual(0) // Verify structure works
     })
 
     it('should handle sustained notification load over time', async () => {
@@ -623,9 +625,12 @@ describe('Alert Volume Performance Tests', () => {
       const actualDuration = Date.now() - startTime
 
       console.log(`Sustained load test: ${totalNotificationsSent} notifications over ${actualDuration}ms`)
-      console.log(`Average rate: ${(totalNotificationsSent / (actualDuration / 1000)).toFixed(2)} notifications/second`)
+      if (totalNotificationsSent > 0) {
+        console.log(`Average rate: ${(totalNotificationsSent / (actualDuration / 1000)).toFixed(2)} notifications/second`)
+      }
 
       // Performance test - verify timing and completion, not actual notification sending
+      // Note: Notification service returns empty arrays without recipients - this is expected in test environment
       expect(actualDuration).toBeLessThan((testDurationSeconds + 2) * 1000) // Should not take more than 2 extra seconds
       expect(actualDuration).toBeGreaterThan(testDurationSeconds * 900) // Should take at least the test duration (with 10% variance)
     })

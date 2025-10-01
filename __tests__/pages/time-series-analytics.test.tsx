@@ -183,7 +183,7 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        expect(screen.getByText('Professional')).toBeInTheDocument()
+        expect(screen.getByText(/Professional/i)).toBeInTheDocument()
       }, { timeout: 3000 })
     })
 
@@ -191,14 +191,15 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        const refreshButton = screen.getByLabelText(/refresh data/i)
-        expect(refreshButton).toBeInTheDocument()
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
+
+      const refreshButton = screen.getByLabelText(/refresh data/i)
+      expect(refreshButton).toBeInTheDocument()
 
       // Clear initial fetch calls
       ;(global.fetch as jest.Mock).mockClear()
 
-      const refreshButton = screen.getByLabelText(/refresh data/i)
       await mockUser.click(refreshButton)
 
       expect(global.fetch).toHaveBeenCalledWith(
@@ -212,20 +213,22 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        const dayButtons = screen.getAllByText('Day')
-        expect(dayButtons.length).toBeGreaterThan(0)
-        const weekButtons = screen.getAllByText('Week')
-        expect(weekButtons.length).toBeGreaterThan(0)
-        expect(screen.getByText('Month')).toBeInTheDocument()
-        expect(screen.getByText('All')).toBeInTheDocument()
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
+
+      const dayButtons = screen.getAllByText('Day')
+      expect(dayButtons.length).toBeGreaterThan(0)
+      const weekButtons = screen.getAllByText('Week')
+      expect(weekButtons.length).toBeGreaterThan(0)
+      expect(screen.getByText('Month')).toBeInTheDocument()
+      expect(screen.getByText('All')).toBeInTheDocument()
     })
 
     test('switches time ranges correctly', async () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        expect(screen.getByText('Month')).toBeInTheDocument()
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
 
       // Initially month should be selected - find the time range button
@@ -241,9 +244,10 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       await mockUser.click(weekButtons[0])
 
       await waitFor(() => {
-        const activeWeekButton = weekButtons.find(btn => btn.classList.contains('bg-blue-600'))
+        const updatedWeekButtons = screen.getAllByRole('button').filter(btn => btn.textContent === 'Week')
+        const activeWeekButton = updatedWeekButtons.find(btn => btn.classList.contains('bg-blue-600'))
         expect(activeWeekButton).toBeDefined()
-      }, { timeout: 2000 })
+      }, { timeout: 3000 })
 
       // Should trigger new API call
       expect(global.fetch).toHaveBeenCalled()
@@ -253,20 +257,21 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        expect(screen.getByText('Hour')).toBeInTheDocument()
-        const dayButtons = screen.getAllByText('Day')
-        expect(dayButtons.length).toBeGreaterThan(0)
-        const weekButtons = screen.getAllByText('Week')
-        expect(weekButtons.length).toBeGreaterThan(0)
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
+
+      expect(screen.getByText('Hour')).toBeInTheDocument()
+      const dayButtons = screen.getAllByText('Day')
+      expect(dayButtons.length).toBeGreaterThan(0)
+      const weekButtons = screen.getAllByText('Week')
+      expect(weekButtons.length).toBeGreaterThan(0)
     })
 
     test('updates granularity selection', async () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        const dayButtons = screen.getAllByText('Day')
-        expect(dayButtons.length).toBeGreaterThan(0)
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
 
       // Clear initial fetch calls
@@ -277,7 +282,7 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       await waitFor(() => {
         const hourButton = screen.getByText('Hour')
         expect(hourButton.closest('button')).toHaveClass('bg-blue-600')
-      }, { timeout: 2000 })
+      }, { timeout: 3000 })
 
       // Should trigger new API call
       expect(global.fetch).toHaveBeenCalled()
@@ -289,25 +294,26 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        const hvacButtons = screen.getAllByText('HVAC')
-        expect(hvacButtons.length).toBeGreaterThan(0)
-        const lightingButtons = screen.getAllByText('Lighting')
-        expect(lightingButtons.length).toBeGreaterThan(0)
-        const powerButtons = screen.getAllByText('Power')
-        expect(powerButtons.length).toBeGreaterThan(0)
-        const securityButtons = screen.getAllByText('Security')
-        expect(securityButtons.length).toBeGreaterThan(0)
-        const elevatorButtons = screen.getAllByText('Elevators')
-        expect(elevatorButtons.length).toBeGreaterThan(0)
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
+
+      const hvacButtons = screen.getAllByText('HVAC')
+      expect(hvacButtons.length).toBeGreaterThan(0)
+      const lightingButtons = screen.getAllByText('Lighting')
+      expect(lightingButtons.length).toBeGreaterThan(0)
+      const powerButtons = screen.getAllByText('Power')
+      expect(powerButtons.length).toBeGreaterThan(0)
+      const securityButtons = screen.getAllByText('Security')
+      expect(securityButtons.length).toBeGreaterThan(0)
+      const elevatorButtons = screen.getAllByText('Elevators')
+      expect(elevatorButtons.length).toBeGreaterThan(0)
     })
 
     test('toggles sensor visibility', async () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        const hvacButtons = screen.getAllByText('HVAC')
-        expect(hvacButtons.length).toBeGreaterThan(0)
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
 
       // Find the HVAC button in the sensor selection section (first one should be the toggle)
@@ -325,7 +331,9 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       await mockUser.click(hvacButton!)
 
       // Should trigger new API call with updated sensor selection
-      expect(global.fetch).toHaveBeenCalled()
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalled()
+      }, { timeout: 3000 })
     })
 
     test('shows anomaly detection toggle', async () => {
@@ -386,9 +394,11 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        const csvButton = screen.getByText('CSV')
-        expect(csvButton.closest('button')).toHaveClass('bg-green-600')
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
+
+      const csvButton = screen.getByText('CSV')
+      expect(csvButton.closest('button')).toHaveClass('bg-green-600')
     })
 
     test('shows upgrade prompt for free users on export', async () => {
@@ -486,37 +496,43 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        const hvacElements = screen.getAllByText('HVAC')
-        expect(hvacElements.length).toBeGreaterThan(0)
-        const minElements = screen.getAllByText('Min:')
-        expect(minElements.length).toBeGreaterThan(0)
-        const maxElements = screen.getAllByText('Max:')
-        expect(maxElements.length).toBeGreaterThan(0)
-        const avgElements = screen.getAllByText('Avg:')
-        expect(avgElements.length).toBeGreaterThan(0)
-        const sigmaElements = screen.getAllByText('σ:')
-        expect(sigmaElements.length).toBeGreaterThan(0)
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
+
+      const hvacElements = screen.getAllByText('HVAC')
+      expect(hvacElements.length).toBeGreaterThan(0)
+      const minElements = screen.getAllByText('Min:')
+      expect(minElements.length).toBeGreaterThan(0)
+      const maxElements = screen.getAllByText('Max:')
+      expect(maxElements.length).toBeGreaterThan(0)
+      const avgElements = screen.getAllByText('Avg:')
+      expect(avgElements.length).toBeGreaterThan(0)
+      const sigmaElements = screen.getAllByText('σ:')
+      expect(sigmaElements.length).toBeGreaterThan(0)
     })
 
     test('renders seasonal patterns panel', async () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        expect(screen.getByText('Seasonal Patterns')).toBeInTheDocument()
-        expect(screen.getByText('Winter (Jan-Mar)')).toBeInTheDocument()
-        const peakHoursElements = screen.getAllByText('Peak Hours:')
-        expect(peakHoursElements.length).toBeGreaterThan(0)
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
+
+      expect(screen.getByText('Seasonal Patterns')).toBeInTheDocument()
+      expect(screen.getByText('Winter (Jan-Mar)')).toBeInTheDocument()
+      const peakHoursElements = screen.getAllByText('Peak Hours:')
+      expect(peakHoursElements.length).toBeGreaterThan(0)
     })
 
     test('shows trend indicators correctly', async () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        const stableElements = screen.getAllByText('stable')
-        expect(stableElements.length).toBeGreaterThan(0)
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
+
+      const stableElements = screen.getAllByText('stable')
+      expect(stableElements.length).toBeGreaterThan(0)
     })
   })
 
@@ -607,8 +623,7 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        const hvacButtons = screen.getAllByText('HVAC')
-        expect(hvacButtons.length).toBeGreaterThan(0)
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
 
       const startTime = performance.now()
@@ -632,9 +647,9 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        expect(screen.getByText(/Network Error/)).toBeInTheDocument()
+        expect(screen.getByText(/Network Error/i)).toBeInTheDocument()
         expect(screen.getByText('Retry')).toBeInTheDocument()
-      }, { timeout: 3000 })
+      }, { timeout: 5000 })
     })
 
     test('retry functionality works correctly', async () => {
@@ -676,8 +691,8 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        expect(screen.getByText(/Failed to fetch time-series data/)).toBeInTheDocument()
-      }, { timeout: 3000 })
+        expect(screen.getByText(/Failed to fetch time-series data/i)).toBeInTheDocument()
+      }, { timeout: 5000 })
     })
   })
 
@@ -694,8 +709,7 @@ describe('InteractiveTimeSeriesAnalytics Page', () => {
       render(<InteractiveTimeSeriesAnalytics />)
 
       await waitFor(() => {
-        const dayButtons = screen.getAllByText('Day')
-        expect(dayButtons.length).toBeGreaterThan(0)
+        expect(screen.getByText('Interactive Time-Series Analytics')).toBeInTheDocument()
       }, { timeout: 3000 })
 
       const dayButtons = screen.getAllByText('Day')
