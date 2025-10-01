@@ -1,0 +1,112 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please provide as much detail as possible.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? Is your feature request related to a problem?
+      placeholder: I'm frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see
+      placeholder: I would like to be able to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or features?
+      placeholder: I've also considered...
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Critical (Blocking workflow)
+        - High (Would significantly improve experience)
+        - Medium (Nice to have)
+        - Low (Minor enhancement)
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Describe real-world scenarios where this feature would be useful
+      placeholder: |
+        1. As a building manager, I need to...
+        2. When analyzing data, I want to...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: feature-area
+    attributes:
+      label: Feature Area
+      description: Which area of the application does this relate to?
+      options:
+        - label: Dashboard & Analytics
+        - label: Pattern Detection
+        - label: Data Export
+        - label: API & Integrations
+        - label: Alerts & Notifications
+        - label: Reports
+        - label: User Management
+        - label: Subscription & Billing
+        - label: Documentation
+        - label: Other
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups or Examples
+      description: If applicable, add mockups, wireframes, or examples from other applications
+      placeholder: Drag and drop images here or paste links
+
+  - type: textarea
+    id: technical
+    attributes:
+      label: Technical Considerations
+      description: Any technical details, constraints, or implementation ideas?
+      placeholder: This might require changes to...
+
+  - type: checkboxes
+    id: subscription-tier
+    attributes:
+      label: Target Subscription Tier
+      description: Which subscription tier(s) should have access to this feature?
+      options:
+        - label: Free Tier
+        - label: Professional Tier
+        - label: Enterprise Tier
+        - label: All Tiers
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided clear use cases and rationale
+          required: true
+        - label: I am willing to help test this feature when implemented
+          required: false

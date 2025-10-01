@@ -1,0 +1,74 @@
+name: Question or Support
+description: Ask a question or get help with the platform
+title: "[Question]: "
+labels: ["question", "support"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help? Ask your question below and we'll do our best to assist you!
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: How do I...?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What is your question about?
+      options:
+        - Getting Started / Setup
+        - Authentication & User Accounts
+        - Dashboard & Analytics
+        - Pattern Detection
+        - Data Export
+        - API Usage
+        - Subscription & Billing
+        - Troubleshooting
+        - Best Practices
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide any additional context that might help us answer your question
+      placeholder: |
+        - What have you tried so far?
+        - What documentation have you checked?
+        - What is your goal?
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment (if applicable)
+      description: Information about your setup
+      placeholder: |
+        - Subscription tier: [Free/Professional/Enterprise]
+        - Platform: [Web/API]
+        - Browser: [Chrome/Firefox/Safari/etc.]
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots (if applicable)
+      description: Add screenshots to help illustrate your question
+      placeholder: Drag and drop images here
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked the documentation
+          required: true
+        - label: I have searched existing issues and discussions
+          required: true
