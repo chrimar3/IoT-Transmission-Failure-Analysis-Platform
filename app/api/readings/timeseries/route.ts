@@ -240,7 +240,7 @@ export async function GET(request: NextRequest) {
         'X-Total-Points': totalPoints.toString(),
         'X-Decimated': decimated.toString(),
         'X-Rate-Limit-Remaining': rateLimitCheck.remaining.toString(),
-        'X-Subscription-Tier': (await subscriptionService.getUserSubscription(userId))?.tier || 'FREE'
+        'X-Subscription-Tier': (await subscriptionService.getUserSubscription(userId))?.tier || 'free'
       }
     })
 

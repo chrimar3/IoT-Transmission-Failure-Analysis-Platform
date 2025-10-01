@@ -5,7 +5,7 @@ declare module 'next-auth' {
   interface Session {
     user: {
       id: string
-      subscriptionTier: 'free' | 'professional'
+      subscriptionTier: 'FREE' | 'PROFESSIONAL' | 'ENTERPRISE'
       subscriptionStatus: 'active' | 'canceled' | 'incomplete' | 'incomplete_expired' | 'past_due' | 'trialing' | 'unpaid'
     } & DefaultSession['user']
   }

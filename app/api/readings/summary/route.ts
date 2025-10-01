@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 
     // Get user's subscription tier for data filtering
     const subscription = await subscriptionService.getUserSubscription(userId)
-    const userTier = subscription?.tier || 'FREE'
+    const userTier = subscription?.tier || 'free'
 
     // Fetch metrics from R2 storage (with subscription-aware filtering)
     const metrics = await r2Client.getMetrics()
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     await subscriptionService.trackUserActivity(userId, 'api_summary_access', {
       tier: userTier,
       execution_time_ms: executionTime,
-      restricted_view: userTier === 'FREE'
+      restricted_view: userTier === 'free'
     })
 
     return NextResponse.json(
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
         success: true,
         data: isExecutiveDashboard ? executiveData : filteredMetrics as DashboardMetrics,
         // Include upgrade prompt for free tier users
-        upgrade_prompt: userTier === 'FREE' ? {
+        upgrade_prompt: userTier === 'free' ? {
           title: 'Unlock Complete Analytics',
           message: 'Professional tier provides full 18-month historical metrics and advanced insights',
           upgradeUrl: '/subscription/upgrade?source=dashboard_metrics',
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': userTier === 'FREE' ? 'no-cache' : 'public, s-maxage=60, stale-while-revalidate=300',
+          'Cache-Control': userTier === 'free' ? 'no-cache' : 'public, s-maxage=60, stale-while-revalidate=300',
           'X-Rate-Limit-Remaining': rateLimitCheck.remaining.toString(),
           'X-Subscription-Tier': userTier,
           'X-Execution-Time': `${executionTime}ms`
@@ -196,7 +196,7 @@ function generateExecutiveStatisticalData(userTier: string) {
   }
 
   // Apply tier restrictions for FREE users
-  if (userTier === 'FREE') {
+  if (userTier === 'free') {
     return {
       ...baseData,
       tier_restricted: true,
@@ -219,7 +219,7 @@ function generateExecutiveStatisticalData(userTier: string) {
  * PROFESSIONAL TIER: Full 18-month metrics with advanced insights
  */
 function applyTierRestrictionsToMetrics(metrics: DashboardMetrics, tier: string): DashboardMetrics {
-  if (tier === 'FREE') {
+  if (tier === 'free') {
     // Restrict free tier to last 30 days and basic metrics
     return metrics
   }

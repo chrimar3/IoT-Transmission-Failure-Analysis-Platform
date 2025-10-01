@@ -285,7 +285,7 @@ export async function GET(request: NextRequest) {
           'Content-Type': 'application/json',
           'Cache-Control': filteredRequest.revenueProtection.tierRestricted ? 'no-cache' : 'public, s-maxage=300, stale-while-revalidate=600',
           'X-Rate-Limit-Remaining': rateLimitCheck.remaining.toString(),
-          'X-Subscription-Tier': (await subscriptionService.getUserSubscription(userId))?.tier || 'FREE',
+          'X-Subscription-Tier': (await subscriptionService.getUserSubscription(userId))?.tier || 'free',
           'X-Execution-Time': `${executionTime}ms`
         }
       }

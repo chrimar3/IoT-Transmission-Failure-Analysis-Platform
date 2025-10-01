@@ -140,11 +140,11 @@ export const authOptions: NextAuthOptions = {
         // Get user's current subscription
         try {
           const subscription = await subscriptionService.getUserSubscription(token.sub)
-          session.user.subscriptionTier = subscription?.tier?.toLowerCase() || 'free'
+          session.user.subscriptionTier = subscription?.tier || 'FREE'
           session.user.subscriptionStatus = subscription?.status || 'active'
         } catch (error) {
           console.warn('Failed to fetch subscription for session:', error)
-          session.user.subscriptionTier = 'free'
+          session.user.subscriptionTier = 'FREE'
           session.user.subscriptionStatus = 'active'
         }
       }

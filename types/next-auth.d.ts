@@ -5,7 +5,7 @@ declare module 'next-auth' {
   interface Session {
     user: {
       id: string
-      subscriptionTier: 'free' | 'professional'
+      subscriptionTier: 'FREE' | 'PROFESSIONAL' | 'ENTERPRISE'
       subscriptionStatus?: 'active' | 'past_due' | 'canceled' | 'incomplete' | 'incomplete_expired' | 'trialing' | 'unpaid'
       subscriptionId?: string
     } & {
@@ -22,7 +22,7 @@ declare module 'next-auth' {
     email: string
     name?: string | null
     image?: string | null
-    subscriptionTier?: 'free' | 'professional'
+    subscriptionTier?: 'FREE' | 'PROFESSIONAL' | 'ENTERPRISE'
   }
 }
 

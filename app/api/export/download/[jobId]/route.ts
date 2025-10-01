@@ -35,9 +35,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (session?.user) {
       // Web session authentication
       userId = session.user.id
-      userTier = session.user.subscriptionTier || 'FREE'
+      userTier = session.user.subscriptionTier || 'free'
 
-      if (userTier === 'FREE') {
+      if (userTier === 'free') {
         return NextResponse.json(
           { success: false, error: 'Professional subscription required for export downloads' },
           { status: 403 }
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         )
       }
 
-      if (apiValidation.tier === 'FREE') {
+      if (apiValidation.tier === 'free') {
         return NextResponse.json(
           { success: false, error: 'Professional API key required for export downloads' },
           { status: 403 }
@@ -180,9 +180,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     if (session?.user) {
       userId = session.user.id
-      const userTier = session.user.subscriptionTier || 'FREE'
+      const userTier = session.user.subscriptionTier || 'free'
 
-      if (userTier === 'FREE') {
+      if (userTier === 'free') {
         return NextResponse.json(
           { success: false, error: 'Professional subscription required' },
           { status: 403 }
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       const apiKey = authHeader.substring(7)
       const apiValidation = await validateAPIKey(apiKey)
 
-      if (!apiValidation.valid || apiValidation.tier === 'FREE') {
+      if (!apiValidation.valid || apiValidation.tier === 'free') {
         return NextResponse.json(
           { success: false, error: 'Professional subscription required' },
           { status: 403 }

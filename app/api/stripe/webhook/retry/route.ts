@@ -174,7 +174,7 @@ async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
   await new Promise(resolve => setTimeout(resolve, 100));
 
   // Throw error if event processing fails (for testing retry logic)
-  if (event.type === 'test.error') {
+  if ((event.type as string) === 'test.error') {
     throw new Error('Test error for retry logic');
   }
 }

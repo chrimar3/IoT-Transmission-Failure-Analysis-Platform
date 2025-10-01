@@ -20,9 +20,9 @@ export async function POST(request: NextRequest) {
     if (session?.user) {
       // Web session authentication
       userId = session.user.id
-      userTier = session.user.subscriptionTier || 'FREE'
+      userTier = session.user.subscriptionTier || 'free'
 
-      if (userTier === 'FREE') {
+      if (userTier === 'free') {
         return NextResponse.json(
           { success: false, error: 'Professional subscription required for exports' },
           { status: 403 }
@@ -208,9 +208,9 @@ export async function GET(request: NextRequest) {
     if (session?.user) {
       // Web session authentication
       userId = session.user.id
-      const userTier = session.user.subscriptionTier || 'FREE'
+      const userTier = session.user.subscriptionTier || 'free'
 
-      if (userTier === 'FREE') {
+      if (userTier === 'free') {
         return NextResponse.json(
           { success: false, error: 'Professional subscription required' },
           { status: 403 }

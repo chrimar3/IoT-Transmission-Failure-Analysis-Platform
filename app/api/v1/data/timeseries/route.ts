@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
         success: false,
         error: 'subscription_required',
         message: 'Professional API endpoints require Professional tier subscription',
-        current_tier: subscription?.tier || 'FREE',
+        current_tier: subscription?.tier || 'free',
         upgrade_prompt: {
           title: 'Upgrade to Professional',
           message: 'Access high-volume timeseries data with Professional tier subscription for €29/month',

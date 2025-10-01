@@ -75,7 +75,7 @@ export default function ValidationChart({ data, type, title, height = 300 }: Val
         return rawData.map((item, index) => {
           const typedItem = item as RawDataItem
           return {
-            name: typedItem.equipment_type || typedItem.floor_number || `Item ${index + 1}`,
+            name: String(typedItem.equipment_type || typedItem.floor_number || `Item ${index + 1}`),
             value: typedItem.performance_score || typedItem.efficiency_score || typedItem.metric_value || 0,
             confidence: typedItem.confidence_level || typedItem.confidence || 85,
             category: typedItem.category || categorizePerformance(typedItem)
