@@ -15,16 +15,18 @@ global.Audio = jest.fn().mockImplementation(() => ({
 }))
 
 // Mock Notification API
-global.Notification = jest.fn().mockImplementation((title, options) => ({
+const NotificationMock = jest.fn().mockImplementation((title, options) => ({
   title,
   ...options
 }))
 
+NotificationMock.permission = 'granted'
+NotificationMock.requestPermission = jest.fn().mockResolvedValue('granted')
+
+global.Notification = NotificationMock as unknown as typeof Notification
+
 Object.defineProperty(window, 'Notification', {
-  value: {
-    permission: 'granted',
-    requestPermission: jest.fn().mockResolvedValue('granted')
-  }
+  value: NotificationMock
 })
 
 // Mock fetch for API calls

@@ -91,6 +91,24 @@ export const SUBSCRIPTION_TIERS = {
       api_access: true,
     },
   },
+  ENTERPRISE: {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 99,
+    currency: 'eur',
+    stripeProductId: process.env.STRIPE_ENTERPRISE_PRODUCT_ID || 'prod_enterprise',
+    stripePriceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || 'price_enterprise_monthly',
+    features: {
+      monthly_exports: -1, // Unlimited
+      dashboard_access: true,
+      basic_analytics: true,
+      email_support: true,
+      priority_support: true,
+      advanced_analytics: true,
+      custom_reports: true,
+      api_access: true,
+    },
+  },
 } as const
 
 // Type definitions
@@ -114,6 +132,9 @@ export interface UserSubscription {
 export function getSubscriptionTierFromPriceId(priceId: string): SubscriptionTier {
   if (priceId === SUBSCRIPTION_TIERS.PROFESSIONAL.stripePriceId) {
     return 'PROFESSIONAL'
+  }
+  if (priceId === SUBSCRIPTION_TIERS.ENTERPRISE.stripePriceId) {
+    return 'ENTERPRISE'
   }
   return 'FREE'
 }

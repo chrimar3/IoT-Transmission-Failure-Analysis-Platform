@@ -11,12 +11,12 @@ import type { MultiSeriesData } from '@/types/analytics'
 
 // Mock recharts components
 jest.mock('recharts', () => ({
-  LineChart: ({ children, data }: unknown) => (
+  LineChart: ({ children, data }: { children: React.ReactNode; data: unknown[] }) => (
     <div data-testid="line-chart" data-points={data?.length || 0}>
       {children}
     </div>
   ),
-  Line: ({ dataKey, stroke }: unknown) => (
+  Line: ({ dataKey, stroke }: { dataKey: string; stroke: string }) => (
     <div data-testid={`line-${dataKey}`} style={{ color: stroke }} />
   ),
   XAxis: () => <div data-testid="x-axis" />,
@@ -24,10 +24,10 @@ jest.mock('recharts', () => ({
   CartesianGrid: () => <div data-testid="grid" />,
   Tooltip: () => <div data-testid="tooltip" />,
   Legend: () => <div data-testid="legend" />,
-  ResponsiveContainer: ({ children }: unknown) => (
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="responsive-container">{children}</div>
   ),
-  Brush: ({ onChange }: unknown) => (
+  Brush: ({ onChange }: { onChange?: (startIndex: number, endIndex: number) => void }) => (
     <div
       data-testid="brush"
       onClick={() => onChange?.(0, 10)}
@@ -51,12 +51,14 @@ const mockMultiSeriesData: MultiSeriesData[] = [
       {
         timestamp: '2025-01-01T00:00:00Z',
         value: 100.5,
-        status: 'normal'
+        status: 'normal',
+        sensor_id: 'SENSOR_001'
       },
       {
         timestamp: '2025-01-01T01:00:00Z',
         value: 105.2,
-        status: 'normal'
+        status: 'normal',
+        sensor_id: 'SENSOR_001'
       }
     ]
   },
@@ -70,12 +72,14 @@ const mockMultiSeriesData: MultiSeriesData[] = [
       {
         timestamp: '2025-01-01T00:00:00Z',
         value: 45.3,
-        status: 'normal'
+        status: 'normal',
+        sensor_id: 'SENSOR_002'
       },
       {
         timestamp: '2025-01-01T01:00:00Z',
         value: 48.1,
-        status: 'warning'
+        status: 'warning',
+        sensor_id: 'SENSOR_002'
       }
     ]
   }
@@ -83,9 +87,10 @@ const mockMultiSeriesData: MultiSeriesData[] = [
 
 const mockSession = {
   user: {
+    id: 'user-123',
     name: 'Test User',
     email: 'test@example.com',
-    subscriptionTier: 'professional'
+    subscriptionTier: 'professional' as const
   },
   expires: '2025-12-31'
 }

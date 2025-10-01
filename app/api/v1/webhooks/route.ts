@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getServerSession } from 'next-auth/next'
 import { WebhookManager } from '@/lib/api/webhook-delivery'
-import type { ApiResponse, WebhookEndpoint, _CreateWebhookRequest, _WebhookTestRequest } from '@/types/api'
+import type { ApiResponse, WebhookEndpoint } from '@/types/api'
 
 // Validation schemas
 const CreateWebhookSchema = z.object({
@@ -103,7 +103,7 @@ export async function POST(_request: NextRequest): Promise<NextResponse> {
     const userId = session.user.id
 
     // Parse and validate request body
-    const body = await request.json()
+    const body = await _request.json()
     const createRequest = CreateWebhookSchema.parse(body)
 
     // Create webhook
@@ -180,7 +180,7 @@ export async function PUT(_request: NextRequest): Promise<NextResponse> {
     }
 
     const userId = session.user.id
-    const url = new URL(request.url)
+    const url = new URL(_request.url)
     const webhookId = url.searchParams.get('id')
 
     if (!webhookId) {
@@ -194,7 +194,7 @@ export async function PUT(_request: NextRequest): Promise<NextResponse> {
     }
 
     // Parse and validate request body
-    const body = await request.json()
+    const body = await _request.json()
     const updateRequest = UpdateWebhookSchema.parse(body)
 
     // Update webhook
@@ -271,7 +271,7 @@ export async function DELETE(_request: NextRequest): Promise<NextResponse> {
     }
 
     const userId = session.user.id
-    const url = new URL(request.url)
+    const url = new URL(_request.url)
     const webhookId = url.searchParams.get('id')
 
     if (!webhookId) {

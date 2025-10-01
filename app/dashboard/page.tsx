@@ -6,7 +6,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { _AlertCircle, RefreshCw, _TrendingUp, _TrendingDown, Activity, _BarChart3, PieChart as _PieChartIcon, Download } from 'lucide-react'
+import { RefreshCw, Activity, Download } from 'lucide-react'
 import ValidationChart from './components/ValidationChart'
 import RealTimeMetrics from './components/RealTimeMetrics'
 import ExportModal from './components/ExportModal'

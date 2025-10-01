@@ -101,13 +101,27 @@ jest.mock('@/lib/supabase-server', () => ({
 }))
 
 describe('Cross-Epic Compatibility Integration Tests', () => {
+  const originalEnv = process.env.NODE_ENV
+
   beforeEach(() => {
     jest.clearAllMocks()
     // Set up test environment
-    process.env.NODE_ENV = 'test'
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: 'test',
+      writable: true,
+      configurable: true
+    })
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key'
+  })
+
+  afterEach(() => {
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: originalEnv,
+      writable: true,
+      configurable: true
+    })
   })
 
   describe('Epic 1 → Epic 2 (Authentication & Subscriptions)', () => {
@@ -151,7 +165,7 @@ describe('Cross-Epic Compatibility Integration Tests', () => {
       it('should provide rate-limiting compatible error responses', async () => {
         // Mock a scenario that would trigger rate limiting
         const { r2Client: mockR2Client } = await import('@/lib/r2-client')
-        mockR2Client.getMetrics.mockRejectedValueOnce(new Error('Rate limited'))
+        ;(mockR2Client.getMetrics as jest.Mock).mockRejectedValueOnce(new Error('Rate limited'))
 
         const request = new NextRequest('http://localhost:3000/api/readings/summary')
         const response = await SummaryGET(request)

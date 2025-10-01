@@ -19,33 +19,24 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  _Legend,
   ResponsiveContainer,
-  _ReferenceLine,
   Brush
 } from 'recharts'
 import {
-  _ZoomIn,
-  _ZoomOut,
   RotateCcw,
   Download,
   RefreshCw,
-  _Settings,
-  _Filter,
   AlertCircle,
-  _TrendingUp,
   Activity,
   Calendar
 } from 'lucide-react'
 import type {
   MultiSeriesData,
-  _TimeSeriesDataPoint,
   ChartConfiguration,
   ChartInteractionState,
-  _ChartZoomState,
   PerformanceMetrics
 } from '@/types/analytics'
-import ChartErrorBoundary, { _ChartErrorWrapper } from './ChartErrorBoundary'
+import ChartErrorBoundary from './ChartErrorBoundary'
 
 interface TimeSeriesChartProps {
   sensorIds?: string[]
@@ -79,7 +70,7 @@ function TimeSeriesChartCore({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [chartData, setChartData] = useState<ChartDataPoint[]>([])
-  const [performance, setPerformance] = useState<PerformanceMetrics | null>(null)
+  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics | null>(null)
 
   // Chart interaction state
   const [interactionState, setInteractionState] = useState<ChartInteractionState>({
@@ -106,7 +97,7 @@ function TimeSeriesChartCore({
 
   // Fetch time-series data
   const fetchData = useCallback(async () => {
-    const startTime = performance.now()
+    const startTime = performance?.now() ?? Date.now()
     setLoading(true)
     setError(null)
 
@@ -129,11 +120,11 @@ function TimeSeriesChartCore({
         throw new Error(result.error || 'Failed to fetch data')
       }
 
-      const loadTime = performance.now() - startTime
+      const loadTime = (performance?.now() ?? Date.now()) - startTime
       setData(result.data.series)
 
       // Update performance metrics
-      setPerformance({
+      setPerformanceMetrics({
         data_load_time: loadTime,
         render_time: 0, // Will be set in effect
         interaction_latency: 0,
@@ -173,11 +164,11 @@ function TimeSeriesChartCore({
     } finally {
       setLoading(false)
     }
-  }, [config, performance])
+  }, [config])
 
   // Transform multi-series data for Recharts
   const transformedData = useMemo(() => {
-    const startRenderTime = performance.now()
+    const startRenderTime = performance?.now() ?? Date.now()
 
     if (data.length === 0) return []
 
@@ -203,11 +194,11 @@ function TimeSeriesChartCore({
       new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     )
 
-    const renderTime = performance.now() - startRenderTime
-    setPerformance(prev => prev ? { ...prev, render_time: renderTime } : null)
+    const renderTime = (performance?.now() ?? Date.now()) - startRenderTime
+    setPerformanceMetrics(prev => prev ? { ...prev, render_time: renderTime } : null)
 
     return result
-  }, [data, performance])
+  }, [data])
 
   // Update chartData when transformedData changes
   useEffect(() => {
@@ -228,7 +219,8 @@ function TimeSeriesChartCore({
   }, [autoRefresh, refreshInterval, fetchData])
 
   // Handle zoom
-  const handleZoom = useCallback((startIndex?: number, endIndex?: number) => {
+  const handleZoom = useCallback((newIndex: { startIndex?: number; endIndex?: number } | null) => {
+    const { startIndex, endIndex } = newIndex || {}
     if (startIndex !== undefined && endIndex !== undefined && chartData.length > 0) {
       const newStartDate = chartData[startIndex]?.timestamp
       const newEndDate = chartData[endIndex]?.timestamp
@@ -272,20 +264,24 @@ function TimeSeriesChartCore({
   }, [config, startDate, endDate, onConfigChange])
 
   // Custom tooltip
-  const CustomTooltip = ({ active, payload, label }: unknown) => {
+  const CustomTooltip = ({ active, payload, label }: {
+    active?: boolean;
+    payload?: Array<{ color: string; dataKey: string; value: number; name?: string; }>;
+    label?: string;
+  }) => {
     if (!active || !payload || payload.length === 0) return null
 
-    const timestamp = new Date(label).toLocaleString()
+    const timestamp = new Date(label as string).toLocaleString()
 
     return (
       <div className="bg-white p-4 border rounded-lg shadow-lg max-w-xs">
         <p className="font-medium text-gray-900 mb-2">{timestamp}</p>
-        {payload.map((entry: unknown, _index: number) => {
+        {payload.map((entry, _index: number) => {
           if (!entry.dataKey.endsWith('_value')) return null
 
           const sensorId = entry.dataKey.replace('_value', '')
           const series = data.find(s => s.sensor_id === sensorId)
-          const status = payload.find((p: unknown) => p.dataKey === `${sensorId}_status`)?.value
+          const status = payload.find(p => p.dataKey === `${sensorId}_status`)?.value
 
           return (
             <div key={_index} className="flex items-center space-x-2 mb-1">
@@ -297,9 +293,9 @@ function TimeSeriesChartCore({
               <span className="text-sm font-medium text-gray-900">
                 {typeof entry.value === 'number' ? entry.value.toFixed(2) : entry.value} {series?.unit}
               </span>
-              {status && status !== 'normal' && (
+              {status && String(status) !== 'normal' && (
                 <AlertCircle className={`h-3 w-3 ${
-                  status === 'error' ? 'text-red-500' : 'text-yellow-500'
+                  String(status) === 'error' ? 'text-red-500' : 'text-yellow-500'
                 }`} />
               )}
             </div>
@@ -313,6 +309,23 @@ function TimeSeriesChartCore({
   const _getStatusStroke = (sensorId: string) => {
     const series = data.find(s => s.sensor_id === sensorId)
     return series?.color || '#3B82F6'
+  }
+
+  // Handle empty sensor state
+  if (!sensorIds || sensorIds.length === 0) {
+    return (
+      <div className="bg-white rounded-lg border p-6" style={{ height }}>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 mb-2">No Sensors Selected</p>
+            <p className="text-sm text-gray-500">
+              Please select sensors to display time-series data
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {
@@ -370,7 +383,7 @@ function TimeSeriesChartCore({
               {/* Performance indicator */}
               {performance && (
                 <div className="text-xs text-gray-500">
-                  {performance.points_rendered.toLocaleString()} points • {Math.round(performance.data_load_time)}ms
+                  {performanceMetrics?.points_rendered.toLocaleString()} points • {Math.round(performanceMetrics?.data_load_time || 0)}ms
                 </div>
               )}
 

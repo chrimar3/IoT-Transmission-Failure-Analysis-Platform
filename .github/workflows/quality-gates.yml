@@ -1,0 +1,293 @@
+# CU-BEMS IoT Platform - Quality Gates CI/CD Pipeline
+# 🧪 Quinn - Test Architect Automated Quality Enforcement
+
+name: Quality Gates
+
+on:
+  push:
+    branches: [ main, master, develop, clean-main ]
+  pull_request:
+    branches: [ main, master, develop ]
+  schedule:
+    # Run quality gates daily at 6 AM UTC
+    - cron: '0 6 * * *'
+
+env:
+  NODE_VERSION: '18.x'
+  GATE_FAILURE_THRESHOLD: 'ZERO_TOLERANCE'
+
+jobs:
+  quality-gate-assessment:
+    name: 🚦 Quality Gate Assessment
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better analysis
+
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: 🔧 Install Dependencies
+      run: |
+        npm ci
+        # Install additional quality tools
+        npm install -g jq
+
+    - name: 🔍 TypeScript Compilation Gate
+      id: typescript_gate
+      run: |
+        echo "🧪 Testing TypeScript compilation..."
+        if npx tsc --noEmit; then
+          echo "typescript_status=PASS" >> $GITHUB_OUTPUT
+          echo "typescript_errors=0" >> $GITHUB_OUTPUT
+        else
+          error_count=$(npx tsc --noEmit 2>&1 | grep -c "error TS" || echo "0")
+          echo "typescript_status=FAIL" >> $GITHUB_OUTPUT
+          echo "typescript_errors=$error_count" >> $GITHUB_OUTPUT
+          echo "::error::TypeScript compilation failed with $error_count errors"
+        fi
+
+    - name: 🧪 Test Coverage Gate
+      id: test_gate
+      run: |
+        echo "🧪 Running test coverage analysis..."
+        if npm run test:coverage; then
+          # Extract coverage percentage (adjust based on your test runner output)
+          coverage=$(cat coverage/coverage-summary.json | jq '.total.lines.pct' 2>/dev/null || echo "0")
+          echo "test_status=PASS" >> $GITHUB_OUTPUT
+          echo "test_coverage=$coverage" >> $GITHUB_OUTPUT
+          echo "✅ Test coverage: $coverage%"
+        else
+          echo "test_status=FAIL" >> $GITHUB_OUTPUT
+          echo "test_coverage=0" >> $GITHUB_OUTPUT
+          echo "::error::Test suite execution failed"
+        fi
+
+    - name: 📝 ESLint Quality Gate
+      id: lint_gate
+      run: |
+        echo "🧪 Running ESLint analysis..."
+        if npx eslint --ext .ts,.tsx . --format json --output-file eslint-report.json; then
+          error_count=$(cat eslint-report.json | jq '[.[] | .errorCount] | add' 2>/dev/null || echo "0")
+          echo "lint_status=PASS" >> $GITHUB_OUTPUT
+          echo "lint_errors=$error_count" >> $GITHUB_OUTPUT
+          echo "✅ ESLint passed with $error_count errors"
+        else
+          echo "lint_status=FAIL" >> $GITHUB_OUTPUT
+          echo "lint_errors=999" >> $GITHUB_OUTPUT
+          echo "::error::ESLint execution failed"
+        fi
+
+    - name: 🔒 Security Vulnerability Gate
+      id: security_gate
+      run: |
+        echo "🧪 Running security vulnerability scan..."
+        if npm audit --json > security-report.json 2>/dev/null; then
+          high_vulns=$(cat security-report.json | jq '.metadata.vulnerabilities.high // 0')
+          critical_vulns=$(cat security-report.json | jq '.metadata.vulnerabilities.critical // 0')
+          total_high_critical=$((high_vulns + critical_vulns))
+          echo "security_status=PASS" >> $GITHUB_OUTPUT
+          echo "security_vulnerabilities=$total_high_critical" >> $GITHUB_OUTPUT
+          echo "✅ Security scan: $total_high_critical high/critical vulnerabilities"
+        else
+          echo "security_status=FAIL" >> $GITHUB_OUTPUT
+          echo "security_vulnerabilities=999" >> $GITHUB_OUTPUT
+          echo "::error::Security audit failed"
+        fi
+
+    - name: 🏗️ Build Success Gate
+      id: build_gate
+      run: |
+        echo "🧪 Testing build process..."
+        if npm run build; then
+          echo "build_status=PASS" >> $GITHUB_OUTPUT
+          echo "build_success=1" >> $GITHUB_OUTPUT
+          echo "✅ Build successful"
+        else
+          echo "build_status=FAIL" >> $GITHUB_OUTPUT
+          echo "build_success=0" >> $GITHUB_OUTPUT
+          echo "::error::Build process failed"
+        fi
+
+    - name: 🚦 Gate Decision Evaluation
+      id: gate_decision
+      run: |
+        echo "🧪 Evaluating quality gate decision..."
+
+        # Extract results from previous steps
+        TS_ERRORS="${{ steps.typescript_gate.outputs.typescript_errors }}"
+        TEST_COVERAGE="${{ steps.test_gate.outputs.test_coverage }}"
+        LINT_ERRORS="${{ steps.lint_gate.outputs.lint_errors }}"
+        SECURITY_VULNS="${{ steps.security_gate.outputs.security_vulnerabilities }}"
+        BUILD_SUCCESS="${{ steps.build_gate.outputs.build_success }}"
+
+        # Zero tolerance criteria
+        CRITICAL_FAILURES=0
+
+        echo "=== QUALITY GATE EVALUATION ==="
+        echo "TypeScript Errors: $TS_ERRORS (Threshold: 0)"
+        echo "Test Coverage: $TEST_COVERAGE% (Threshold: 85%)"
+        echo "ESLint Errors: $LINT_ERRORS (Threshold: 0)"
+        echo "Security Vulnerabilities: $SECURITY_VULNS (Threshold: 0)"
+        echo "Build Success: $BUILD_SUCCESS (Threshold: 1)"
+
+        # Check critical gates (zero tolerance)
+        if [[ "$TS_ERRORS" -gt 0 ]]; then
+          echo "::error::CRITICAL: TypeScript compilation errors detected: $TS_ERRORS"
+          CRITICAL_FAILURES=$((CRITICAL_FAILURES + 1))
+        fi
+
+        if [[ "$SECURITY_VULNS" -gt 0 ]]; then
+          echo "::error::CRITICAL: High/Critical security vulnerabilities: $SECURITY_VULNS"
+          CRITICAL_FAILURES=$((CRITICAL_FAILURES + 1))
+        fi
+
+        if [[ "$BUILD_SUCCESS" -eq 0 ]]; then
+          echo "::error::CRITICAL: Build process failed"
+          CRITICAL_FAILURES=$((CRITICAL_FAILURES + 1))
+        fi
+
+        # Check other quality gates
+        if [[ "$LINT_ERRORS" -gt 0 ]]; then
+          echo "::warning::ESLint errors detected: $LINT_ERRORS"
+        fi
+
+        # Determine final gate status
+        if [[ $CRITICAL_FAILURES -gt 0 ]]; then
+          echo "gate_status=CRITICAL_FAIL" >> $GITHUB_OUTPUT
+          echo "gate_decision=DEPLOYMENT_BLOCKED" >> $GITHUB_OUTPUT
+          echo "🚨 OVERALL GATE STATUS: CRITICAL FAIL - DEPLOYMENT BLOCKED"
+          exit 1
+        elif [[ "$TEST_COVERAGE" -lt 85 ]] || [[ "$LINT_ERRORS" -gt 0 ]]; then
+          echo "gate_status=CONCERNS" >> $GITHUB_OUTPUT
+          echo "gate_decision=REVIEW_REQUIRED" >> $GITHUB_OUTPUT
+          echo "⚠️ OVERALL GATE STATUS: CONCERNS - REVIEW REQUIRED"
+          exit 0  # Don't fail the build, but flag for review
+        else
+          echo "gate_status=PASS" >> $GITHUB_OUTPUT
+          echo "gate_decision=DEPLOYMENT_APPROVED" >> $GITHUB_OUTPUT
+          echo "✅ OVERALL GATE STATUS: PASS - DEPLOYMENT APPROVED"
+          exit 0
+        fi
+
+    - name: 📊 Generate Quality Report
+      if: always()
+      run: |
+        # Create comprehensive quality report
+        cat > quality-gate-report.md << EOF
+        # Quality Gate Assessment Report
+
+        **Assessment Date:** $(date)
+        **Commit:** ${{ github.sha }}
+        **Branch:** ${{ github.ref_name }}
+        **Trigger:** ${{ github.event_name }}
+
+        ## Gate Results Summary
+
+        | Metric | Current | Threshold | Status |
+        |--------|---------|-----------|---------|
+        | TypeScript Errors | ${{ steps.typescript_gate.outputs.typescript_errors }} | 0 | ${{ steps.typescript_gate.outputs.typescript_status }} |
+        | Test Coverage | ${{ steps.test_gate.outputs.test_coverage }}% | 85% | ${{ steps.test_gate.outputs.test_status }} |
+        | ESLint Errors | ${{ steps.lint_gate.outputs.lint_errors }} | 0 | ${{ steps.lint_gate.outputs.lint_status }} |
+        | Security Vulnerabilities | ${{ steps.security_gate.outputs.security_vulnerabilities }} | 0 | ${{ steps.security_gate.outputs.security_status }} |
+        | Build Success | ${{ steps.build_gate.outputs.build_success }} | 1 | ${{ steps.build_gate.outputs.build_status }} |
+
+        ## Final Decision
+
+        **Gate Status:** ${{ steps.gate_decision.outputs.gate_status }}
+        **Decision:** ${{ steps.gate_decision.outputs.gate_decision }}
+
+        ---
+        *Generated by 🧪 Quinn - Test Architect Quality Gate System*
+        EOF
+
+    - name: 💬 Comment PR with Quality Results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('quality-gate-report.md', 'utf8');
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: report
+          });
+
+    - name: 📄 Upload Quality Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: quality-gate-reports-${{ github.run_id }}
+        path: |
+          quality-gate-report.md
+          eslint-report.json
+          security-report.json
+          coverage/
+        retention-days: 30
+
+    - name: 🚨 Slack Notification on Critical Failure
+      if: steps.gate_decision.outputs.gate_status == 'CRITICAL_FAIL'
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        text: |
+          🚨 CRITICAL QUALITY GATE FAILURE
+          Repository: ${{ github.repository }}
+          Branch: ${{ github.ref_name }}
+          TypeScript Errors: ${{ steps.typescript_gate.outputs.typescript_errors }}
+          Security Vulnerabilities: ${{ steps.security_gate.outputs.security_vulnerabilities }}
+
+          DEPLOYMENT IS BLOCKED - Immediate attention required!
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  deployment-gate:
+    name: 🚀 Deployment Gate
+    needs: quality-gate-assessment
+    runs-on: ubuntu-latest
+    if: needs.quality-gate-assessment.outputs.gate_decision == 'DEPLOYMENT_APPROVED'
+
+    steps:
+    - name: ✅ Deployment Approved
+      run: |
+        echo "🎉 All quality gates passed!"
+        echo "✅ TypeScript compilation: CLEAN"
+        echo "✅ Test coverage: ADEQUATE"
+        echo "✅ Security scan: CLEAN"
+        echo "✅ Build process: SUCCESS"
+        echo ""
+        echo "🚀 DEPLOYMENT APPROVED - Platform ready for production"
+
+    - name: 🏗️ Trigger Deployment
+      run: |
+        echo "Triggering deployment pipeline..."
+        # Add your deployment trigger logic here
+        # For example: call deployment webhook, trigger another workflow, etc.
+        echo "Deployment pipeline initiated successfully"
+
+outputs:
+  gate-status:
+    description: "Overall quality gate status"
+    value: ${{ jobs.quality-gate-assessment.outputs.gate_status }}
+
+  gate-decision:
+    description: "Quality gate decision"
+    value: ${{ jobs.quality-gate-assessment.outputs.gate_decision }}
+
+  typescript-errors:
+    description: "Number of TypeScript compilation errors"
+    value: ${{ jobs.quality-gate-assessment.outputs.typescript_errors }}
+
+  deployment-approved:
+    description: "Whether deployment has been approved"
+    value: ${{ jobs.quality-gate-assessment.outputs.gate_decision == 'DEPLOYMENT_APPROVED' }}

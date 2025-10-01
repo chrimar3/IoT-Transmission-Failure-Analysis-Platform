@@ -10,7 +10,7 @@ import {
   DEFAULT_REPORT_LAYOUT,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_TYPOGRAPHY
-} from '@/types/reports'
+} from '../../types/reports'
 
 interface ReportDesignerProps {
   template?: ReportTemplate

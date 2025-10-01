@@ -4,7 +4,7 @@
  * Advanced pattern detection with statistical evidence and recommendations
  */
 
-import { _NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, AuthenticatedRequest, logApiUsage } from '@/lib/api/authentication'
 import type { ApiResponse, PatternExportData } from '@/types/api'
@@ -94,8 +94,8 @@ async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
         },
         metadata: {
           date_range: {
-            start: params.start_date,
-            end: params.end_date
+            start: params.start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+            end: params.end_date || new Date().toISOString()
           },
           analysis_methods: [
             'statistical_process_control',
@@ -187,19 +187,38 @@ async function generatePatternData(params: unknown): Promise<{
   totalCount: number
   hasMore: boolean
 }> {
-  const startDate = new Date(params.start_date)
-  const endDate = new Date(params.end_date)
+  interface ParamsType {
+    start_date?: string
+    end_date?: string
+    pattern_types?: string[]
+    equipment_types?: string[]
+    floor_numbers?: number[]
+    limit?: number
+    offset?: number
+    format?: string
+    min_confidence?: number
+    include_recommendations?: boolean
+    include_statistical_evidence?: boolean
+    severity_levels?: string[]
+    [key: string]: unknown
+  }
 
-  const patternTypes = params.pattern_types.length > 0
-    ? params.pattern_types
+  const typedParams = params as ParamsType
+  const limit = typedParams.limit ?? 50
+  const offset = typedParams.offset ?? 0
+  const startDate = new Date(typedParams.start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+  const endDate = new Date(typedParams.end_date || new Date().toISOString())
+
+  const patternTypes = (typedParams.pattern_types && typedParams.pattern_types.length > 0)
+    ? typedParams.pattern_types
     : ['anomaly', 'efficiency', 'maintenance', 'usage']
 
-  const equipmentTypes = params.equipment_types.length > 0
-    ? params.equipment_types
+  const equipmentTypes = (typedParams.equipment_types && typedParams.equipment_types.length > 0)
+    ? typedParams.equipment_types
     : ['HVAC', 'Lighting', 'Power', 'Water', 'Security']
 
-  const floorNumbers = params.floor_numbers.length > 0
-    ? params.floor_numbers
+  const floorNumbers = (typedParams.floor_numbers && typedParams.floor_numbers.length > 0)
+    ? typedParams.floor_numbers
     : [1, 2, 3, 4, 5, 6, 7]
 
   const data: PatternExportData[] = []
@@ -208,21 +227,21 @@ async function generatePatternData(params: unknown): Promise<{
 
   // Generate patterns for each combination
   for (const patternType of patternTypes) {
-    if (patternCount >= params.limit) break
+    if (patternCount >= limit) break
 
     for (const equipmentType of equipmentTypes) {
-      if (patternCount >= params.limit) break
+      if (patternCount >= limit) break
 
       // Generate 1-3 patterns per equipment type
       const patternsForEquipment = Math.floor(Math.random() * 3) + 1
 
       for (let i = 0; i < patternsForEquipment; i++) {
-        if (totalGenerated < params.offset) {
+        if (totalGenerated < offset) {
           totalGenerated++
           continue
         }
 
-        if (patternCount >= params.limit) break
+        if (patternCount >= limit) break
 
         const pattern = generatePattern(
           patternType,
@@ -230,13 +249,13 @@ async function generatePatternData(params: unknown): Promise<{
           floorNumbers,
           startDate,
           endDate,
-          params.min_confidence,
-          params.include_recommendations,
-          params.include_statistical_evidence
+          typedParams.min_confidence ?? 0.7,
+          typedParams.include_recommendations ?? true,
+          typedParams.include_statistical_evidence ?? true
         )
 
         // Apply severity filter if specified
-        if (params.severity_levels.length > 0 && !params.severity_levels.includes(pattern.severity)) {
+        if (typedParams.severity_levels && typedParams.severity_levels.length > 0 && !typedParams.severity_levels.includes(pattern.severity)) {
           totalGenerated++
           continue
         }
@@ -250,7 +269,7 @@ async function generatePatternData(params: unknown): Promise<{
 
   // Estimate total patterns available
   const estimatedTotal = patternTypes.length * equipmentTypes.length * 2.5 // Average 2.5 patterns per equipment type
-  const hasMore = (params.offset + params.limit) < estimatedTotal
+  const hasMore = (offset + limit) < estimatedTotal
 
   return {
     data,

@@ -1,14 +1,79 @@
 /**
- * API Endpoint: GET /api/readings/timeseries
- * Enhanced for Story 3.2: Interactive Time-Series Visualizations
- * PROTECTED: Subscription-based access with revenue protection (Story 1.3)
- * Returns optimized multi-sensor time-series data for chart visualization
+ * @swagger
+ * /api/readings/timeseries:
+ *   get:
+ *     summary: Get time-series sensor data
+ *     description: Returns optimized multi-sensor time-series data for chart visualization with subscription-based access control
+ *     tags:
+ *       - Readings
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: sensor_ids
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of sensor IDs (e.g., SENSOR_001,SENSOR_002)
+ *       - in: query
+ *         name: start_date
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Start date in ISO format
+ *       - in: query
+ *         name: end_date
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: End date in ISO format
+ *       - in: query
+ *         name: interval
+ *         schema:
+ *           type: string
+ *           enum: [minute, hour, day, week]
+ *         description: Data aggregation interval
+ *       - in: query
+ *         name: max_points
+ *         schema:
+ *           type: integer
+ *           minimum: 10
+ *           maximum: 10000
+ *         description: Maximum number of data points to return
+ *       - in: query
+ *         name: aggregation
+ *         schema:
+ *           type: string
+ *           enum: [avg, sum, min, max]
+ *         description: Aggregation method for data points
+ *     responses:
+ *       200:
+ *         description: Time-series data returned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     series:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                     metadata:
+ *                       type: object
+ *       401:
+ *         description: Authentication required
+ *       429:
+ *         description: Rate limit exceeded
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import type { TimeSeriesApiResponse, MultiSeriesData, TimeSeriesDataPoint } from '@/types/analytics'
-import { enforceDataAccessRestrictions, enforceTierBasedRateLimit, generateUpgradePrompt } from '@/src/lib/middleware/data-access.middleware'
+import { enforceDataAccessRestrictions, enforceTierBasedRateLimit } from '@/src/lib/middleware/data-access.middleware'
 import { subscriptionService } from '@/src/lib/stripe/subscription.service'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/src/lib/auth/config'
@@ -79,8 +144,8 @@ export async function GET(request: NextRequest) {
     })
 
     // Additional validation for date ranges
-    const startDate = new Date(params.start_date)
-    const endDate = new Date(params.end_date)
+    const startDate = new Date(params.start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
+    const endDate = new Date(params.end_date || new Date())
 
     // Validate date range logic
     if (startDate >= endDate) {
@@ -116,8 +181,8 @@ export async function GET(request: NextRequest) {
     // REVENUE PROTECTION: Apply subscription-based data access restrictions
     const dataRequest = {
       dateRange: {
-        start: params.start_date,
-        end: params.end_date
+        start: params.start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        end: params.end_date || new Date().toISOString()
       },
       maxRecords: params.max_points,
       sensorIds: params.sensor_ids,
@@ -130,12 +195,12 @@ export async function GET(request: NextRequest) {
     // Update params with tier-restricted data access
     const restrictedParams = {
       ...params,
-      start_date: filteredRequest.dateRange?.start || params.start_date,
-      end_date: filteredRequest.dateRange?.end || params.end_date,
+      start_date: filteredRequest.dateRange?.start || params.start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      end_date: filteredRequest.dateRange?.end || params.end_date || new Date().toISOString(),
       max_points: filteredRequest.maxRecords || params.max_points,
-      sensor_ids: params.sensor_ids, // Allow all sensors but restrict data volume
-      equipment_types: params.equipment_types,
-      floor_numbers: params.floor_numbers
+      sensor_ids: params.sensor_ids || [], // Allow all sensors but restrict data volume
+      equipment_types: params.equipment_types || [],
+      floor_numbers: params.floor_numbers || []
     }
 
     // Generate Bangkok dataset with subscription-aware restrictions
@@ -145,7 +210,7 @@ export async function GET(request: NextRequest) {
     const totalPoints = series.reduce((sum, s) => sum + s.data.length, 0)
 
     // Check if data was decimated during generation
-    const originalPointsEstimate = Math.floor((endDate.getTime() - startDate.getTime()) / (60 * 60 * 1000)) * params.sensor_ids.length // hourly estimate
+    const originalPointsEstimate = Math.floor((endDate.getTime() - startDate.getTime()) / (60 * 60 * 1000)) * (params.sensor_ids?.length || 1) // hourly estimate
     const decimated = totalPoints < originalPointsEstimate || totalPoints > params.max_points
 
     const response: TimeSeriesApiResponse = {
@@ -156,22 +221,14 @@ export async function GET(request: NextRequest) {
           total_points: totalPoints,
           decimated,
           query_time_ms: queryTime,
-          cache_hit: false,
-          // Revenue protection metadata
-          tier_restrictions: filteredRequest.revenueProtection.tierRestricted ? {
-            applied_restrictions: filteredRequest.appliedRestrictions,
-            restricted_fields: filteredRequest.restrictedFields,
-            upgrade_available: filteredRequest.showUpgradePrompt
-          } : undefined
+          cache_hit: false
         }
-      },
-      // Include upgrade prompt if user hit data restrictions
-      upgrade_prompt: filteredRequest.showUpgradePrompt ? generateUpgradePrompt(filteredRequest.appliedRestrictions) : undefined
+      }
     }
 
     // Track API usage for revenue analytics
     await subscriptionService.trackUserActivity(userId, 'api_timeseries_access', {
-      sensor_count: params.sensor_ids.length,
+      sensor_count: params.sensor_ids?.length || 0,
       data_points: totalPoints,
       tier_restricted: filteredRequest.revenueProtection.tierRestricted
     })
@@ -300,7 +357,7 @@ interface ProcessedParams {
  */
 async function generateBangkokMultiSensorData(
   params: ProcessedParams,
-  revenueProtection?: { tierRestricted: boolean; originalRecordLimit?: number; restrictedDateRange?: { start: string; end: string } }
+  _revenueProtection?: { tierRestricted: boolean; originalRecordLimit?: number; restrictedDateRange?: { start: string; end: string } }
 ): Promise<MultiSeriesData[]> {
   const { sensor_ids, start_date, end_date, interval, max_points, equipment_types, floor_numbers } = params
 

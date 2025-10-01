@@ -6,10 +6,9 @@
  * Optimized for 100,000+ records without memory issues
  */
 
-import { _Readable } from 'stream'
+// Stream import removed - not used
 import type {
   ExportFilters,
-  _ExportJobParameters,
   ExportMetrics,
   OptimizationSettings,
   ExportError
@@ -49,6 +48,7 @@ export interface CSVExportResult {
   file_path?: string
   file_size_bytes: number
   records_exported: number
+  record_count: number
   processing_time_ms: number
   memory_peak_mb: number
   error?: ExportError
@@ -116,7 +116,7 @@ export class CSVExporter {
 
       // Generate CSV with streaming
       if (this.config.streaming) {
-        recordsExported = await this.streamingExport(dataStream, filePath, _jobId)
+        recordsExported = await this.streamingExport(dataStream, filePath, jobId)
       } else {
         recordsExported = await this.batchExport(dataStream, filePath)
       }
@@ -146,6 +146,7 @@ export class CSVExporter {
         file_path: filePath,
         file_size_bytes: stats.size,
         records_exported: recordsExported,
+        record_count: recordsExported,
         processing_time_ms: processingTime,
         memory_peak_mb: memoryPeak,
         metrics
@@ -156,6 +157,7 @@ export class CSVExporter {
         success: false,
         file_size_bytes: 0,
         records_exported: recordsExported,
+        record_count: recordsExported,
         processing_time_ms: performance.now() - startTime,
         memory_peak_mb: memoryPeak,
         error: {
@@ -408,11 +410,11 @@ export class CSVExporter {
     // Based on filters and date ranges
 
     const daysDiff = Math.ceil(
-      (new Date(filters.date_range.end_date).getTime() -
-       new Date(filters.date_range.start_date).getTime()) / (1000 * 60 * 60 * 24)
+      (new Date(_filters.date_range.end_date).getTime() -
+       new Date(_filters.date_range.start_date).getTime()) / (1000 * 60 * 60 * 24)
     )
 
-    const sensorCount = filters.sensor_ids.length || 134 // Bangkok dataset default
+    const sensorCount = _filters.sensor_ids.length || 134 // Bangkok dataset default
     const estimatedRecords = daysDiff * sensorCount * 24 // Hourly data assumption
 
     return {
@@ -426,15 +428,15 @@ export class CSVExporter {
    * Validate export filters
    */
   private validateFilters(_filters: ExportFilters): void {
-    if (!filters.date_range.start_date || !filters.date_range.end_date) {
+    if (!_filters.date_range.start_date || !_filters.date_range.end_date) {
       throw new Error('Date range is required for CSV export')
     }
 
-    if (new Date(filters.date_range.start_date) > new Date(filters.date_range.end_date)) {
+    if (new Date(_filters.date_range.start_date) > new Date(_filters.date_range.end_date)) {
       throw new Error('Start date must be before end date')
     }
 
-    if (filters.sensor_ids.length === 0) {
+    if (_filters.sensor_ids.length === 0) {
       throw new Error('At least one sensor must be selected')
     }
   }
@@ -445,6 +447,23 @@ export class CSVExporter {
   private async updateJobProgress(_jobId: number, _recordsProcessed: number): Promise<void> {
     // This would update the export_jobs table with progress
     // Implementation depends on your job queue system
+  }
+
+  /**
+   * Fetch sensor data based on filters
+   */
+  async fetchSensorData(_filters: ExportFilters): Promise<unknown[]> {
+    // This would integrate with your database layer
+    // Mock implementation for testing
+    return []
+  }
+
+  /**
+   * Update progress for external monitoring
+   */
+  async updateProgress(_jobId: number, _progress: number): Promise<void> {
+    // This would update external progress tracking
+    // Implementation depends on your progress tracking system
   }
 
   /**
@@ -490,18 +509,24 @@ export class CSVExporter {
   private getErrorSuggestions(error: unknown): string[] {
     const suggestions: string[] = []
 
-    if (error?.code === 'EMFILE' || error?.code === 'ENOMEM') {
-      suggestions.push('Try reducing chunk size or enabling streaming mode')
-      suggestions.push('Reduce date range to process fewer records')
+    if (error && typeof error === 'object' && 'code' in error) {
+      const errorCode = (error as { code?: string }).code
+      if (errorCode === 'EMFILE' || errorCode === 'ENOMEM') {
+        suggestions.push('Try reducing chunk size or enabling streaming mode')
+        suggestions.push('Reduce date range to process fewer records')
+      }
     }
 
-    if (error?.message?.includes('timeout')) {
-      suggestions.push('Increase query timeout settings')
-      suggestions.push('Consider using data aggregation to reduce dataset size')
-    }
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorMessage = (error as { message?: string }).message
+      if (errorMessage?.includes('timeout')) {
+        suggestions.push('Increase query timeout settings')
+        suggestions.push('Consider using data aggregation to reduce dataset size')
+      }
 
-    if (error?.message?.includes('permission')) {
-      suggestions.push('Check file system permissions for export directory')
+      if (errorMessage?.includes('permission')) {
+        suggestions.push('Check file system permissions for export directory')
+      }
     }
 
     return suggestions

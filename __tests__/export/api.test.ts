@@ -8,15 +8,15 @@
 import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
 import { NextRequest, NextResponse } from 'next/server'
 import { POST as createExport } from '../../app/api/export/create/route'
-import { GET as getStatus } from '../../app/api/export/status/[job_id]/route'
-import { GET as downloadExport } from '../../app/api/export/download/[job_id]/route'
+import { GET as getStatus } from '../../app/api/export/status/[jobId]/route'
+// Note: download route was removed, using status route for testing
 import { SubscriptionMiddleware } from '../../lib/middleware/subscriptionMiddleware'
 import type { CreateExportRequest } from '../../types/export'
 
 // Mock Next.js request helpers
 const createMockRequest = (body?: unknown, headers?: Record<string, string>) => {
   const request = {
-    json: jest.fn().mockResolvedValue(body),
+    json: jest.fn<() => Promise<any>>().mockResolvedValue(body),
     headers: {
       get: jest.fn((key: string) => headers?.[key.toLowerCase()] || null)
     }
@@ -25,8 +25,8 @@ const createMockRequest = (body?: unknown, headers?: Record<string, string>) => 
   return request
 }
 
-const createMockParams = (job_id: string) => ({
-  params: { job_id }
+const createMockParams = (jobId: string) => ({
+  params: { jobId }
 })
 
 describe('Export Creation API', () => {
@@ -127,7 +127,7 @@ describe('Export Creation API', () => {
 
     expect(response.status).toBe(400)
     expect(result.success).toBe(false)
-    expect(result.details.some((error: unknown) =>
+    expect(result.details.some((error: { message: string }) =>
       error.message.includes('Start date must be before end date')
     )).toBe(true)
   })
@@ -180,7 +180,7 @@ describe('Export Creation API', () => {
 
     expect(response.status).toBe(400)
     expect(result.success).toBe(false)
-    expect(result.details.some((error: unknown) =>
+    expect(result.details.some((error: { message: string }) =>
       error.message.includes('email')
     )).toBe(true)
   })
@@ -293,65 +293,71 @@ describe('Export Status API', () => {
   })
 })
 
-describe('Export Download API', () => {
-  test('should allow download of completed export', async () => {
+describe('Export Status API - Completed Jobs', () => {
+  test('should return completed export details', async () => {
     const request = createMockRequest(null, {
       'authorization': 'Bearer valid-token'
     })
 
     // Job ID 4 should be completed based on mock logic (jobId % 4 === 0)
-    const response = await downloadExport(request, createMockParams('4'))
+    const response = await getStatus(request, createMockParams('4'))
+    const result = await response.json()
 
     expect(response.status).toBe(200)
-    expect(response.headers.get('Content-Type')).toBe('text/csv')
-    expect(response.headers.get('Content-Disposition')).toContain('attachment')
-    expect(response.headers.get('Content-Disposition')).toContain('sensor_export_4.csv')
+    expect(result.success).toBe(true)
+    expect(result.status).toBe('completed')
+    expect(result.download_url).toBeDefined()
   })
 
-  test('should reject download of incomplete export', async () => {
+  test('should show download URL for completed exports', async () => {
+    const request = createMockRequest(null, {
+      'authorization': 'Bearer valid-token'
+    })
+
+    // Job ID 8 should be completed (8 % 4 === 0)
+    const response = await getStatus(request, createMockParams('8'))
+    const result = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(result.status).toBe('completed')
+    expect(result.download_url).toContain('sensor_export_8')
+  })
+
+  test('should handle pending exports without download URL', async () => {
     const request = createMockRequest(null, {
       'authorization': 'Bearer valid-token'
     })
 
     // Job ID 1 should be pending
-    const response = await downloadExport(request, createMockParams('1'))
+    const response = await getStatus(request, createMockParams('1'))
     const result = await response.json()
 
-    expect(response.status).toBe(400)
-    expect(result.error).toBe('Export not ready for download')
+    expect(response.status).toBe(200)
+    expect(result.status).toBe('pending')
+    expect(result.download_url).toBeUndefined()
   })
 
-  test('should return 404 for non-existent export', async () => {
-    const request = createMockRequest(null, {
-      'authorization': 'Bearer valid-token'
-    })
-
-    const response = await downloadExport(request, createMockParams('999'))
-    const result = await response.json()
-
-    expect(response.status).toBe(404)
-    expect(result.error).toBe('Export job not found')
-  })
-
-  test('should require authentication', async () => {
+  test('should require authentication for export status', async () => {
     const request = createMockRequest()
 
-    const response = await downloadExport(request, createMockParams('4'))
+    const response = await getStatus(request, createMockParams('4'))
     const result = await response.json()
 
     expect(response.status).toBe(401)
     expect(result.error).toBe('Authentication required')
   })
 
-  test('should set correct content type for different formats', async () => {
+  test('should return export metadata for different formats', async () => {
     const request = createMockRequest(null, {
       'authorization': 'Bearer valid-token'
     })
 
-    const response = await downloadExport(request, createMockParams('8')) // 8 % 4 === 0, completed
+    const response = await getStatus(request, createMockParams('8'))
+    const result = await response.json()
 
     expect(response.status).toBe(200)
-    expect(response.headers.get('Content-Type')).toBe('text/csv')
+    expect(result.export_metadata).toBeDefined()
+    expect(result.export_metadata.format).toBe('csv')
   })
 })
 
@@ -370,7 +376,7 @@ describe('Subscription Middleware', () => {
     }
 
     // Mock free tier user
-    jest.spyOn(SubscriptionMiddleware as unknown, 'getUserTier').mockResolvedValue('free')
+    jest.spyOn(SubscriptionMiddleware as any, 'getUserTier').mockResolvedValue('free')
 
     const result = await SubscriptionMiddleware.validateExportAccess('free-user', request)
 
@@ -422,7 +428,7 @@ describe('Subscription Middleware', () => {
     }
 
     // Mock free tier with 50MB limit
-    jest.spyOn(SubscriptionMiddleware as unknown, 'getUserTier').mockResolvedValue('free')
+    jest.spyOn(SubscriptionMiddleware as any, 'getUserTier').mockResolvedValue('free')
 
     const result = await SubscriptionMiddleware.validateExportAccess('free-user', largeRequest)
 
@@ -445,8 +451,8 @@ describe('Subscription Middleware', () => {
     }
 
     // Mock high number of active exports
-    jest.spyOn(SubscriptionMiddleware as unknown, 'getActiveExportCount').mockResolvedValue(5)
-    jest.spyOn(SubscriptionMiddleware as unknown, 'getUserTier').mockResolvedValue('free')
+    jest.spyOn(SubscriptionMiddleware as any, 'getActiveExportCount').mockResolvedValue(5)
+    jest.spyOn(SubscriptionMiddleware as any, 'getUserTier').mockResolvedValue('free')
 
     const result = await SubscriptionMiddleware.validateExportAccess('busy-user', request)
 
@@ -487,7 +493,7 @@ describe('Error Handling', () => {
 
   test('should handle malformed JSON requests', async () => {
     const request = {
-      json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
+      json: jest.fn<() => Promise<any>>().mockRejectedValue(new Error('Invalid JSON')),
       headers: {
         get: jest.fn(() => 'Bearer valid-token')
       }
@@ -546,9 +552,10 @@ describe('Security Tests', () => {
       'authorization': 'Bearer valid-token'
     })
 
-    const response = await downloadExport(request, createMockParams('../../../etc/passwd'))
+    const response = await getStatus(request, createMockParams('../../../etc/passwd'))
     const result = await response.json()
 
     expect(response.status).toBe(400)
+    expect(result.error).toBe('Invalid job ID')
   })
 })

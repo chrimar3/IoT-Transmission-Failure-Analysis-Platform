@@ -11,6 +11,24 @@ interface ChartData {
   category?: string
 }
 
+interface RawDataItem {
+  title?: string
+  confidence?: number
+  confidence_level?: number
+  category?: string
+  scenario_name?: string
+  annual_savings?: number
+  estimated_savings?: string
+  equipment_type?: string
+  floor_number?: string | number
+  performance_score?: number
+  efficiency_score?: number
+  metric_value?: number
+  created_at?: string
+  data_quality_score?: number
+  quality_score?: number
+}
+
 interface ValidationChartProps {
   data: unknown[]
   type: 'confidence' | 'savings' | 'performance' | 'trends'
@@ -29,56 +47,68 @@ const COLORS = {
 export default function ValidationChart({ data, type, title, height = 300 }: ValidationChartProps) {
   const [chartData, setChartData] = useState<ChartData[]>([])
 
-  useEffect(() => {
-    const processedData = processDataForChart(data, type)
-    setChartData(processedData)
-  }, [data, type, processDataForChart])
-
   const processDataForChart = useCallback((rawData: unknown[], chartType: string): ChartData[] => {
     switch (chartType) {
       case 'confidence':
-        return rawData.map((item, index) => ({
-          name: item.title?.slice(0, 20) + '...' || `Insight ${index + 1}`,
-          value: item.confidence || item.confidence_level || 95,
-          confidence: item.confidence || item.confidence_level || 95,
-          category: item.category || 'general'
-        }))
+        return rawData.map((item, index) => {
+          const typedItem = item as RawDataItem
+          return {
+            name: typedItem.title?.slice(0, 20) + '...' || `Insight ${index + 1}`,
+            value: typedItem.confidence || typedItem.confidence_level || 95,
+            confidence: typedItem.confidence || typedItem.confidence_level || 95,
+            category: typedItem.category || 'general'
+          }
+        })
 
       case 'savings':
-        return rawData.map((item, index) => ({
-          name: item.scenario_name || item.title?.slice(0, 20) + '...' || `Scenario ${index + 1}`,
-          value: item.annual_savings || extractSavingsValue(item.estimated_savings) || 0,
-          savings: item.annual_savings || extractSavingsValue(item.estimated_savings) || 0,
-          confidence: item.confidence_level || item.confidence || 90
-        }))
+        return rawData.map((item, index) => {
+          const typedItem = item as RawDataItem
+          return {
+            name: typedItem.scenario_name || typedItem.title?.slice(0, 20) + '...' || `Scenario ${index + 1}`,
+            value: typedItem.annual_savings || extractSavingsValue(typedItem.estimated_savings) || 0,
+            savings: typedItem.annual_savings || extractSavingsValue(typedItem.estimated_savings) || 0,
+            confidence: typedItem.confidence_level || typedItem.confidence || 90
+          }
+        })
 
       case 'performance':
-        return rawData.map((item, index) => ({
-          name: item.equipment_type || item.floor_number || `Item ${index + 1}`,
-          value: item.performance_score || item.efficiency_score || item.metric_value || 0,
-          confidence: item.confidence_level || item.confidence || 85,
-          category: item.category || categorizePerformance(item)
-        }))
+        return rawData.map((item, index) => {
+          const typedItem = item as RawDataItem
+          return {
+            name: typedItem.equipment_type || typedItem.floor_number || `Item ${index + 1}`,
+            value: typedItem.performance_score || typedItem.efficiency_score || typedItem.metric_value || 0,
+            confidence: typedItem.confidence_level || typedItem.confidence || 85,
+            category: typedItem.category || categorizePerformance(typedItem)
+          }
+        })
 
       case 'trends':
-        return rawData.map((item, index) => ({
-          name: new Date(item.created_at || Date.now()).toLocaleDateString() || `Day ${index + 1}`,
-          value: item.data_quality_score || item.quality_score || 95,
-          confidence: item.confidence_level || 90
-        }))
+        return rawData.map((item, index) => {
+          const typedItem = item as RawDataItem
+          return {
+            name: new Date(typedItem.created_at || Date.now()).toLocaleDateString() || `Day ${index + 1}`,
+            value: typedItem.data_quality_score || typedItem.quality_score || 95,
+            confidence: typedItem.confidence_level || 90
+          }
+        })
 
       default:
         return []
     }
   }, [])
 
-  const extractSavingsValue = (savingsString: string): number => {
+  useEffect(() => {
+    const processedData = processDataForChart(data, type)
+    setChartData(processedData)
+  }, [data, type, processDataForChart])
+
+  const extractSavingsValue = (savingsString: string | undefined): number => {
     if (!savingsString) return 0
     const match = savingsString.match(/\$([0-9,]+)/)
     return match ? parseInt(match[1].replace(/,/g, '')) : 0
   }
 
-  const categorizePerformance = (item: unknown): string => {
+  const categorizePerformance = (item: RawDataItem): string => {
     const value = item.performance_score || item.efficiency_score || item.metric_value || 0
     if (value >= 90) return 'high'
     if (value >= 70) return 'medium'
@@ -91,7 +121,7 @@ export default function ValidationChart({ data, type, title, height = 300 }: Val
     return COLORS.low
   }
 
-  const CustomTooltip = ({ active, payload, label }: unknown) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; payload: ChartData }>; label?: string }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload
       return (

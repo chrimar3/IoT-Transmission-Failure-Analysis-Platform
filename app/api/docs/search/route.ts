@@ -28,6 +28,16 @@ interface SearchFilters {
   content_type?: string
 }
 
+interface ArticleData {
+  title?: string
+  description?: string
+  content?: string
+  tags?: string[]
+  category?: string
+  difficulty?: string
+  tier_required?: string
+}
+
 const CONTENT_BASE_PATH = path.join(process.cwd(), 'content', 'documentation')
 const PREVIEW_LENGTH = 150
 
@@ -199,7 +209,7 @@ async function performDocumentationSearch(
 }
 
 function calculateRelevanceScore(
-  article: any,
+  article: ArticleData,
   searchTerms: string[]
 ): number {
   let score = 0

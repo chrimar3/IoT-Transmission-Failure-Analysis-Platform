@@ -8,7 +8,7 @@ import { generateExcel } from '@/src/lib/reports/excel-exporter'
 
 // Mock dependencies
 jest.mock('@/lib/database/connection')
-jest.mock('@/lib/data/bangkok-dataset')
+jest.mock('@/src/lib/data/bangkok-dataset')
 jest.mock('@/lib/r2-client')
 jest.mock('@/src/lib/reports/email-delivery')
 jest.mock('@/src/lib/reports/pdf-generator')
@@ -85,15 +85,15 @@ describe('Report Generation Engine', () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    (jest as any).clearAllMocks()
 
     // Setup default mocks
-    mockPrisma.reportTemplate.findUnique.mockResolvedValue(mockTemplate as unknown)
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown)
-    mockPrisma.generatedReport.update.mockResolvedValue({} as unknown)
+    (mockPrisma.reportTemplate.findUnique as jest.MockedFunction<any>).mockResolvedValue(mockTemplate as any)
+    (mockPrisma.user.findUnique as jest.MockedFunction<any>).mockResolvedValue(mockUser as any)
+    (mockPrisma.generatedReport.update as jest.MockedFunction<any>).mockResolvedValue({} as any)
 
-    mockGetBangkokData.mockResolvedValue(mockBangkokData)
-    mockUploadToR2.mockResolvedValue('https://example.com/report.pdf')
+    (mockGetBangkokData as jest.MockedFunction<any>).mockResolvedValue(mockBangkokData as any)
+    mockUploadToR2.mockResolvedValue({ url: 'https://example.com/report.pdf', size: 1024 })
     mockSendReportEmail.mockResolvedValue()
 
     mockGeneratePDF.mockResolvedValue(Buffer.from('mock-pdf-content'))
@@ -174,7 +174,7 @@ describe('Report Generation Engine', () => {
     })
 
     it('should handle template not found error', async () => {
-      mockPrisma.reportTemplate.findUnique.mockResolvedValue(null)
+      (mockPrisma.reportTemplate.findUnique as jest.MockedFunction<any>).mockResolvedValue(null)
 
       await expect(generateReportJob(mockJob)).rejects.toThrow('Template or user not found')
 
@@ -188,7 +188,7 @@ describe('Report Generation Engine', () => {
     })
 
     it('should handle user not found error', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue(null)
+      (mockPrisma.user.findUnique as jest.MockedFunction<any>).mockResolvedValue(null)
 
       await expect(generateReportJob(mockJob)).rejects.toThrow('Template or user not found')
     })
@@ -214,7 +214,7 @@ describe('Report Generation Engine', () => {
     })
 
     it('should handle unsupported format', async () => {
-      const invalidJob = { ...mockJob, format: 'invalid' as unknown }
+      const invalidJob = { ...mockJob, format: 'invalid' as any } as any
 
       await expect(generateReportJob(invalidJob)).rejects.toThrow('Unsupported format: invalid')
     })
@@ -255,8 +255,10 @@ describe('Report Generation Engine', () => {
     })
 
     it('should calculate metadata correctly', async () => {
-      const templateWithMultipleComponents = {
-        ...mockTemplate,
+      const testTemplate: any = {
+        id: 'template-123',
+        name: 'Test Report',
+        version: '1.0',
         template_data: {
           components: [
             { id: '1', type: 'chart', config: {} },
@@ -267,7 +269,7 @@ describe('Report Generation Engine', () => {
         }
       }
 
-      mockPrisma.reportTemplate.findUnique.mockResolvedValue(templateWithMultipleComponents as unknown)
+      (mockPrisma.reportTemplate.findUnique as jest.MockedFunction<any>).mockResolvedValue(testTemplate)
 
       await generateReportJob(mockJob)
 
@@ -288,8 +290,10 @@ describe('Report Generation Engine', () => {
 
   describe('Data Processing', () => {
     it('should filter data by sensor IDs when specified', async () => {
-      const templateWithQuery = {
-        ...mockTemplate,
+      const queryTemplate: any = {
+        id: 'template-123',
+        name: 'Test Report',
+        version: '1.0',
         template_data: {
           components: [{
             id: 'chart-1',
@@ -304,7 +308,7 @@ describe('Report Generation Engine', () => {
         }
       }
 
-      mockPrisma.reportTemplate.findUnique.mockResolvedValue(templateWithQuery as unknown)
+      (mockPrisma.reportTemplate.findUnique as jest.MockedFunction<any>).mockResolvedValue(queryTemplate)
 
       await generateReportJob(mockJob)
 
@@ -317,8 +321,9 @@ describe('Report Generation Engine', () => {
     })
 
     it('should generate insights from data patterns', async () => {
-      const dataWithTrend = {
-        ...mockBangkokData,
+      const trendData: any = {
+        data: mockBangkokData.data,
+        aggregations: mockBangkokData.aggregations,
         statistics: {
           confidence: 0.95,
           trend: 0.2,
@@ -326,7 +331,7 @@ describe('Report Generation Engine', () => {
         }
       }
 
-      mockGetBangkokData.mockResolvedValue(dataWithTrend)
+      (mockGetBangkokData as jest.MockedFunction<any>).mockResolvedValue(trendData)
 
       await generateReportJob(mockJob)
 

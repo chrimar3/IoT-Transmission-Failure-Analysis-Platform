@@ -14,7 +14,7 @@ interface R2Config {
   bucketName: string
 }
 
-interface SensorDataQuery {
+export interface SensorDataQuery {
   startDate?: string
   endDate?: string
   sensorId?: string
@@ -39,7 +39,7 @@ export interface SensorDataRecord {
   status: 'normal' | 'warning' | 'error' | 'offline'
 }
 
-interface R2Metrics {
+export interface R2Metrics {
   total_sensors: number
   active_sensors: number
   offline_sensors: number

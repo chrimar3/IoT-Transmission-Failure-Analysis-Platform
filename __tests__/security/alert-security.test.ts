@@ -8,9 +8,9 @@
 import { NextRequest } from 'next/server'
 import { AlertRuleEngine } from '../../lib/alerts/AlertRuleEngine'
 import type {
-  _AlertConfiguration,
+  AlertConfiguration,
   CreateAlertConfigRequest,
-  _AlertValidation
+  AlertValidation
 } from '../../types/alerts'
 
 // Mock authentication service
@@ -419,6 +419,13 @@ describe('Alert System Security Tests', () => {
             severity: 'error'
           }
         ],
+        warnings: [],
+        suggestions: [
+          'Consider upgrading to Professional tier for advanced features',
+          'Use email notifications instead of webhooks for free tier'
+        ],
+        estimated_alert_volume: 100,
+        estimated_cost_impact: 0,
         subscription_compatibility: {
           tier_required: 'professional',
           features_blocked: ['anomaly_detection', 'webhook_notifications', 'slack_integration'],
@@ -428,7 +435,7 @@ describe('Alert System Security Tests', () => {
 
       // Mock validation for free user
       const mockValidateForFreeTier = jest.spyOn(alertEngine, 'validateConfiguration')
-      mockValidateForFreeTier.mockResolvedValue(freeUserValidation)
+      mockValidateForFreeTier.mockResolvedValue(freeUserValidation as any)
 
       const validation = await alertEngine.validateConfiguration(alertConfigWithAdvancedFeatures)
 

@@ -97,8 +97,8 @@ export async function GET(request: NextRequest) {
     })
 
     // Additional validation for date ranges
-    const startDate = new Date(params.start_date)
-    const endDate = new Date(params.end_date)
+    const startDate = new Date(params.start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+    const endDate = new Date(params.end_date || new Date().toISOString())
 
     // Validate date range logic
     if (startDate >= endDate) {
@@ -134,8 +134,8 @@ export async function GET(request: NextRequest) {
     // Professional tier gets enhanced data access
     const dataRequest = {
       dateRange: {
-        start: params.start_date,
-        end: params.end_date
+        start: params.start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        end: params.end_date || new Date().toISOString()
       },
       maxRecords: params.max_points,
       sensorIds: params.sensor_ids,
@@ -144,16 +144,24 @@ export async function GET(request: NextRequest) {
     }
 
     // Professional tier bypasses restrictions but still applies for consistency
-    const filteredRequest = await enforceDataAccessRestrictions(userId, dataRequest)
+    await enforceDataAccessRestrictions(userId, dataRequest)
 
     // Generate Bangkok dataset multi-sensor time-series data with professional features
-    const series = await generateBangkokMultiSensorData(params, true)
+    const processedParams = {
+      ...params,
+      start_date: params.start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      end_date: params.end_date || new Date().toISOString(),
+      sensor_ids: params.sensor_ids || ['SENSOR_001', 'SENSOR_002', 'SENSOR_003'],
+      equipment_types: params.equipment_types || [],
+      floor_numbers: params.floor_numbers || []
+    }
+    const series = await generateBangkokMultiSensorData(processedParams, true)
 
     const queryTime = Date.now() - startTime
     const totalPoints = series.reduce((sum, s) => sum + s.data.length, 0)
 
     // Check if data was decimated during generation
-    const originalPointsEstimate = Math.floor((endDate.getTime() - startDate.getTime()) / (60 * 60 * 1000)) * params.sensor_ids.length // hourly estimate
+    const originalPointsEstimate = Math.floor((endDate.getTime() - startDate.getTime()) / (60 * 60 * 1000)) * processedParams.sensor_ids.length // hourly estimate
     const decimated = totalPoints < originalPointsEstimate || totalPoints > params.max_points
 
     const response: TimeSeriesApiResponse = {
@@ -164,22 +172,14 @@ export async function GET(request: NextRequest) {
           total_points: totalPoints,
           decimated,
           query_time_ms: queryTime,
-          cache_hit: false,
-          // Professional tier metadata
-          api_version: 'v1-professional',
-          full_dataset_access: true,
-          enhanced_features: ['statistical_confidence', 'predictive_values', 'anomaly_scoring']
+          cache_hit: false
         }
-      },
-      subscription_info: {
-        tier: subscription.tier,
-        api_access: 'professional'
       }
     }
 
     // Track Professional API usage for revenue analytics
     await subscriptionService.trackUserActivity(userId, 'professional_api_timeseries', {
-      sensor_count: params.sensor_ids.length,
+      sensor_count: processedParams.sensor_ids.length,
       data_points: totalPoints,
       tier: subscription.tier,
       query_time_ms: queryTime
@@ -308,7 +308,7 @@ interface ProcessedParams {
  * Optimized for chart visualization with proper data decimation
  * PROFESSIONAL TIER: Enhanced with advanced analytics features
  */
-async function generateBangkokMultiSensorData(params: ProcessedParams, professionalTier: boolean = false): Promise<MultiSeriesData[]> {
+async function generateBangkokMultiSensorData(params: ProcessedParams, _professionalTier: boolean = false): Promise<MultiSeriesData[]> {
   const { sensor_ids, start_date, end_date, interval, max_points, equipment_types, floor_numbers } = params
 
   const startDate = new Date(start_date)

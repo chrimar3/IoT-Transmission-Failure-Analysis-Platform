@@ -7,11 +7,22 @@ import { NextRequest } from 'next/server'
 // Mock dependencies
 jest.mock('next-auth')
 jest.mock('@/lib/middleware/subscription')
-jest.mock('@/lib/database/connection')
+jest.mock('@/lib/database/connection', () => ({
+  prisma: {
+    reportTemplate: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn()
+    }
+  }
+}))
 
 const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>
 const mockValidateSubscription = validateSubscription as jest.MockedFunction<typeof validateSubscription>
-const mockPrisma = prisma as jest.Mocked<typeof prisma>
+const mockPrisma = prisma as any
 
 describe('/api/reports/templates', () => {
   const mockSession = {
@@ -40,7 +51,7 @@ describe('/api/reports/templates', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockGetServerSession.mockResolvedValue(mockSession as unknown)
-    mockValidateSubscription.mockResolvedValue(true)
+    mockValidateSubscription.mockResolvedValue({ error: null } as any)
   })
 
   describe('GET /api/reports/templates', () => {
@@ -72,7 +83,7 @@ describe('/api/reports/templates', () => {
     })
 
     it('should return 403 for non-Professional user', async () => {
-      mockValidateSubscription.mockResolvedValue(false)
+      mockValidateSubscription.mockResolvedValue({ error: 'Insufficient subscription tier' } as any)
 
       const request = new NextRequest('http://localhost/api/reports/templates')
       const response = await GET(request)
@@ -194,7 +205,7 @@ describe('/api/reports/templates', () => {
     })
 
     it('should return 403 for non-Professional user', async () => {
-      mockValidateSubscription.mockResolvedValue(false)
+      mockValidateSubscription.mockResolvedValue({ error: 'Insufficient subscription tier' } as any)
 
       const request = new NextRequest('http://localhost/api/reports/templates', {
         method: 'POST',

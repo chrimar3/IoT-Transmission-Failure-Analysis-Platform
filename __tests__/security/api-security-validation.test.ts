@@ -4,13 +4,13 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from '@jest/globals'
-import { _NextRequest } from 'next/server'
+import { NextRequest } from 'next/server'
 import crypto from 'crypto'
 
 // Test utilities and mocks
 import { createMockUser, createMockApiKey, createMockRequest } from '../utils/test-helpers'
-import { validateApiKey, generateApiKey, hashApiKey } from '@/lib/api/key-management'
-import { _isRateLimited, _recordApiRequest } from '@/lib/api/rate-limiting'
+import { ApiKeyManager } from '@/lib/api/key-management'
+import { RateLimiter } from '@/lib/api/rate-limiting'
 
 describe('API Security Validation - Story 4.2', () => {
   let testUser: unknown

@@ -117,8 +117,8 @@ export const authOptions: NextAuthOptions = {
 
         // For MVP: Add basic user metadata
         token.email = user.email
-        token.name = user.name
-        token.picture = user.image
+        token.name = user.name || null
+        token.picture = user.image || null
       }
 
       // Add account provider info

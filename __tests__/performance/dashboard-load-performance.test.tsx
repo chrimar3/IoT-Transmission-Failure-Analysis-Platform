@@ -9,7 +9,27 @@ import { describe, test, expect, beforeAll, afterAll } from '@jest/globals'
 import { render, waitFor } from '@testing-library/react'
 import { performance } from 'perf_hooks'
 import Dashboard from '@/app/dashboard/page'
-import { mockBangkokDataset } from '@/__tests__/utils/bangkok-test-data'
+// Mock Bangkok dataset for performance testing
+const mockBangkokDataset = {
+  dataset_info: {
+    total_records: 2847365,
+    location: 'Bangkok, Thailand',
+    sensors: ['temperature', 'humidity', 'pressure', 'light'],
+    timespan: '2023-01-01 to 2023-12-31'
+  },
+  summary: {
+    average_temperature: 28.5,
+    average_humidity: 75.2,
+    total_readings: 2847365
+  },
+  timeseries: [
+    { timestamp: '2023-01-01T00:00:00Z', temperature: 28.5, humidity: 75.2 }
+  ],
+  analytics: {
+    trends: { temperature: 'increasing', humidity: 'stable' },
+    patterns: ['daily_cycle', 'seasonal_variation']
+  }
+}
 
 interface PerformanceMetrics {
   initial_load_time: number
@@ -139,7 +159,7 @@ describe('Dashboard Performance Under Load - Bangkok Dataset', () => {
     // Monitor memory usage over extended session
     const memoryMonitor = setInterval(() => {
       if (typeof window !== 'undefined' && 'performance' in window && 'memory' in window.performance) {
-        memoryReadings.push(window.performance.memory.usedJSHeapSize)
+        memoryReadings.push((window.performance as any).memory?.usedJSHeapSize || 0)
       }
     }, memoryCheckInterval)
 

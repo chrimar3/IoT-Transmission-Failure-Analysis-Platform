@@ -29,6 +29,7 @@ export interface ExportFilters {
   floor_numbers?: number[]
   data_aggregation?: 'raw' | 'hourly' | 'daily' | 'weekly'
   status_filter?: string[]
+  include_inactive?: boolean
 }
 
 // Export job creation request

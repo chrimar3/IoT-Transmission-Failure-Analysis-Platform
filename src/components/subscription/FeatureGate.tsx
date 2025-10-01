@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode, useEffect, useState } from 'react'
-import { useSubscription } from '@/hooks/useSubscription'
+import { useSubscription } from '../../hooks/useSubscription'
 import { Loader2, Lock, CreditCard, ArrowRight } from 'lucide-react'
 
 interface FeatureGateProps {

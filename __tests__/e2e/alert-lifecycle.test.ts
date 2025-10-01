@@ -129,7 +129,7 @@ describe('Alert Lifecycle End-to-End Tests', () => {
             configuration: {
               phone_numbers: ['+66812345678', '+66887654321']
             },
-            priority_filter: ['critical', 'emergency']
+            priority_filter: ['critical', 'high']
           },
           {
             type: 'webhook',
@@ -509,7 +509,11 @@ describe('Alert Lifecycle End-to-End Tests', () => {
         system_status: {},
         weather_data: {
           temperature: 36,
-          humidity: 85
+          humidity: 85,
+          wind_speed: 3,
+          solar_irradiance: 800,
+          weather_condition: 'clear',
+          forecast_change: 'temperature rising'
         }
       }
 
@@ -532,7 +536,11 @@ describe('Alert Lifecycle End-to-End Tests', () => {
         system_status: {},
         weather_data: {
           temperature: 32,
-          humidity: 80
+          humidity: 80,
+          wind_speed: 5,
+          solar_irradiance: 400,
+          weather_condition: 'partly_cloudy',
+          forecast_change: 'stable'
         }
       }
 
@@ -617,6 +625,7 @@ describe('Alert Lifecycle End-to-End Tests', () => {
           temperature: 32,
           humidity: 95, // Very high humidity during monsoon
           wind_speed: 1,
+          solar_irradiance: 200,
           weather_condition: 'heavy_rain',
           forecast_change: 'continued rainfall'
         }
@@ -690,7 +699,11 @@ describe('Alert Lifecycle End-to-End Tests', () => {
         system_status: {},
         weather_data: {
           temperature: 37,
-          humidity: 85
+          humidity: 85,
+          wind_speed: 4,
+          solar_irradiance: 900,
+          weather_condition: 'hot',
+          forecast_change: 'temperature rising'
         }
       }
 
@@ -911,7 +924,7 @@ describe('Alert Lifecycle End-to-End Tests', () => {
       }
 
       // Mock the duplicate alert check to return the first alert
-      const duplicateCheckSpy = jest.spyOn(alertEngine as unknown, 'checkForDuplicateAlert')
+      const duplicateCheckSpy = jest.spyOn(alertEngine as any, 'checkForDuplicateAlert')
       duplicateCheckSpy.mockResolvedValueOnce(firstAlert)
 
       const secondAlerts = await alertEngine.evaluateAlerts([alertConfiguration], secondContext)
@@ -931,7 +944,11 @@ describe('Alert Lifecycle End-to-End Tests', () => {
         system_status: {},
         weather_data: {
           temperature: 38,
-          humidity: 80
+          humidity: 80,
+          wind_speed: 2,
+          solar_irradiance: 950,
+          weather_condition: 'sunny',
+          forecast_change: 'stable'
         }
       }
 
@@ -1109,7 +1126,7 @@ describe('Alert Lifecycle End-to-End Tests', () => {
   describe('Error Recovery and Resilience', () => {
     it('should continue processing when individual notifications fail', async () => {
       // Mock email service to fail
-      const emailProvider = (notificationService as unknown).emailProvider
+      const emailProvider = (notificationService as any).emailProvider
       const originalSendEmail = emailProvider.sendEmail
       emailProvider.sendEmail = jest.fn().mockRejectedValue(new Error('Email service down'))
 
@@ -1151,7 +1168,7 @@ describe('Alert Lifecycle End-to-End Tests', () => {
 
     it('should handle network timeouts gracefully', async () => {
       // Mock webhook service to timeout
-      const webhookService = (notificationService as unknown).webhookService
+      const webhookService = (notificationService as any).webhookService
       const originalSendWebhook = webhookService.sendWebhook
       webhookService.sendWebhook = jest.fn().mockImplementation(() =>
         new Promise((_, reject) =>
@@ -1257,8 +1274,10 @@ describe('Alert Lifecycle End-to-End Tests', () => {
         weather_data: {
           temperature: 38, // Very hot day
           humidity: 70,
+          wind_speed: 3,
           solar_irradiance: 950,
-          weather_condition: 'clear_sky'
+          weather_condition: 'clear_sky',
+          forecast_change: 'stable'
         }
       }
 
@@ -1281,7 +1300,7 @@ describe('Alert Lifecycle End-to-End Tests', () => {
       expect(alert.metric_values[0].contributing_factors).toContain('High temperature')
 
       // Verify confidence calculation
-      const confidence = (alertEngine as unknown).calculateConfidence([
+      const confidence = (alertEngine as any).calculateConfidence([
         {
           condition_id: 'energy',
           met: true,

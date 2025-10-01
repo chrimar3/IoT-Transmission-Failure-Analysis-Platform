@@ -4,7 +4,7 @@
  */
 
 import React from 'react'
-import { render, screen, fireEvent, _waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import DateRangePicker from '@/app/dashboard/components/DateRangePicker'
 
 // Mock date for consistent testing
@@ -437,7 +437,7 @@ describe('DateRangePicker', () => {
       fireEvent.click(screen.getByRole('button'))
 
       const highlightedButton = screen.getByText('Last 24 Hours').closest('button')
-      expect(highlightedButton).toHaveClass('bg-blue-50', 'border-blue-200', 'text-blue-700')
+      expect(highlightedButton).toHaveClass('bg-blue-50 border-blue-200 text-blue-700')
     })
   })
 

@@ -3,12 +3,13 @@
  * Generates downloadable reports and data exports from validation results
  */
 
+import React from 'react';
 import { NextRequest, NextResponse } from 'next/server';
 import { validationService } from '../../../src/lib/database/validation-service';
 import { withSubscriptionCheck } from '../../../src/lib/middleware/subscription.middleware';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../src/lib/auth/config';
-import { ExportFilters } from '../../../types/export';
+// Export filters handled by DataFilters interface below
 import { subscriptionService } from '../../../src/lib/stripe/subscription.service';
 
 interface ExportRequest {
@@ -56,25 +57,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }, { status: 400 });
     }
 
+    // Transform filters to match DataFilters interface
+    const transformedFilters: Partial<DataFilters> | undefined = filters ? {
+      ...filters,
+      date_range: filters.date_range ? {
+        start_date: filters.date_range.start,
+        end_date: filters.date_range.end
+      } : undefined
+    } : undefined;
+
     // Get data based on type
     let exportData;
     let filename;
 
     switch (data_type) {
       case 'insights':
-        exportData = await getInsightsData(session_id, filters);
+        exportData = await getInsightsData(session_id, transformedFilters);
         filename = `cu-bems-insights-${new Date().toISOString().split('T')[0]}`;
         break;
       case 'scenarios':
-        exportData = await getScenariosData(session_id, filters);
+        exportData = await getScenariosData(session_id, transformedFilters);
         filename = `cu-bems-scenarios-${new Date().toISOString().split('T')[0]}`;
         break;
       case 'metrics':
-        exportData = await getMetricsData(session_id, filters);
+        exportData = await getMetricsData(session_id, transformedFilters);
         filename = `cu-bems-metrics-${new Date().toISOString().split('T')[0]}`;
         break;
       case 'complete':
-        exportData = await getCompleteReport(session_id, filters);
+        exportData = await getCompleteReport(session_id, transformedFilters);
         filename = `cu-bems-complete-report-${new Date().toISOString().split('T')[0]}`;
         break;
       default:
@@ -119,9 +129,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const headers = new Headers();
     headers.set('Content-Type', result.contentType);
     headers.set('Content-Disposition', `attachment; filename="${result.filename}"`);
-    headers.set('Content-Length', result.content.length.toString());
+    headers.set('Content-Length', (result.content as Buffer | string).length.toString());
 
-    return new NextResponse(result.content, {
+    return new NextResponse(result.content as BodyInit, {
       status: 200,
       headers
     });
@@ -169,7 +179,7 @@ export async function GET(): Promise<NextResponse> {
 /**
  * Helper functions for data retrieval
  */
-async function getInsightsData(sessionId?: string, filters?: Partial<ExportFilters>) {
+async function getInsightsData(sessionId?: string, filters?: Partial<DataFilters>) {
   if (sessionId) {
     const results = await validationService.getValidationResults(sessionId);
     return applyFilters(results.insights, filters);
@@ -185,7 +195,7 @@ async function getInsightsData(sessionId?: string, filters?: Partial<ExportFilte
   return applyFilters(results.insights, filters);
 }
 
-async function getScenariosData(sessionId?: string, filters?: Partial<ExportFilters>) {
+async function getScenariosData(sessionId?: string, filters?: Partial<DataFilters>) {
   if (sessionId) {
     const scenarios = await validationService.getSavingsScenarios(sessionId);
     return applyFilters(scenarios, filters);
@@ -200,7 +210,7 @@ async function getScenariosData(sessionId?: string, filters?: Partial<ExportFilt
   return applyFilters(scenarios, filters);
 }
 
-async function getMetricsData(sessionId?: string, filters?: Partial<ExportFilters>) {
+async function getMetricsData(sessionId?: string, filters?: Partial<DataFilters>) {
   if (sessionId) {
     const results = await validationService.getValidationResults(sessionId);
     return applyFilters(results.quality_metrics, filters);
@@ -209,7 +219,7 @@ async function getMetricsData(sessionId?: string, filters?: Partial<ExportFilter
   return generateMockMetrics();
 }
 
-async function getCompleteReport(sessionId?: string, filters?: Partial<ExportFilters>) {
+async function getCompleteReport(sessionId?: string, filters?: Partial<DataFilters>) {
   const [insights, scenarios, metrics] = await Promise.all([
     getInsightsData(sessionId, filters),
     getScenariosData(sessionId, filters),
@@ -230,11 +240,30 @@ async function getCompleteReport(sessionId?: string, filters?: Partial<ExportFil
   };
 }
 
-function applyFilters(data: unknown[], filters?: Partial<ExportFilters>): unknown[] {
+interface DataFilters {
+  confidence_threshold?: number
+  category?: string
+  severity?: string
+  date_range?: {
+    start_date: string
+    end_date: string
+  }
+}
+
+function applyFilters(data: unknown[], filters?: Partial<DataFilters>): unknown[] {
   if (!filters || !data) return data;
 
-  return data.filter(item => {
-    if (filters.confidence_threshold && item.confidence_level < filters.confidence_threshold) {
+interface DataItem {
+    confidence_level?: number
+    category?: string
+    severity?: string
+    created_at?: string
+    generated_at?: string
+    [key: string]: unknown
+  }
+
+  return (data as DataItem[]).filter((item: DataItem) => {
+    if (filters.confidence_threshold && item.confidence_level !== undefined && item.confidence_level < filters.confidence_threshold) {
       return false;
     }
     if (filters.category && item.category !== filters.category) {
@@ -244,9 +273,11 @@ function applyFilters(data: unknown[], filters?: Partial<ExportFilters>): unknow
       return false;
     }
     if (filters.date_range) {
-      const itemDate = new Date(item.created_at || item.generated_at);
-      const startDate = new Date(filters.date_range.start);
-      const endDate = new Date(filters.date_range.end);
+      const dateValue = item.created_at || item.generated_at;
+      if (!dateValue) return true; // Skip date filtering if no date available
+      const itemDate = new Date(dateValue);
+      const startDate = new Date(filters.date_range.start_date);
+      const endDate = new Date(filters.date_range.end_date);
       if (itemDate < startDate || itemDate > endDate) {
         return false;
       }
@@ -280,7 +311,7 @@ async function generateExport(data: unknown, format: string, filename: string) {
       };
     case 'excel':
       return {
-        content: generateExcel(data),
+        content: await generateExcel(data),
         filename: `${filename}.xlsx`,
         contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       };
@@ -297,12 +328,19 @@ function generateCSV(data: unknown): string {
   // Handle different data structures
   let records = Array.isArray(data) ? data : [data];
 
-  if (data.insights && data.scenarios) {
+  interface CompleteReportData {
+    insights: Record<string, unknown>[]
+    scenarios: Record<string, unknown>[]
+    metrics: Record<string, unknown>[]
+  }
+
+  if (data && typeof data === 'object' && 'insights' in data && 'scenarios' in data) {
     // Complete report - combine all data
+    const reportData = data as CompleteReportData
     records = [
-      ...data.insights.map((item: unknown) => ({ ...item, data_type: 'insight' })),
-      ...data.scenarios.map((item: unknown) => ({ ...item, data_type: 'scenario' })),
-      ...data.metrics.map((item: unknown) => ({ ...item, data_type: 'metric' }))
+      ...reportData.insights.map((item: Record<string, unknown>) => ({ ...item, data_type: 'insight' })),
+      ...reportData.scenarios.map((item: Record<string, unknown>) => ({ ...item, data_type: 'scenario' })),
+      ...reportData.metrics.map((item: Record<string, unknown>) => ({ ...item, data_type: 'metric' }))
     ];
   }
 
@@ -334,29 +372,28 @@ function generateCSV(data: unknown): string {
   return csvRows.join('\n');
 }
 
-async function generatePDF(data: unknown, title: string): Promise<string> {
-  // For now, return a simple PDF-like text format
-  // In a real implementation, you'd use a PDF library like jsPDF or Puppeteer
+async function generatePDF(data: unknown, title: string): Promise<Buffer> {
+  const { renderToBuffer } = await import('@react-pdf/renderer')
+  const { PDFReport } = await import('../../../src/lib/export/pdf-generator')
 
-  const content = [
-    `CU-BEMS IoT Analysis Report`,
-    `Generated: ${new Date().toLocaleString()}`,
-    `Title: ${title}`,
-    ``,
-    `=== EXECUTIVE SUMMARY ===`,
-    JSON.stringify(data, null, 2),
-    ``,
-    `=== END OF REPORT ===`
-  ].join('\n');
+  // Determine report type from title
+  const reportType = title.includes('executive') ? 'executive' :
+                    title.includes('technical') ? 'technical' :
+                    title.includes('compliance') ? 'compliance' :
+                    title.includes('performance') ? 'performance' : 'executive'
 
-  // Return base64 encoded content for PDF simulation
-  return Buffer.from(content).toString('base64');
+  const pdfDocument = React.createElement(PDFReport, {
+    data,
+    reportType: reportType as 'executive' | 'technical' | 'compliance' | 'raw_data' | 'performance',
+    title
+  })
+
+  return await renderToBuffer(pdfDocument)
 }
 
-function generateExcel(data: unknown): string {
-  // For now, return CSV format as Excel can read it
-  // In a real implementation, you'd use a library like xlsx
-  return generateCSV(data);
+async function generateExcel(data: unknown): Promise<Buffer> {
+  const { generateExcelBuffer } = await import('../../../src/lib/export/excel-generator')
+  return await generateExcelBuffer(data, 'complete')
 }
 
 /**

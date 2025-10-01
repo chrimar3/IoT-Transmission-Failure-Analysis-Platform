@@ -1,4 +1,4 @@
-import { _generateReportJob } from '@/src/lib/reports/report-generator'
+import { generateReportJob } from '@/src/lib/reports/report-generator'
 import { generatePDF } from '@/src/lib/reports/pdf-generator'
 import { generateExcel } from '@/src/lib/reports/excel-exporter'
 import { getBangkokData } from '@/lib/data/bangkok-dataset'

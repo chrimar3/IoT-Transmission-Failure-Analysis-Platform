@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { AlertTriangle, CheckCircle, Clock, Bell, _X, Info, AlertCircle, Zap } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Clock, Bell, Info, AlertCircle, Zap } from 'lucide-react'
 
 interface Alert {
   id: string

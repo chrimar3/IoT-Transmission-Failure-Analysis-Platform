@@ -5,10 +5,15 @@ declare module 'next-auth' {
   interface Session {
     user: {
       id: string
-      email: string
+      subscriptionTier: 'free' | 'professional'
+      subscriptionStatus?: 'active' | 'past_due' | 'canceled' | 'incomplete' | 'incomplete_expired' | 'trialing' | 'unpaid'
+      subscriptionId?: string
+    } & {
       name?: string | null
+      email?: string | null
       image?: string | null
     }
+    expires: string
     accessToken?: string
   }
 
@@ -17,6 +22,7 @@ declare module 'next-auth' {
     email: string
     name?: string | null
     image?: string | null
+    subscriptionTier?: 'free' | 'professional'
   }
 }
 

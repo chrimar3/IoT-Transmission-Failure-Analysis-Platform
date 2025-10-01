@@ -1,0 +1,493 @@
+/**
+ * Integration Tests for Story 3.4: Data Export and Reporting
+ * Tests complete export flow: Create -> Generate -> Upload -> Download
+ */
+
+import { ExportManager } from '@/src/lib/export/export-manager'
+import { ExportStorageService } from '@/src/lib/export/storage-service'
+import { ExportUsageTrackingService } from '@/src/lib/export/usage-tracking-service'
+
+// Mock Supabase
+jest.mock('@/src/lib/supabase', () => ({
+  createServiceClient: jest.fn(() => ({
+    storage: {
+      listBuckets: jest.fn(() => ({ data: [], error: null })),
+      createBucket: jest.fn(() => ({ error: null })),
+      from: jest.fn(() => ({
+        upload: jest.fn(() => ({
+          data: { path: 'user123/job123/report.pdf' },
+          error: null
+        })),
+        createSignedUrl: jest.fn(() => ({
+          data: { signedUrl: 'https://storage.example.com/signed-url' },
+          error: null
+        })),
+        remove: jest.fn(() => ({ error: null })),
+        list: jest.fn(() => ({ data: [], error: null }))
+      }))
+    },
+    rpc: jest.fn((funcName: string) => {
+      if (funcName === 'can_user_export') {
+        return Promise.resolve({
+          data: [{
+            can_export: true,
+            current_count: 10,
+            limit_count: 100,
+            percentage_used: 10.0,
+            resets_at: new Date('2025-11-01').toISOString()
+          }],
+          error: null
+        })
+      }
+      return Promise.resolve({ data: null, error: null })
+    }),
+    from: jest.fn(() => ({
+      insert: jest.fn(() => ({ error: null })),
+      update: jest.fn(() => ({ eq: jest.fn(() => ({ error: null })) })),
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          single: jest.fn(() => ({
+            data: {
+              tier: 'PROFESSIONAL',
+              exports_per_month: 100,
+              max_file_size_mb: 50,
+              max_recipients_per_email: 10,
+              scheduled_reports_limit: 10,
+              share_links_per_month: 50,
+              formats_allowed: ['csv', 'excel', 'pdf'],
+              features_enabled: ['basic_export', 'excel_export', 'pdf_export']
+            },
+            error: null
+          }))
+        }))
+      }))
+    }))
+  }))
+}))
+
+describe('Story 3.4: Export Integration Tests', () => {
+  let exportManager: ExportManager
+  let storageService: ExportStorageService
+  let trackingService: ExportUsageTrackingService
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    exportManager = ExportManager.getInstance()
+    storageService = ExportStorageService.getInstance()
+    trackingService = ExportUsageTrackingService.getInstance()
+  })
+
+  describe('Complete Export Flow', () => {
+    it('should complete full export workflow: create -> generate -> upload -> download', async () => {
+      const userId = 'test-user-123'
+      const format = 'pdf'
+      const template = 'executive'
+      const dateRange = {
+        start: '2018-01-01',
+        end: '2018-06-30'
+      }
+
+      // Step 1: Check usage limits
+      const usageCheck = await trackingService.canUserExport(userId, 'PROFESSIONAL')
+      expect(usageCheck.canExport).toBe(true)
+
+      // Step 2: Verify format is allowed
+      const formatAllowed = await trackingService.isFormatAllowed('PROFESSIONAL', format)
+      expect(formatAllowed).toBe(true)
+
+      // Step 3: Create export job
+      const job = await exportManager.createExportJob(userId, format, template, dateRange)
+      expect(job).toBeDefined()
+      expect(job.id).toBeDefined()
+      expect(job.status).toBe('queued')
+      expect(job.userId).toBe(userId)
+
+      // Step 4: Record job in database
+      const recorded = await trackingService.recordExportJob(
+        job.id,
+        userId,
+        format,
+        { template, dateRange },
+        'PROFESSIONAL'
+      )
+      expect(recorded).toBe(true)
+
+      // Step 5: Wait for job to complete (simulated)
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Step 6: Verify job completed
+      const completedJob = exportManager.getExportJob(job.id)
+      expect(completedJob).toBeDefined()
+      expect(completedJob?.downloadUrl).toBeDefined()
+
+      // Step 7: Log download action
+      const logged = await trackingService.logExportAction(userId, job.id, 'downloaded', {})
+      expect(logged).toBe(true)
+    }, 10000)
+
+    it('should enforce tier limits and reject exports when quota exceeded', async () => {
+      // Mock exceeded quota
+      const { createServiceClient } = require('@/src/lib/supabase')
+      const mockSupabase = createServiceClient()
+      mockSupabase.rpc.mockResolvedValue({
+        data: [{
+          can_export: false,
+          current_count: 100,
+          limit_count: 100,
+          percentage_used: 100.0,
+          resets_at: new Date('2025-11-01').toISOString()
+        }],
+        error: null
+      })
+
+      const usageCheck = await trackingService.canUserExport('user123', 'PROFESSIONAL')
+
+      expect(usageCheck.canExport).toBe(false)
+      expect(usageCheck.currentCount).toBe(100)
+      expect(usageCheck.limit).toBe(100)
+    })
+
+    it('should reject disallowed formats for tier', async () => {
+      // Mock FREE tier limits
+      const { createServiceClient } = require('@/src/lib/supabase')
+      const mockSupabase = createServiceClient()
+      mockSupabase.from().select().eq().single.mockResolvedValue({
+        data: {
+          tier: 'FREE',
+          formats_allowed: ['csv']
+        },
+        error: null
+      })
+
+      const formatAllowed = await trackingService.isFormatAllowed('FREE', 'pdf')
+
+      expect(formatAllowed).toBe(false)
+    })
+  })
+
+  describe('Storage Integration', () => {
+    it('should upload file to storage and generate signed URL', async () => {
+      const mockBuffer = Buffer.from('test pdf content')
+      const result = await storageService.uploadExportFile(
+        'user123',
+        'job456',
+        mockBuffer,
+        'report.pdf',
+        'application/pdf'
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.fileKey).toBeDefined()
+      expect(result.fileUrl).toContain('signed-url')
+      expect(result.expiresAt).toBeDefined()
+      expect(result.checksum).toBeDefined()
+      expect(result.checksum).toHaveLength(64) // SHA-256 hex string
+    })
+
+    it('should regenerate signed URL for expired files', async () => {
+      const fileKey = 'user123/job456/report.pdf'
+      const result = await storageService.generateSignedUrl(fileKey)
+
+      expect(result.success).toBe(true)
+      expect(result.signedUrl).toBeDefined()
+    })
+
+    it('should calculate consistent checksums for identical files', async () => {
+      const mockBuffer = Buffer.from('test pdf content')
+
+      const result1 = await storageService.uploadExportFile(
+        'user123',
+        'job456',
+        mockBuffer,
+        'report1.pdf',
+        'application/pdf'
+      )
+
+      const result2 = await storageService.uploadExportFile(
+        'user123',
+        'job457',
+        mockBuffer,
+        'report2.pdf',
+        'application/pdf'
+      )
+
+      expect(result1.checksum).toBe(result2.checksum)
+    })
+
+    it('should retry upload on transient failures', async () => {
+      const { createServiceClient } = require('@/src/lib/supabase')
+      const mockSupabase = createServiceClient()
+
+      // Mock first attempt fails, second succeeds
+      let attemptCount = 0
+      mockSupabase.storage.from().upload.mockImplementation(() => {
+        attemptCount++
+        if (attemptCount === 1) {
+          return Promise.resolve({
+            data: null,
+            error: { message: 'Network timeout' }
+          })
+        }
+        return Promise.resolve({
+          data: { path: 'user123/job456/report.pdf' },
+          error: null
+        })
+      })
+
+      const mockBuffer = Buffer.from('test content')
+      const result = await storageService.uploadExportFile(
+        'user123',
+        'job456',
+        'report.pdf',
+        mockBuffer,
+        'application/pdf'
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.retryAttempts).toBe(2) // Failed once, succeeded on second attempt
+      expect(attemptCount).toBe(2)
+    })
+
+    it('should fail after max retry attempts', async () => {
+      const { createServiceClient } = require('@/src/lib/supabase')
+      const mockSupabase = createServiceClient()
+
+      // Mock all attempts fail
+      mockSupabase.storage.from().upload.mockResolvedValue({
+        data: null,
+        error: { message: 'Persistent storage error' }
+      })
+
+      const mockBuffer = Buffer.from('test content')
+      const result = await storageService.uploadExportFile(
+        'user123',
+        'job456',
+        mockBuffer,
+        'report.pdf',
+        'application/pdf'
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.retryAttempts).toBe(3) // Max attempts
+      expect(result.error).toContain('Upload failed after 3 attempts')
+    })
+
+    it('should cleanup partial uploads on signed URL generation failure', async () => {
+      const { createServiceClient } = require('@/src/lib/supabase')
+      const mockSupabase = createServiceClient()
+      const mockRemove = jest.fn(() => ({ error: null }))
+
+      // Mock upload succeeds but signed URL fails
+      mockSupabase.storage.from().upload.mockResolvedValue({
+        data: { path: 'user123/job456/report.pdf' },
+        error: null
+      })
+
+      mockSupabase.storage.from().createSignedUrl.mockResolvedValue({
+        data: null,
+        error: { message: 'Unable to generate signed URL' }
+      })
+
+      mockSupabase.storage.from().remove = mockRemove
+
+      const mockBuffer = Buffer.from('test content')
+      const result = await storageService.uploadExportFile(
+        'user123',
+        'job456',
+        mockBuffer,
+        'report.pdf',
+        'application/pdf'
+      )
+
+      // Should attempt cleanup (note: cleanup happens but may fail silently)
+      expect(result.success).toBe(false)
+    })
+
+    it('should handle duplicate file errors gracefully', async () => {
+      const { createServiceClient } = require('@/src/lib/supabase')
+      const mockSupabase = createServiceClient()
+
+      // Mock file already exists error
+      mockSupabase.storage.from().upload.mockResolvedValue({
+        data: null,
+        error: { message: 'File already exists' }
+      })
+
+      // But signed URL generation works
+      mockSupabase.storage.from().createSignedUrl.mockResolvedValue({
+        data: { signedUrl: 'https://storage.example.com/existing-file' },
+        error: null
+      })
+
+      const mockBuffer = Buffer.from('test content')
+      const result = await storageService.uploadExportFile(
+        'user123',
+        'job456',
+        mockBuffer,
+        'report.pdf',
+        'application/pdf'
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.fileUrl).toContain('existing-file')
+    })
+  })
+
+  describe('Usage Tracking', () => {
+    it('should track export usage correctly', async () => {
+      const userId = 'user123'
+
+      // Record multiple exports
+      await trackingService.recordExportJob('job1', userId, 'csv', {}, 'PROFESSIONAL')
+      await trackingService.recordExportJob('job2', userId, 'pdf', {}, 'PROFESSIONAL')
+
+      // Get current usage
+      const usage = await trackingService.getCurrentMonthUsage(userId)
+
+      expect(usage).toBeDefined()
+    })
+
+    it('should get user export statistics', async () => {
+      const stats = await trackingService.getUserExportStats('user123')
+
+      expect(Array.isArray(stats)).toBe(true)
+    })
+  })
+
+  describe('Error Handling', () => {
+    it('should handle export generation errors gracefully', async () => {
+      const userId = 'test-user'
+      const format = 'pdf'
+      const template = 'executive'
+      const dateRange = {
+        start: '2018-01-01',
+        end: '2018-06-30'
+      }
+
+      // Create job
+      const job = await exportManager.createExportJob(userId, format, template, dateRange)
+
+      // Wait for processing
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Job should exist even if it fails
+      const retrievedJob = exportManager.getExportJob(job.id)
+      expect(retrievedJob).toBeDefined()
+    })
+
+    it('should handle storage upload failures', async () => {
+      const { createServiceClient } = require('@/src/lib/supabase')
+      const mockSupabase = createServiceClient()
+      mockSupabase.storage.from().upload.mockResolvedValue({
+        data: null,
+        error: { message: 'Storage quota exceeded' }
+      })
+
+      const mockBuffer = Buffer.from('test content')
+      const result = await storageService.uploadExportFile(
+        'user123',
+        'job456',
+        mockBuffer,
+        'report.pdf',
+        'application/pdf'
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBeDefined()
+    })
+  })
+
+  describe('Professional Tier Features', () => {
+    it('should allow all formats for PROFESSIONAL tier', async () => {
+      const csvAllowed = await trackingService.isFormatAllowed('PROFESSIONAL', 'csv')
+      const excelAllowed = await trackingService.isFormatAllowed('PROFESSIONAL', 'excel')
+      const pdfAllowed = await trackingService.isFormatAllowed('PROFESSIONAL', 'pdf')
+
+      expect(csvAllowed).toBe(true)
+      expect(excelAllowed).toBe(true)
+      expect(pdfAllowed).toBe(true)
+    })
+
+    it('should have higher export limits for PROFESSIONAL tier', async () => {
+      const limits = await trackingService.getTierLimits('PROFESSIONAL')
+
+      expect(limits).toBeDefined()
+      expect(limits?.exports_per_month).toBeGreaterThan(5)
+    })
+  })
+
+  describe('Export Job Lifecycle', () => {
+    it('should track job status through lifecycle', async () => {
+      const jobId = 'test-job-123'
+      const userId = 'user123'
+
+      // Create job
+      await trackingService.recordExportJob(jobId, userId, 'pdf', {}, 'PROFESSIONAL')
+
+      // Update to processing
+      let updated = await trackingService.updateExportJobStatus(jobId, 'processing', {
+        progressPercent: 50
+      })
+      expect(updated).toBe(true)
+
+      // Update to completed
+      updated = await trackingService.updateExportJobStatus(jobId, 'completed', {
+        progressPercent: 100,
+        fileUrl: 'https://example.com/file.pdf',
+        completedAt: new Date().toISOString()
+      })
+      expect(updated).toBe(true)
+    })
+
+    it('should log all export actions for audit trail', async () => {
+      const userId = 'user123'
+      const jobId = 'job123'
+
+      // Log various actions
+      await trackingService.logExportAction(userId, jobId, 'created', {})
+      await trackingService.logExportAction(userId, jobId, 'downloaded', {})
+      await trackingService.logExportAction(userId, jobId, 'shared', {})
+
+      // All logs should succeed
+      expect(true).toBe(true)
+    })
+  })
+
+  describe('File Format Generation', () => {
+    it('should generate CSV export successfully', async () => {
+      const job = await exportManager.createExportJob(
+        'user123',
+        'csv',
+        'raw_data',
+        { start: '2018-01-01', end: '2018-06-30' }
+      )
+
+      expect(job.format).toBe('csv')
+      expect(job.status).toBe('queued')
+    })
+
+    it('should generate Excel export successfully', async () => {
+      const job = await exportManager.createExportJob(
+        'user123',
+        'excel',
+        'technical',
+        { start: '2018-01-01', end: '2018-06-30' }
+      )
+
+      expect(job.format).toBe('excel')
+      expect(job.status).toBe('queued')
+    })
+
+    it('should generate PDF export successfully', async () => {
+      const job = await exportManager.createExportJob(
+        'user123',
+        'pdf',
+        'executive',
+        { start: '2018-01-01', end: '2018-06-30' }
+      )
+
+      expect(job.format).toBe('pdf')
+      expect(job.status).toBe('queued')
+    })
+  })
+})

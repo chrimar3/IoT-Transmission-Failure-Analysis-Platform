@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   Bell,
   CheckCircle,
-  _X,
   Zap,
   AlertCircle,
   Info,
@@ -16,7 +15,7 @@ import {
   Shield,
   DollarSign,
   Settings,
-  _Filter,
+  Filter as _Filter,
   Search,
   ArrowUp,
   ArrowDown,
@@ -25,8 +24,8 @@ import {
   Volume2,
   VolumeX,
   MapPin,
-  _Users,
-  _Calendar,
+  Users as _Users,
+  Calendar as _Calendar,
   RefreshCw
 } from 'lucide-react'
 
@@ -125,13 +124,6 @@ export default function CriticalAlertsSystem({
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const previousAlertsRef = useRef<CriticalAlert[]>([])
 
-  useEffect(() => {
-    if (!paused) {
-      fetchAlerts()
-      const interval = setInterval(fetchAlerts, refreshInterval)
-      return () => clearInterval(interval)
-    }
-  }, [fetchAlerts, refreshInterval, paused])
 
   useEffect(() => {
     // Initialize audio for alert sounds
@@ -139,31 +131,6 @@ export default function CriticalAlertsSystem({
     audioRef.current.volume = 0.5
   }, [])
 
-  useEffect(() => {
-    // Check for new critical alerts and play sound if enabled
-    if (preferences.sound_enabled && previousAlertsRef.current.length > 0) {
-      const newCriticalAlerts = alerts.filter(alert =>
-        (alert.severity === 'emergency' || alert.severity === 'critical') &&
-        !previousAlertsRef.current.some(prev => prev.id === alert.id)
-      )
-
-      if (newCriticalAlerts.length > 0) {
-        setNewAlertsCount(prev => prev + newCriticalAlerts.length)
-        playAlertSound()
-
-        // Show desktop notification if enabled
-        if (preferences.desktop_notifications && 'Notification' in window) {
-          newCriticalAlerts.forEach(alert => {
-            new Notification(`Critical Alert: ${alert.title}`, {
-              body: alert.message,
-              icon: '/favicon.ico'
-            })
-          })
-        }
-      }
-    }
-    previousAlertsRef.current = alerts
-  }, [alerts, preferences.sound_enabled, preferences.desktop_notifications, playAlertSound])
 
   const fetchAlerts = useCallback(async () => {
     try {
@@ -203,11 +170,45 @@ export default function CriticalAlertsSystem({
     }
   }, [maxDisplayAlerts, preferences.severity_filter, preferences.type_filter, sessionId])
 
+  useEffect(() => {
+    if (!paused) {
+      fetchAlerts()
+      const interval = setInterval(fetchAlerts, refreshInterval)
+      return () => clearInterval(interval)
+    }
+  }, [fetchAlerts, refreshInterval, paused])
+
   const playAlertSound = useCallback(() => {
     if (audioRef.current && preferences.sound_enabled) {
       audioRef.current.play().catch(e => console.log('Could not play alert sound:', e))
     }
   }, [preferences.sound_enabled])
+
+  useEffect(() => {
+    // Check for new critical alerts and play sound if enabled
+    if (preferences.sound_enabled && previousAlertsRef.current.length > 0) {
+      const newCriticalAlerts = alerts.filter(alert =>
+        (alert.severity === 'emergency' || alert.severity === 'critical') &&
+        !previousAlertsRef.current.some(prev => prev.id === alert.id)
+      )
+
+      if (newCriticalAlerts.length > 0) {
+        setNewAlertsCount(prev => prev + newCriticalAlerts.length)
+        playAlertSound()
+
+        // Show desktop notification if enabled
+        if (preferences.desktop_notifications && 'Notification' in window) {
+          newCriticalAlerts.forEach(alert => {
+            new Notification(`Critical Alert: ${alert.title}`, {
+              body: alert.message,
+              icon: '/favicon.ico'
+            })
+          })
+        }
+      }
+    }
+    previousAlertsRef.current = alerts
+  }, [alerts, preferences.sound_enabled, preferences.desktop_notifications, playAlertSound])
 
   const handleAlertAction = async (action: 'acknowledge' | 'resolve' | 'escalate', alert: CriticalAlert) => {
     try {

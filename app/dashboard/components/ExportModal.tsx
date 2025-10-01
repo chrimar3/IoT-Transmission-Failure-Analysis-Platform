@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Download, FileText, Table, FileSpreadsheet, X, Filter, _Calendar } from 'lucide-react'
+import { Download, FileText, Table, FileSpreadsheet, X, Filter } from 'lucide-react'
 
 interface ExportFormat {
   id: string
@@ -31,6 +31,33 @@ export default function ExportModal({ isOpen, onClose, sessionId }: ExportModalP
   const [isExporting, setIsExporting] = useState(false)
   const [availableFormats, setAvailableFormats] = useState<ExportFormat[]>([])
 
+  const fetchExportFormats = useCallback(async () => {
+    try {
+      const response = await fetch('/api/export/formats')
+      const data = await response.json()
+
+      if (data.success) {
+        const formatsWithIcons = data.data.formats.map((format: unknown) => {
+          const formatData = format as { id: string; name: string; description: string }
+          return {
+            ...formatData,
+            icon: getFormatIcon(formatData.id)
+          }
+        })
+        setAvailableFormats(formatsWithIcons)
+      }
+    } catch (error) {
+      console.error('Error fetching export formats:', error)
+      // Fallback to default formats
+      setAvailableFormats([
+        { id: 'csv', name: 'CSV', description: 'Comma-separated values for analysis', icon: <Table className="h-5 w-5" /> },
+        { id: 'json', name: 'JSON', description: 'JavaScript Object Notation for APIs', icon: <FileText className="h-5 w-5" /> },
+        { id: 'pdf', name: 'PDF', description: 'Professional report with CU-BEMS branding', icon: <FileText className="h-5 w-5" /> },
+        { id: 'excel', name: 'Excel', description: 'Excel workbook with charts and summaries', icon: <FileSpreadsheet className="h-5 w-5" /> }
+      ])
+    }
+  }, [])
+
   useEffect(() => {
     if (isOpen) {
       fetchExportFormats()
@@ -48,29 +75,6 @@ export default function ExportModal({ isOpen, onClose, sessionId }: ExportModalP
       }))
     }
   }, [isOpen, fetchExportFormats])
-
-  const fetchExportFormats = useCallback(async () => {
-    try {
-      const response = await fetch('/api/export/formats')
-      const data = await response.json()
-
-      if (data.success) {
-        const formatsWithIcons = data.data.formats.map((format: unknown) => ({
-          ...format,
-          icon: getFormatIcon(format.id)
-        }))
-        setAvailableFormats(formatsWithIcons)
-      }
-    } catch (error) {
-      console.error('Error fetching export formats:', error)
-      // Fallback to default formats
-      setAvailableFormats([
-        { id: 'csv', name: 'CSV', description: 'Comma-separated values', icon: <Table className="h-5 w-5" /> },
-        { id: 'json', name: 'JSON', description: 'JavaScript Object Notation', icon: <FileText className="h-5 w-5" /> },
-        { id: 'excel', name: 'Excel', description: 'Microsoft Excel format', icon: <FileSpreadsheet className="h-5 w-5" /> }
-      ])
-    }
-  }, [])
 
   const getFormatIcon = (formatId: string) => {
     switch (formatId) {
@@ -191,10 +195,10 @@ export default function ExportModal({ isOpen, onClose, sessionId }: ExportModalP
           <h3 className="font-medium text-gray-900 mb-3">Data Type</h3>
           <div className="space-y-2">
             {[
-              { id: 'insights', name: 'Insights', description: 'Business insights and recommendations' },
-              { id: 'scenarios', name: 'Scenarios', description: 'Savings scenarios with ROI calculations' },
-              { id: 'metrics', name: 'Metrics', description: 'Performance and quality metrics' },
-              { id: 'complete', name: 'Complete Report', description: 'All data combined' }
+              { id: 'insights', name: 'Executive Summary', description: 'Key business insights with statistical backing' },
+              { id: 'scenarios', name: 'Technical Analysis', description: 'Detailed scenarios and ROI calculations' },
+              { id: 'metrics', name: 'Compliance Report', description: 'Regulatory-grade validation metrics' },
+              { id: 'complete', name: 'Complete Report', description: 'Comprehensive analysis with all data types' }
             ].map((dataType) => (
               <label key={dataType.id} className="flex items-center space-x-3 cursor-pointer">
                 <input
@@ -296,6 +300,22 @@ export default function ExportModal({ isOpen, onClose, sessionId }: ExportModalP
           </div>
         </div>
 
+        {/* Professional Tier Notice */}
+        <div className="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start space-x-2">
+            <div className="flex-shrink-0">
+              <div className="w-2 h-2 bg-amber-500 rounded-full mt-2"></div>
+            </div>
+            <div className="text-sm">
+              <p className="font-medium text-amber-800 mb-1">Professional Feature</p>
+              <p className="text-amber-700">
+                Export functionality is available exclusively to Professional tier subscribers (€29/month).
+                Exports include CU-BEMS branding and statistical validation suitable for executive presentations.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Export Summary */}
         <div className="mb-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <h4 className="font-medium text-blue-900 mb-2">Export Summary</h4>
@@ -304,6 +324,7 @@ export default function ExportModal({ isOpen, onClose, sessionId }: ExportModalP
             <p>Data: <span className="font-medium">{selectedDataType}</span></p>
             <p>Min Confidence: <span className="font-medium">{filters.confidence_threshold}%</span></p>
             {sessionId && <p>Session: <span className="font-medium">{sessionId.slice(0, 8)}...</span></p>}
+            <p>Templates: <span className="font-medium">Executive, Technical, Compliance available</span></p>
           </div>
         </div>
 

@@ -286,7 +286,7 @@ export class RecommendationEngine {
     adjustedCost += laborCost
 
     // Context adjustments
-    if (context.operational_criticality === 'high') {
+    if (_context.operational_criticality === 'high') {
       adjustedCost *= 1.2 // Priority service premium
     }
 
@@ -318,7 +318,7 @@ export class RecommendationEngine {
     estimatedSavings += downtimeCost * preventedDowntimeHours
 
     // Operational criticality multiplier
-    if (context.operational_criticality === 'high') {
+    if (_context.operational_criticality === 'high') {
       estimatedSavings *= 1.5
     }
 
@@ -373,7 +373,7 @@ export class RecommendationEngine {
     priorityScore += action.urgency_multiplier * 20
 
     // Context contribution (10% weight)
-    priorityScore += context.operational_criticality === 'high' ? 10 : context.operational_criticality === 'medium' ? 5 : 2
+    priorityScore += _context.operational_criticality === 'high' ? 10 : _context.operational_criticality === 'medium' ? 5 : 2
 
     if (priorityScore >= 70) return 'high'
     if (priorityScore >= 40) return 'medium'
@@ -394,7 +394,7 @@ export class RecommendationEngine {
     successProb *= (0.5 + (pattern.confidence_score / 200)) // 0.5 to 1.0 multiplier
 
     // Adjust based on expertise match
-    if (context.available_expertise?.includes(action.required_expertise)) {
+    if (_context.available_expertise?.includes(action.required_expertise)) {
       successProb *= 1.1
     }
 
@@ -453,7 +453,7 @@ export class RecommendationEngine {
       enhancedDescription += ' High-confidence detection algorithm recommends immediate attention.'
     }
 
-    if (context.operational_criticality === 'high') {
+    if (_context.operational_criticality === 'high') {
       enhancedDescription += ' Critical operational equipment requires priority handling.'
     }
 

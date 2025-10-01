@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { enforceDataAccessRestrictions, enforceTierBasedRateLimit, generateUpgradePrompt } from '@/src/lib/middleware/data-access.middleware'
+import { enforceTierBasedRateLimit } from '@/src/lib/middleware/data-access.middleware'
 import { subscriptionService } from '@/src/lib/stripe/subscription.service'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/src/lib/auth/config'
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateAnalyticsData(params: z.infer<typeof AnalyticsRequestSchema>, tier: string) {
+function generateAnalyticsData(params: z.infer<typeof AnalyticsRequestSchema>, _tier: string) {
   const { analysis_type, equipment_type, confidence_level } = params
 
   switch (analysis_type) {

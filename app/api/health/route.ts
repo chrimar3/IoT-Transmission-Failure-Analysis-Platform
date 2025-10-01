@@ -2,8 +2,40 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Health Check Endpoint
- * Provides comprehensive system health status for domain verification and monitoring
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: System health check
+ *     description: Returns comprehensive system health status including database, authentication, storage, and monitoring services
+ *     tags:
+ *       - Health
+ *     responses:
+ *       200:
+ *         description: System is healthy or degraded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   enum: [healthy, degraded, unhealthy]
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                 services:
+ *                   type: object
+ *                   properties:
+ *                     database:
+ *                       type: object
+ *                     authentication:
+ *                       type: object
+ *                     storage:
+ *                       type: object
+ *                     monitoring:
+ *                       type: object
+ *       503:
+ *         description: System is unhealthy
  */
 
 interface HealthStatus {
@@ -125,7 +157,7 @@ async function checkDatabase(): Promise<ServiceHealth> {
     );
 
     // Simple connectivity test
-    const { error } = await supabase.from('sensor_readings').select('count').limit(1);
+    const { error } = await supabase.from('validation_sessions').select('count').limit(1);
 
     if (error) {
       return {

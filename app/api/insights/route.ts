@@ -85,15 +85,28 @@ export async function GET(request: NextRequest) {
     // Apply filters if specified
     let filteredInsights = insights.key_insights;
 
+    interface InsightItem {
+      category?: string
+      severity?: string
+      implementation_difficulty?: string
+      [key: string]: unknown
+    }
+
     if (category) {
       filteredInsights = filteredInsights.filter(
-        (insight: unknown) => insight.category === category
+        (insight: unknown) => {
+          const typedInsight = insight as InsightItem
+          return typedInsight.category === category
+        }
       );
     }
 
     if (severity) {
       filteredInsights = filteredInsights.filter(
-        (insight: unknown) => insight.severity === severity
+        (insight: unknown) => {
+          const typedInsight = insight as InsightItem
+          return typedInsight.severity === severity
+        }
       );
     }
 
@@ -147,11 +160,17 @@ export async function POST() {
         dataset_summary: insights.summary,
         business_impact: insights.business_impact_summary,
         critical_insights: insights.key_insights
-          .filter((insight: unknown) => insight.severity === 'critical')
+          .filter((insight: unknown) => {
+            const typedInsight = insight as { severity?: string }
+            return typedInsight.severity === 'critical'
+          })
           .slice(0, 3),
         total_savings_potential: insights.business_impact_summary?.total_identified_savings || '$273,500/year',
         immediate_actions: insights.key_insights
-          .filter((insight: unknown) => insight.implementation_difficulty === 'Easy')
+          .filter((insight: unknown) => {
+            const typedInsight = insight as { implementation_difficulty?: string }
+            return typedInsight.implementation_difficulty === 'Easy'
+          })
           .slice(0, 3),
         data_confidence: insights.summary.data_quality_score || 100
       },

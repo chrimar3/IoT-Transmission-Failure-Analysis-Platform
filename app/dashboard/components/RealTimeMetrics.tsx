@@ -25,12 +25,6 @@ export default function RealTimeMetrics({ sessionId, refreshInterval = 30000 }: 
   const [loading, setLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
-  useEffect(() => {
-    fetchMetrics()
-    const interval = setInterval(fetchMetrics, refreshInterval)
-    return () => clearInterval(interval)
-  }, [fetchMetrics, refreshInterval])
-
   const fetchMetrics = useCallback(async () => {
     try {
       const url = sessionId
@@ -57,6 +51,12 @@ export default function RealTimeMetrics({ sessionId, refreshInterval = 30000 }: 
       setLoading(false)
     }
   }, [sessionId])
+
+  useEffect(() => {
+    fetchMetrics()
+    const interval = setInterval(fetchMetrics, refreshInterval)
+    return () => clearInterval(interval)
+  }, [fetchMetrics, refreshInterval])
 
   const generateMockMetrics = (): MetricData[] => {
     const baseMetrics = [

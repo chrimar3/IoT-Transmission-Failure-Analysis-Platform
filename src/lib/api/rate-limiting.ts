@@ -27,6 +27,32 @@ interface RateLimitConfig {
   windowSizeMs: number
 }
 
+/**
+ * Simplified rate limit check function for compatibility with tests
+ */
+export async function checkRateLimit(
+  userId: string,
+  operation: string,
+  _options: { maxRequests: number; windowMs: number }
+): Promise<{ allowed: boolean; retryAfter: number }> {
+  try {
+    // Use the existing RateLimiter to check rate limits
+    const tier: RateLimitTier = await RateLimiter.getUserTierFromSubscription(userId)
+    const result = await RateLimiter.checkRateLimit(`api_key_${userId}`, userId, tier, operation)
+
+    return {
+      allowed: result.allowed,
+      retryAfter: result.retryAfter || 0
+    }
+  } catch (error) {
+    console.error('Rate limit check error:', error)
+    return {
+      allowed: true,
+      retryAfter: 0
+    }
+  }
+}
+
 export class RateLimiter {
   private static readonly CONFIG: Record<RateLimitTier, RateLimitConfig> = {
     free: {

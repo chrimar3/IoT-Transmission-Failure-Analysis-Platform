@@ -11,7 +11,6 @@ import type {
   ChannelType,
   AlertInstance,
   NotificationLog,
-  _NotificationStatus,
   NotificationRecipient,
   EscalationPolicy,
   EscalationStage
@@ -88,13 +87,13 @@ export class NotificationDeliveryService {
 
     // Check quiet hours
     if (this.isQuietHours(settings.quiet_hours, _alert)) {
-      console.log(`Alert ${alert.id} suppressed due to quiet hours`)
+      console.log(`Alert ${_alert.id} suppressed due to quiet hours`)
       return notifications
     }
 
     // Check frequency limits
     if (await this.exceedsFrequencyLimits(settings.frequency_limits, _alert)) {
-      console.log(`Alert ${alert.id} suppressed due to frequency limits`)
+      console.log(`Alert ${_alert.id} suppressed due to frequency limits`)
       return notifications
     }
 
@@ -106,7 +105,7 @@ export class NotificationDeliveryService {
       if (!channel.enabled) continue
 
       // Check if channel should handle this severity
-      if (!channel.priority_filter.includes(alert.severity)) continue
+      if (!channel.priority_filter.includes(_alert.severity)) continue
 
       try {
         const channelNotifications = await this.sendChannelNotifications(
@@ -210,16 +209,16 @@ export class NotificationDeliveryService {
       case 'email':
         return await this.emailProvider.sendEmail(
           recipient,
-          template.subject,
-          template._body,
-          template.html_body,
+          _template.subject,
+          _template.body,
+          _template.html_body,
           _config
         )
 
       case 'sms':
         return await this.smsProvider.sendSMS(
           recipient,
-          template._body,
+          _template.body,
           _config
         )
 
@@ -275,10 +274,10 @@ export class NotificationDeliveryService {
     if (!quietHours.enabled) return false
 
     // Check if alert is in exceptions list
-    if (quietHours.exceptions.includes(alert.id)) return false
+    if (quietHours.exceptions.includes(_alert.id)) return false
 
     // Critical alerts may ignore quiet hours
-    if (alert.severity === 'critical' && !quietHours.exceptions.includes('all_critical')) {
+    if (_alert.severity === 'critical' && !quietHours.exceptions.includes('all_critical')) {
       return false
     }
 
@@ -425,17 +424,17 @@ export class NotificationDeliveryService {
    */
   private generateNotificationTemplate(_alert: AlertInstance): NotificationTemplate {
     const variables = {
-      alert_title: alert.title,
-      alert_description: alert.description,
-      severity: alert.severity.toUpperCase(),
-      triggered_at: new Date(alert.triggered_at).toLocaleString(),
-      alert_id: alert.id,
-      dashboard_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/alerts/${alert.id}`
+      alert_title: _alert.title,
+      alert_description: _alert.description,
+      severity: _alert.severity ? _alert.severity.toUpperCase() : 'UNKNOWN',
+      triggered_at: new Date(_alert.triggered_at).toLocaleString(),
+      alert_id: _alert.id,
+      dashboard_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/alerts/${_alert.id}`
     }
 
     const subject = `🚨 ${variables.severity} Alert: ${variables.alert_title}`
 
-    const _body = `
+    const body = `
 Alert Details:
 • Title: ${variables.alert_title}
 • Severity: ${variables.severity}
@@ -475,7 +474,7 @@ Alert ID: ${variables.alert_id}
 
     return {
       subject,
-      _body,
+      body,
       html_body,
       variables
     }

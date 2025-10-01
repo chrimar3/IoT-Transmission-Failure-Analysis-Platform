@@ -1,5 +1,5 @@
 import { POST as generateReport } from '@/app/api/reports/generate/route'
-import { GET as downloadReport } from '@/app/api/reports/download/[id]/route'
+// import { GET as downloadReport } from '@/app/api/reports/download/[id]/route' // File doesn't exist
 import { getServerSession } from 'next-auth'
 import { validateSubscription } from '@/lib/middleware/subscription'
 import { prisma } from '@/lib/database/connection'
@@ -37,7 +37,11 @@ describe('Reports Security Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockGetServerSession.mockResolvedValue(mockSession as unknown)
-    mockValidateSubscription.mockResolvedValue(true)
+    mockValidateSubscription.mockResolvedValue(true as any)
+
+    // Add missing Prisma methods
+    ;(mockPrisma.reportTemplate as any).findFirst = jest.fn().mockResolvedValue(null)
+    ;(mockPrisma.generatedReport as any).count = jest.fn().mockResolvedValue(0)
   })
 
   describe('Authentication and Authorization', () => {
@@ -58,7 +62,7 @@ describe('Reports Security Tests', () => {
     })
 
     it('should reject non-Professional tier users', async () => {
-      mockValidateSubscription.mockResolvedValue(false)
+      mockValidateSubscription.mockResolvedValue(false as any)
 
       const request = new NextRequest('http://localhost/api/reports/generate', {
         method: 'POST',
@@ -75,12 +79,15 @@ describe('Reports Security Tests', () => {
 
     it('should validate template access permissions', async () => {
       // Template owned by different user, not public, not shared
-      const inaccessibleTemplate = {
-        ...mockTemplate,
-        user_id: 'other-user-456'
+      const inaccessibleTemplate: any = {
+        id: mockTemplate.id,
+        user_id: 'other-user-456',
+        name: mockTemplate.name,
+        version: mockTemplate.version,
+        template_data: mockTemplate.template_data
       }
 
-      mockPrisma.reportTemplate.findFirst.mockResolvedValue(null)
+      (mockPrisma.reportTemplate as any).findFirst.mockResolvedValue(null)
 
       const request = new NextRequest('http://localhost/api/reports/generate', {
         method: 'POST',
@@ -99,14 +106,17 @@ describe('Reports Security Tests', () => {
     })
 
     it('should allow access to public templates', async () => {
-      const publicTemplate = {
-        ...mockTemplate,
+      const publicTemplate: any = {
+        id: mockTemplate.id,
+        name: mockTemplate.name,
+        version: mockTemplate.version,
+        template_data: mockTemplate.template_data,
         user_id: 'other-user-456',
         is_public: true
       }
 
-      mockPrisma.reportTemplate.findFirst.mockResolvedValue(publicTemplate as unknown)
-      mockPrisma.generatedReport.count.mockResolvedValue(0)
+      (mockPrisma.reportTemplate as any).findFirst.mockResolvedValue(publicTemplate as unknown)
+      (mockPrisma.generatedReport as any).count.mockResolvedValue(0)
       mockPrisma.generatedReport.create.mockResolvedValue({ id: 'report-123' } as unknown)
 
       const request = new NextRequest('http://localhost/api/reports/generate', {
@@ -124,7 +134,10 @@ describe('Reports Security Tests', () => {
 
     it('should allow access to shared templates', async () => {
       const sharedTemplate = {
-        ...mockTemplate,
+        id: mockTemplate.id,
+        name: mockTemplate.name,
+        version: mockTemplate.version,
+        template_data: mockTemplate.template_data,
         user_id: 'other-user-456',
         shared_templates: [{ shared_with: 'user-123' }]
       }
@@ -419,7 +432,9 @@ describe('Reports Security Tests', () => {
     it('should validate and sanitize template component configurations', async () => {
       // Test with a template containing potentially dangerous configurations
       const dangerousTemplate = {
-        ...mockTemplate,
+        id: mockTemplate.id,
+        name: mockTemplate.name,
+        version: mockTemplate.version,
         template_data: {
           components: [
             {

@@ -5,7 +5,7 @@
  * Testing all evaluation logic, conditions, aggregations, and alert triggering
  */
 
-import { AlertRuleEngine } from '../AlertRuleEngine'
+import { AlertRuleEngine } from '../../../lib/alerts/AlertRuleEngine'
 import type {
   AlertConfiguration,
   AlertRule,

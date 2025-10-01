@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getServerSession } from 'next-auth/next'
 import { ApiKeyManager } from '@/lib/api/key-management'
-import type { ApiResponse, _CreateApiKeyRequest, ApiKey } from '@/types/api'
+import type { ApiResponse, ApiKey } from '@/types/api'
 
 // Validation schemas
 const CreateKeyRequestSchema = z.object({
@@ -99,7 +99,7 @@ export async function POST(_request: NextRequest): Promise<NextResponse> {
     const userId = session.user.id
 
     // Parse and validate request body
-    const body = await request.json()
+    const body = await _request.json()
     const createRequest = CreateKeyRequestSchema.parse(body)
 
     // Create API key
@@ -174,7 +174,7 @@ export async function PUT(_request: NextRequest): Promise<NextResponse> {
     }
 
     const userId = session.user.id
-    const url = new URL(request.url)
+    const url = new URL(_request.url)
     const keyId = url.searchParams.get('id')
 
     if (!keyId) {
@@ -188,7 +188,7 @@ export async function PUT(_request: NextRequest): Promise<NextResponse> {
     }
 
     // Parse and validate request body
-    const body = await request.json()
+    const body = await _request.json()
     const updateRequest = UpdateKeyRequestSchema.parse(body)
 
     // Update API key
@@ -265,7 +265,7 @@ export async function DELETE(_request: NextRequest): Promise<NextResponse> {
     }
 
     const userId = session.user.id
-    const url = new URL(request.url)
+    const url = new URL(_request.url)
     const keyId = url.searchParams.get('id')
 
     if (!keyId) {

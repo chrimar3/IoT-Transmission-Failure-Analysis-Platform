@@ -6,8 +6,8 @@
  */
 
 import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
-import fs from 'fs'
-import path from 'path'
+import * as fs from 'fs'
+import * as path from 'path'
 import { CSVExporter } from '../../lib/export/csvExporter'
 import { ExcelExporter } from '../../lib/export/excelExporter'
 import { PDFGenerator } from '../../lib/export/pdfGenerator'
@@ -81,7 +81,7 @@ describe('CSV Exporter', () => {
 
   test('should export data to CSV format', async () => {
     // Mock database query
-    jest.spyOn(csvExporter as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(csvExporter, 'fetchSensorData').mockResolvedValue(mockSensorData)
 
     const result = await csvExporter.exportToCSV(mockFilters, tempFilePath)
 
@@ -107,7 +107,7 @@ describe('CSV Exporter', () => {
       temperature: 20 + Math.random() * 10
     }))
 
-    jest.spyOn(csvExporter as unknown, 'fetchSensorData').mockResolvedValue(largeMockData)
+    jest.spyOn(csvExporter, 'fetchSensorData').mockResolvedValue(largeMockData)
 
     const result = await csvExporter.exportToCSV(mockFilters, tempFilePath)
 
@@ -120,10 +120,10 @@ describe('CSV Exporter', () => {
   })
 
   test('should handle export with progress tracking', async () => {
-    jest.spyOn(csvExporter as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(csvExporter, 'fetchSensorData').mockResolvedValue(mockSensorData)
 
-    const progressCallback = jest.fn()
-    jest.spyOn(csvExporter as unknown, 'updateProgress').mockImplementation(progressCallback)
+    const progressCallback = jest.fn().mockImplementation(async () => {})
+    jest.spyOn(csvExporter, 'updateProgress').mockImplementation(progressCallback as any)
 
     await csvExporter.exportToCSV(mockFilters, tempFilePath, 123)
 
@@ -131,7 +131,7 @@ describe('CSV Exporter', () => {
   })
 
   test('should handle database errors gracefully', async () => {
-    jest.spyOn(csvExporter as unknown, 'fetchSensorData').mockRejectedValue(new Error('Database connection failed'))
+    jest.spyOn(csvExporter, 'fetchSensorData').mockRejectedValue(new Error('Database connection failed'))
 
     const result = await csvExporter.exportToCSV(mockFilters, tempFilePath)
 
@@ -163,7 +163,7 @@ describe('Excel Exporter', () => {
   })
 
   test('should export data to Excel format with multiple sheets', async () => {
-    jest.spyOn(excelExporter as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(excelExporter as any, 'fetchSensorData').mockResolvedValue(mockSensorData)
 
     const result = await excelExporter.exportToExcel(mockFilters, tempFilePath)
 
@@ -176,7 +176,7 @@ describe('Excel Exporter', () => {
   })
 
   test('should include charts when requested', async () => {
-    jest.spyOn(excelExporter as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(excelExporter as any, 'fetchSensorData').mockResolvedValue(mockSensorData)
 
     const result = await excelExporter.exportToExcel(
       mockFilters,
@@ -190,12 +190,13 @@ describe('Excel Exporter', () => {
   })
 
   test('should apply custom formatting and branding', async () => {
-    jest.spyOn(excelExporter as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(excelExporter as any, 'fetchSensorData').mockResolvedValue(mockSensorData)
 
     const brandingSettings = {
       company_name: 'Test Company',
-      logo_url: 'https://example.com/logo.png',
-      primary_color: '#007bff'
+      company_logo_url: 'https://example.com/logo.png',
+      primary_color: '#007bff',
+      show_generated_timestamp: true
     }
 
     const result = await excelExporter.exportToExcel(
@@ -217,7 +218,7 @@ describe('Excel Exporter', () => {
       timestamp: new Date(Date.now() + i * 60000).toISOString()
     }))
 
-    jest.spyOn(excelExporter as unknown, 'fetchSensorData').mockResolvedValue(largeDataset)
+    jest.spyOn(excelExporter as any, 'fetchSensorData').mockResolvedValue(largeDataset)
 
     const result = await excelExporter.exportToExcel(mockFilters, tempFilePath)
 
@@ -231,7 +232,15 @@ describe('PDF Generator', () => {
   let tempFilePath: string
 
   beforeEach(() => {
-    pdfGenerator = new PDFGenerator()
+    pdfGenerator = new PDFGenerator({
+      template_id: 'default',
+      include_charts: true,
+      include_branding: false,
+      page_orientation: 'portrait',
+      page_size: 'A4',
+      quality: 'normal',
+      compression_level: 6
+    })
     tempFilePath = createTempFile('pdf')
   })
 
@@ -240,8 +249,8 @@ describe('PDF Generator', () => {
   })
 
   test('should generate PDF report with charts', async () => {
-    jest.spyOn(pdfGenerator as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
-    jest.spyOn(pdfGenerator as unknown, 'generateCharts').mockResolvedValue(['chart1.png', 'chart2.png'])
+    jest.spyOn(pdfGenerator as any, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(pdfGenerator as any, 'generateCharts').mockResolvedValue(['chart1.png', 'chart2.png'])
 
     const result = await pdfGenerator.generateReport(mockFilters, tempFilePath)
 
@@ -252,14 +261,15 @@ describe('PDF Generator', () => {
   })
 
   test('should apply custom template and branding', async () => {
-    jest.spyOn(pdfGenerator as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(pdfGenerator as any, 'fetchSensorData').mockResolvedValue(mockSensorData)
 
     const templateOptions = {
       template_id: 'executive_summary',
       branding_settings: {
         company_name: 'IoT Analytics Corp',
-        logo_url: 'https://example.com/logo.png',
-        primary_color: '#2563eb'
+        company_logo_url: 'https://example.com/logo.png',
+        primary_color: '#2563eb',
+        show_generated_timestamp: true
       }
     }
 
@@ -276,8 +286,8 @@ describe('PDF Generator', () => {
   })
 
   test('should handle chart generation failures gracefully', async () => {
-    jest.spyOn(pdfGenerator as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
-    jest.spyOn(pdfGenerator as unknown, 'generateCharts').mockRejectedValue(new Error('Chart generation failed'))
+    jest.spyOn(pdfGenerator as any, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(pdfGenerator as any, 'generateCharts').mockRejectedValue(new Error('Chart generation failed'))
 
     const result = await pdfGenerator.generateReport(mockFilters, tempFilePath)
 
@@ -292,7 +302,7 @@ describe('PDF Generator', () => {
       sensor_id: `SENSOR_${i}`
     }))
 
-    jest.spyOn(pdfGenerator as unknown, 'fetchSensorData').mockResolvedValue(largeDataset)
+    jest.spyOn(pdfGenerator as any, 'fetchSensorData').mockResolvedValue(largeDataset)
 
     const result = await pdfGenerator.generateReport(mockFilters, tempFilePath)
 
@@ -304,7 +314,7 @@ describe('PDF Generator', () => {
   })
 
   test('should support password protection', async () => {
-    jest.spyOn(pdfGenerator as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(pdfGenerator as any, 'fetchSensorData').mockResolvedValue(mockSensorData)
 
     const securityOptions = {
       password: 'test123',
@@ -333,8 +343,8 @@ describe('Export Integration Tests', () => {
     const excelExporter = new ExcelExporter()
 
     // Mock data fetch for both exporters
-    jest.spyOn(csvExporter as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
-    jest.spyOn(excelExporter as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(csvExporter, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(excelExporter as any, 'fetchSensorData').mockResolvedValue(mockSensorData)
 
     const csvPath = createTempFile('csv')
     const excelPath = createTempFile('xlsx')
@@ -356,8 +366,8 @@ describe('Export Integration Tests', () => {
     const excelExporter = new ExcelExporter()
 
     // Use same mock data for both
-    jest.spyOn(csvExporter as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
-    jest.spyOn(excelExporter as unknown, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(csvExporter, 'fetchSensorData').mockResolvedValue(mockSensorData)
+    jest.spyOn(excelExporter as any, 'fetchSensorData').mockResolvedValue(mockSensorData)
 
     const csvPath = createTempFile('csv')
     const excelPath = createTempFile('xlsx')
@@ -389,7 +399,7 @@ describe('Export Integration Tests', () => {
     ]
 
     const csvExporter = new CSVExporter()
-    jest.spyOn(csvExporter as unknown, 'fetchSensorData').mockResolvedValue(edgeCaseData)
+    jest.spyOn(csvExporter, 'fetchSensorData').mockResolvedValue(edgeCaseData)
 
     const csvPath = createTempFile('csv')
     const result = await csvExporter.exportToCSV(mockFilters, csvPath)
@@ -423,7 +433,7 @@ describe('Export Performance Tests', () => {
       temperature: 20 + Math.random() * 10
     }))
 
-    jest.spyOn(csvExporter as unknown, 'fetchSensorData').mockResolvedValue(largeDataset)
+    jest.spyOn(csvExporter, 'fetchSensorData').mockResolvedValue(largeDataset)
 
     const startTime = Date.now()
     const result = await csvExporter.exportToCSV(mockFilters, createTempFile('csv'))
@@ -441,7 +451,7 @@ describe('Export Performance Tests', () => {
       sensor_id: `SENSOR_${i}`
     }))
 
-    jest.spyOn(excelExporter as unknown, 'fetchSensorData').mockResolvedValue(mediumDataset)
+    jest.spyOn(excelExporter as any, 'fetchSensorData').mockResolvedValue(mediumDataset)
 
     const initialMemory = process.memoryUsage().heapUsed
     const result = await excelExporter.exportToExcel(mockFilters, createTempFile('xlsx'))

@@ -341,7 +341,7 @@ export class StripeProductionValidator {
         taxEnabled: !!taxSettings.status,
         testCalculation: {
           totalTax: testCalculation.tax_amount_exclusive,
-          taxBreakdown: testCalculation.tax_breakdown?.map((breakdown: Record<string, any>) => ({
+          taxBreakdown: testCalculation.tax_breakdown?.map((breakdown: Record<string, unknown>) => ({
             jurisdiction: breakdown.jurisdiction || 'Unknown',
             rate: breakdown.tax_rate_details?.percentage_decimal || 0,
             amount: breakdown.amount || breakdown.tax_amount || 0

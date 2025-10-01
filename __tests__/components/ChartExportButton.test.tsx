@@ -41,7 +41,7 @@ const mockFreeSession = {
   expires: '2025-12-31'
 }
 
-const renderWithSession = (component: React.ReactElement, session: unknown = mockProfessionalSession) => {
+const renderWithSession = (component: React.ReactElement, session: any = mockProfessionalSession) => {
   return render(
     <SessionProvider session={session}>
       {component}
@@ -66,7 +66,7 @@ describe('ChartExportButton', () => {
 
       const exportButton = screen.getByRole('button', { name: /export/i })
       expect(exportButton).toBeInTheDocument()
-      expect(exportButton).toHaveClass('bg-green-100', 'text-green-700')
+      expect(exportButton).toHaveClass('bg-green-100 text-green-700')
       expect(exportButton).not.toHaveAttribute('disabled')
     })
 
@@ -78,7 +78,7 @@ describe('ChartExportButton', () => {
 
       const exportButton = screen.getByRole('button', { name: /export/i })
       expect(exportButton).toBeInTheDocument()
-      expect(exportButton).toHaveClass('bg-orange-100', 'text-orange-700')
+      expect(exportButton).toHaveClass('bg-orange-100 text-orange-700')
       expect(exportButton).toHaveAttribute('title', 'Professional subscription required')
     })
 
@@ -207,11 +207,11 @@ describe('ChartExportButton', () => {
       expect(pdfButton).toBeInTheDocument()
 
       // PNG should be selected by default
-      expect(pngButton).toHaveClass('bg-blue-50', 'border-blue-200')
+      expect(pngButton).toHaveClass('bg-blue-50 border-blue-200')
 
       // Click PDF
       fireEvent.click(pdfButton!)
-      expect(pdfButton).toHaveClass('bg-blue-50', 'border-blue-200')
+      expect(pdfButton).toHaveClass('bg-blue-50 border-blue-200')
     })
 
     test('allows title customization', () => {
@@ -222,7 +222,7 @@ describe('ChartExportButton', () => {
       fireEvent.click(screen.getByRole('button', { name: /export/i }))
 
       const titleInput = screen.getByLabelText('Chart Title')
-      expect(titleInput).toHaveValue(/Bangkok Time-Series Analysis/)
+      expect((titleInput as HTMLInputElement).value).toMatch(/Bangkok Time-Series Analysis/)
 
       fireEvent.change(titleInput, { target: { value: 'Custom Chart Title' } })
       expect(titleInput).toHaveValue('Custom Chart Title')

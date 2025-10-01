@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     // For retriable errors, return 500 to trigger Stripe retry
-    if (isRetriableError(error as Error)) {
+    if (await isRetriableError(error as Error)) {
       await scheduleWebhookRetry(event, retryCount + 1)
       return NextResponse.json(
         {

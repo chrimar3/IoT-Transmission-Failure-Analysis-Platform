@@ -167,11 +167,11 @@ describe('Pattern Detection Integration Flow', () => {
       expect(data.data.patterns.length).toBeGreaterThan(0)
 
       // Should detect different pattern types
-      const patternTypes = data.data.patterns.map((p: unknown) => p.pattern_type)
+      const patternTypes = data.data.patterns.map((p: any) => p.pattern_type)
       expect(patternTypes).toContain('anomaly')
 
       // Should have appropriate recommendations for each pattern type
-      const patternsWithRecommendations = data.data.patterns.filter((p: unknown) => p.recommendations.length > 0)
+      const patternsWithRecommendations = data.data.patterns.filter((p: any) => p.recommendations.length > 0)
       expect(patternsWithRecommendations.length).toBeGreaterThan(0)
     })
 

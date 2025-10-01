@@ -52,7 +52,18 @@ const mockTemplate: ReportTemplate = {
     branding: {
       company_name: 'Test Company'
     },
-    data_configuration: {}
+    data_configuration: {
+      sensors: ['SENSOR_001', 'SENSOR_002'],
+      date_range: {
+        start_date: '2023-01-01T00:00:00Z',
+        end_date: '2023-01-31T23:59:59Z'
+      },
+      filters: {
+        floor_numbers: [1, 2],
+        equipment_types: ['HVAC', 'Lighting']
+      },
+      aggregation: 'daily'
+    }
   },
   is_public: false,
   version: '1.0',

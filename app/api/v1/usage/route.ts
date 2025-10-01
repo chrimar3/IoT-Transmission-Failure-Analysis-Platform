@@ -126,6 +126,9 @@ interface UsageAnalyticsParams {
   detailed?: boolean;
   start_date?: string;
   end_date?: string;
+  api_key_id?: string;
+  group_by?: string;
+  include_errors?: boolean;
 }
 
 async function getUsageAnalytics(userId: string, params: UsageAnalyticsParams): Promise<ApiUsageStats> {
@@ -184,7 +187,7 @@ async function getUsageAnalytics(userId: string, params: UsageAnalyticsParams): 
     })
 
     // Group requests by day/week/month
-    const requestsByDay = groupRequestsByPeriod(usageData, params.group_by)
+    const requestsByDay = groupRequestsByPeriod(usageData, (params.group_by as 'day' | 'week' | 'month') || 'day')
 
     // Get top errors if requested
     const topErrors = params.include_errors ? getTopErrors(usageData) : []
@@ -215,7 +218,8 @@ function groupRequestsByPeriod(
   const groups: Record<string, number> = {}
 
   usageData.forEach(req => {
-    const date = new Date(req.timestamp)
+    const typedReq = req as { timestamp: string }
+    const date = new Date(typedReq.timestamp)
     let groupKey: string
 
     switch (groupBy) {
@@ -251,14 +255,18 @@ function getTopErrors(usageData: unknown[]): Array<{ error: string; count: numbe
 
   // Count errors by status code and message
   usageData
-    .filter(req => req.response_status >= 400 || req.error_message)
+    .filter(req => {
+      const typedReq = req as { response_status?: number; error_message?: string }
+      return (typedReq.response_status && typedReq.response_status >= 400) || typedReq.error_message
+    })
     .forEach(req => {
+      const typedReq = req as { response_status?: number; error_message?: string }
       let errorKey: string
 
-      if (req.error_message) {
-        errorKey = req.error_message
-      } else if (req.response_status >= 400) {
-        errorKey = `HTTP ${req.response_status}: ${getHttpStatusMessage(req.response_status)}`
+      if (typedReq.error_message) {
+        errorKey = typedReq.error_message
+      } else if (typedReq.response_status && typedReq.response_status >= 400) {
+        errorKey = `HTTP ${typedReq.response_status}: ${getHttpStatusMessage(typedReq.response_status)}`
       } else {
         return
       }

@@ -14,32 +14,32 @@ jest.mock('next-auth', () => ({
 jest.mock('@/lib/algorithms/StatisticalAnomalyDetector')
 jest.mock('@/lib/algorithms/RecommendationEngine')
 
-// Mock user subscription service
-jest.mock('@/lib/services/UserSubscriptionService', () => ({
-  UserSubscriptionService: {
-    checkSubscription: jest.fn()
-  }
+// Mock dynamic imports
+const mockRecommendationEngineClass = jest.fn()
+jest.doMock('@/lib/algorithms/RecommendationEngine', () => ({
+  RecommendationEngine: mockRecommendationEngineClass
 }))
+
+// Note: UserSubscriptionService is not used in the patterns/detect route
+// The route checks subscription tier directly from the session
 
 import { getServerSession } from 'next-auth'
 import { StatisticalAnomalyDetector } from '@/lib/algorithms/StatisticalAnomalyDetector'
 import { RecommendationEngine } from '@/lib/algorithms/RecommendationEngine'
-import { UserSubscriptionService } from '@/lib/services/UserSubscriptionService'
 
 const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>
-const mockCheckSubscription = UserSubscriptionService.checkSubscription as jest.MockedFunction<typeof UserSubscriptionService.checkSubscription>
 
 // Mock implementations
 const mockDetectAnomalies = jest.fn()
 const mockGenerateRecommendations = jest.fn()
 
-jest.mocked(StatisticalAnomalyDetector).mockImplementation(() => ({
+jest.mocked(StatisticalAnomalyDetector).mockImplementation((config: Partial<any>) => ({
   detectAnomalies: mockDetectAnomalies
-} as unknown))
+} as any))
 
 jest.mocked(RecommendationEngine).mockImplementation(() => ({
   generateRecommendations: mockGenerateRecommendations
-} as unknown))
+} as any))
 
 describe('/api/patterns/detect', () => {
   beforeEach(() => {
@@ -47,44 +47,24 @@ describe('/api/patterns/detect', () => {
 
     // Default mock implementations
     mockGetServerSession.mockResolvedValue({
-      user: { id: 'user_123', email: 'test@cu-bems.com' }
+      user: { id: 'user_123', email: 'test@cu-bems.com', subscriptionTier: 'professional' }
     } as unknown)
-
-    mockCheckSubscription.mockResolvedValue({
-      isAdvanced: true,
-      tier: 'professional',
-      limits: { sensors: 50, patterns: 1000 }
-    })
 
     mockDetectAnomalies.mockResolvedValue({
       success: true,
       patterns: [],
-      summary: {
-        total_patterns: 0,
-        by_severity: { critical: 0, warning: 0, info: 0 },
-        by_type: { anomaly: 0, trend: 0, correlation: 0, seasonal: 0, threshold: 0, frequency: 0 },
-        high_confidence_count: 0,
-        average_confidence: 0,
-        recommendations_count: 0,
-        critical_actions_required: 0
+      anomalies: [], // Alias for backward compatibility
+      statistics: null, // For test compatibility
+      statistical_summary: {
+        total_points_analyzed: 100,
+        anomalies_detected: 0,
+        confidence_distribution: { high: 0, medium: 0, low: 0 },
+        processing_time_ms: 150
       },
-      analysis_metadata: {
-        analysis_duration_ms: 150,
-        sensors_analyzed: 1,
-        data_points_processed: 100,
-        algorithms_used: ['statistical_zscore'],
-        confidence_calibration: {
-          historical_accuracy: 85,
-          sample_size: 1000,
-          calibration_date: '2025-01-01T00:00:00Z',
-          reliability_score: 90
-        },
-        performance_metrics: {
-          cpu_usage_ms: 100,
-          memory_peak_mb: 50,
-          cache_hit_rate: 0.8,
-          algorithm_efficiency: 0.95
-        }
+      performance_metrics: {
+        algorithm_efficiency: 0.95,
+        memory_usage_mb: 50,
+        throughput_points_per_second: 666.67
       }
     })
 
@@ -97,6 +77,9 @@ describe('/api/patterns/detect', () => {
 
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h'
@@ -114,6 +97,9 @@ describe('/api/patterns/detect', () => {
     it('should accept valid authenticated requests', async () => {
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h'
@@ -132,6 +118,9 @@ describe('/api/patterns/detect', () => {
     it('should validate required fields', async () => {
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({}) // Missing required fields
       })
 
@@ -142,11 +131,17 @@ describe('/api/patterns/detect', () => {
       expect(data.success).toBe(false)
       expect(data.error).toBe('Invalid request data')
       expect(data.validation_errors).toBeDefined()
+      expect(data.validation_errors).toHaveLength(2) // sensor_ids and time_window are required
+      expect(data.validation_errors.some((err: any) => err.field === 'sensor_ids')).toBe(true)
+      expect(data.validation_errors.some((err: any) => err.field === 'time_window')).toBe(true)
     })
 
     it('should validate sensor_ids array', async () => {
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: 'invalid', // Should be array
           time_window: '24h'
@@ -164,6 +159,9 @@ describe('/api/patterns/detect', () => {
     it('should validate time_window enum', async () => {
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: 'invalid_window'
@@ -180,6 +178,9 @@ describe('/api/patterns/detect', () => {
     it('should validate confidence_threshold range', async () => {
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h',
@@ -197,6 +198,9 @@ describe('/api/patterns/detect', () => {
     it('should accept valid optional parameters', async () => {
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001', 'SENSOR_002'],
           time_window: '7d',
@@ -217,14 +221,16 @@ describe('/api/patterns/detect', () => {
 
   describe('subscription limits', () => {
     it('should enforce free tier sensor limits', async () => {
-      mockCheckSubscription.mockResolvedValue({
-        isAdvanced: false,
-        tier: 'free',
-        limits: { sensors: 5, patterns: 100 }
-      })
+      mockGetServerSession.mockResolvedValue({
+        user: { id: 'user_123', email: 'test@cu-bems.com', subscriptionTier: 'free' }
+      } as unknown)
 
+      // The route checks user tier directly from session, not subscription service
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: Array.from({ length: 10 }, (_, i) => `SENSOR_${i + 1}`),
           time_window: '24h'
@@ -243,6 +249,9 @@ describe('/api/patterns/detect', () => {
     it('should allow professional tier higher limits', async () => {
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: Array.from({ length: 25 }, (_, i) => `SENSOR_${i + 1}`),
           time_window: '24h'
@@ -256,23 +265,29 @@ describe('/api/patterns/detect', () => {
       expect(data.success).toBe(true)
     })
 
-    it('should handle subscription check errors', async () => {
-      mockCheckSubscription.mockRejectedValue(new Error('Subscription service error'))
+    it('should enforce free tier time window restrictions', async () => {
+      mockGetServerSession.mockResolvedValue({
+        user: { id: 'user_123', email: 'test@cu-bems.com', subscriptionTier: 'free' }
+      } as unknown)
 
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
-          time_window: '24h'
+          time_window: '30d'
         })
       })
 
       const response = await POST(request)
       const data = await response.json()
 
-      // Should default to free tier limits when subscription check fails
-      expect(response.status).toBe(200)
-      expect(data.success).toBe(true)
+      expect(response.status).toBe(403)
+      expect(data.success).toBe(false)
+      expect(data.error).toBe('Subscription limit exceeded')
+      expect(data.upgrade_required).toBe(true)
     })
   })
 
@@ -300,37 +315,26 @@ describe('/api/patterns/detect', () => {
       mockDetectAnomalies.mockResolvedValue({
         success: true,
         patterns: mockPatterns,
-        summary: {
-          total_patterns: 1,
-          by_severity: { critical: 0, warning: 1, info: 0 },
-          by_type: { anomaly: 1, trend: 0, correlation: 0, seasonal: 0, threshold: 0, frequency: 0 },
-          high_confidence_count: 1,
-          average_confidence: 85,
-          recommendations_count: 0,
-          critical_actions_required: 0
+        anomalies: mockPatterns,
+        statistics: null,
+        statistical_summary: {
+          total_points_analyzed: 1000,
+          anomalies_detected: 1,
+          confidence_distribution: { high: 1, medium: 0, low: 0 },
+          processing_time_ms: 250
         },
-        analysis_metadata: {
-          analysis_duration_ms: 250,
-          sensors_analyzed: 1,
-          data_points_processed: 1000,
-          algorithms_used: ['statistical_zscore'],
-          confidence_calibration: {
-            historical_accuracy: 85,
-            sample_size: 1000,
-            calibration_date: '2025-01-01T00:00:00Z',
-            reliability_score: 90
-          },
-          performance_metrics: {
-            cpu_usage_ms: 200,
-            memory_peak_mb: 75,
-            cache_hit_rate: 0.85,
-            algorithm_efficiency: 0.92
-          }
+        performance_metrics: {
+          algorithm_efficiency: 0.92,
+          memory_usage_mb: 75,
+          throughput_points_per_second: 4000
         }
       })
 
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h'
@@ -353,6 +357,15 @@ describe('/api/patterns/detect', () => {
     })
 
     it('should include recommendations when requested', async () => {
+      // Mock professional user session for recommendations
+      mockGetServerSession.mockResolvedValue({
+        user: {
+          id: 'user_123',
+          email: 'test@cu-bems.com',
+          subscriptionTier: 'professional'
+        }
+      } as unknown)
+
       const mockRecommendations = [
         {
           id: 'rec_001',
@@ -372,10 +385,31 @@ describe('/api/patterns/detect', () => {
         success: true,
         patterns: [{
           id: 'pattern_001',
+          sensor_id: 'SENSOR_001',
+          pattern_type: 'anomaly',
+          severity: 'warning',
+          confidence_score: 0.85,
+          start_timestamp: '2025-09-23T10:00:00Z',
+          end_timestamp: '2025-09-23T10:30:00Z',
+          description: 'Anomalous reading detected',
           recommendations: []
         }],
-        summary: {},
-        analysis_metadata: {}
+        anomalies: [{
+          id: 'pattern_001',
+          recommendations: []
+        }],
+        statistics: null,
+        statistical_summary: {
+          total_points_analyzed: 500,
+          anomalies_detected: 1,
+          confidence_distribution: { high: 0, medium: 1, low: 0 },
+          processing_time_ms: 200
+        },
+        performance_metrics: {
+          algorithm_efficiency: 0.88,
+          memory_usage_mb: 60,
+          throughput_points_per_second: 2500
+        }
       } as unknown)
 
       mockGenerateRecommendations.mockResolvedValue([{
@@ -383,12 +417,53 @@ describe('/api/patterns/detect', () => {
         recommendations: mockRecommendations
       }])
 
+
+      // Set up the dynamic import mock
+      mockRecommendationEngineClass.mockImplementation(() => ({
+        generateRecommendations: mockGenerateRecommendations
+      }))
+
+      mockDetectAnomalies.mockImplementation((...args) => {
+        return Promise.resolve({
+          success: true,
+          patterns: [{
+            id: 'pattern_001',
+            sensor_id: 'SENSOR_001',
+            pattern_type: 'anomaly',
+            severity: 'warning',
+            confidence_score: 0.85,
+            start_timestamp: '2025-09-23T10:00:00Z',
+            end_timestamp: '2025-09-23T10:30:00Z',
+            description: 'Anomalous reading detected',
+            recommendations: []
+          }],
+          anomalies: [],
+          statistics: null,
+          statistical_summary: {
+            total_points_analyzed: 500,
+            anomalies_detected: 1,
+            confidence_distribution: { high: 0, medium: 1, low: 0 },
+            processing_time_ms: 200
+          },
+          performance_metrics: {
+            algorithm_efficiency: 0.88,
+            memory_usage_mb: 60,
+            throughput_points_per_second: 2500
+          }
+        })
+      })
+
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h',
-          include_recommendations: true
+          include_recommendations: true,
+          confidence_threshold: 0.5,
+          severity_filter: ['warning', 'critical']
         })
       })
 
@@ -409,12 +484,26 @@ describe('/api/patterns/detect', () => {
         success: false,
         error: 'Algorithm processing error',
         patterns: [],
-        summary: null,
-        analysis_metadata: null
+        anomalies: [],
+        statistics: null,
+        statistical_summary: {
+          total_points_analyzed: 0,
+          anomalies_detected: 0,
+          confidence_distribution: {},
+          processing_time_ms: 0
+        },
+        performance_metrics: {
+          algorithm_efficiency: 0,
+          memory_usage_mb: 0,
+          throughput_points_per_second: 0
+        }
       })
 
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h'
@@ -434,14 +523,28 @@ describe('/api/patterns/detect', () => {
       mockDetectAnomalies.mockResolvedValue({
         success: true,
         patterns: [{ id: 'pattern_001', recommendations: [] }],
-        summary: {},
-        analysis_metadata: {}
+        anomalies: [{ id: 'pattern_001', recommendations: [] }],
+        statistics: null,
+        statistical_summary: {
+          total_points_analyzed: 300,
+          anomalies_detected: 1,
+          confidence_distribution: { high: 0, medium: 0, low: 1 },
+          processing_time_ms: 180
+        },
+        performance_metrics: {
+          algorithm_efficiency: 0.75,
+          memory_usage_mb: 45,
+          throughput_points_per_second: 1666
+        }
       } as unknown)
 
       mockGenerateRecommendations.mockRejectedValue(new Error('Recommendation engine error'))
 
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h',
@@ -464,6 +567,9 @@ describe('/api/patterns/detect', () => {
     it('should include performance metrics in response', async () => {
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h'
@@ -485,6 +591,9 @@ describe('/api/patterns/detect', () => {
 
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h'
@@ -511,13 +620,27 @@ describe('/api/patterns/detect', () => {
         new Promise(resolve => setTimeout(() => resolve({
           success: true,
           patterns: [],
-          summary: {},
-          analysis_metadata: {}
+          anomalies: [],
+          statistics: null,
+          statistical_summary: {
+            total_points_analyzed: 250,
+            anomalies_detected: 0,
+            confidence_distribution: {},
+            processing_time_ms: 100
+          },
+          performance_metrics: {
+            algorithm_efficiency: 0.9,
+            memory_usage_mb: 40,
+            throughput_points_per_second: 2500
+          }
         }), 100))
       )
 
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h'
@@ -536,6 +659,9 @@ describe('/api/patterns/detect', () => {
     it('should handle malformed JSON gracefully', async () => {
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: 'invalid json{'
       })
 
@@ -550,6 +676,9 @@ describe('/api/patterns/detect', () => {
     it('should provide helpful error messages', async () => {
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: [],
           time_window: '24h'
@@ -561,6 +690,11 @@ describe('/api/patterns/detect', () => {
 
       expect(response.status).toBe(400)
       expect(data.success).toBe(false)
+      expect(data.error).toBe('Invalid request data')
+      expect(data.validation_errors).toBeDefined()
+      expect(data.validation_errors.some((err: any) =>
+        err.field === 'sensor_ids' && err.message.includes('least 1')
+      )).toBe(true)
       expect(data.suggestions).toBeDefined()
       expect(data.suggestions.length).toBeGreaterThan(0)
     })
@@ -570,6 +704,9 @@ describe('/api/patterns/detect', () => {
 
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h'
@@ -591,6 +728,9 @@ describe('/api/patterns/detect', () => {
     it('should handle rate limiting information', async () => {
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: ['SENSOR_001'],
           time_window: '24h'
@@ -608,6 +748,9 @@ describe('/api/patterns/detect', () => {
 
       const request = new NextRequest('http://localhost/api/patterns/detect', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sensor_ids: largeSensorArray,
           time_window: '24h'

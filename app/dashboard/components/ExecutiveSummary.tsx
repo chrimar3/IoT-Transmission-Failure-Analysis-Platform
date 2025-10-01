@@ -7,22 +7,22 @@ import {
   TrendingDown,
   Activity,
   Zap,
-  _AlertCircle,
-  _CheckCircle,
+  AlertCircle as _AlertCircle,
+  CheckCircle as _CheckCircle,
   DollarSign,
-  _Users,
+  Users as _Users,
   Settings,
   BarChart3,
   PieChart as _PieChartIcon,
   LineChart as _LineChartIcon,
   Monitor,
-  _Thermometer,
-  _Wind,
-  _Lightbulb,
+  Thermometer as _Thermometer,
+  Wind as _Wind,
+  Lightbulb as _Lightbulb,
   Shield,
   Star,
-  _Calendar,
-  _Clock,
+  Calendar as _Calendar,
+  Clock as _Clock,
   MapPin
 } from 'lucide-react'
 
@@ -97,12 +97,6 @@ export default function ExecutiveSummary({
   const [selectedTimeframe, setSelectedTimeframe] = useState<'24h' | '7d' | '30d'>('24h')
   const [showPersonalization, setShowPersonalization] = useState(false)
 
-  useEffect(() => {
-    fetchExecutiveSummary()
-    const interval = setInterval(fetchExecutiveSummary, refreshInterval)
-    return () => clearInterval(interval)
-  }, [fetchExecutiveSummary, refreshInterval])
-
   const fetchExecutiveSummary = useCallback(async () => {
     try {
       const params = new URLSearchParams({
@@ -130,6 +124,12 @@ export default function ExecutiveSummary({
       setLoading(false)
     }
   }, [selectedTimeframe, sessionId])
+
+  useEffect(() => {
+    fetchExecutiveSummary()
+    const interval = setInterval(fetchExecutiveSummary, refreshInterval)
+    return () => clearInterval(interval)
+  }, [fetchExecutiveSummary, refreshInterval])
 
   const getHealthStatusColor = (status: string) => {
     switch (status) {
@@ -192,6 +192,7 @@ export default function ExecutiveSummary({
       </div>
     )
   }
+
 
   if (!data) {
     return (

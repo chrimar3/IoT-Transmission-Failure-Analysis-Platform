@@ -2,17 +2,17 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useSubscription } from '@/hooks/useSubscription'
-import useReports from '@/hooks/useReports'
-import ReportDesigner from '@/src/components/reports/ReportDesigner'
-import { ReportTemplate } from '@/types/reports'
-import { FeatureGate } from '@/src/components/subscription/FeatureGate'
+import { useSubscription } from '../../../src/hooks/useSubscription'
+import useReports from '../../../src/hooks/useReports'
+import ReportDesigner from '../../../src/components/reports/ReportDesigner'
+import { ReportTemplate, GeneratedReport, ReportSchedule, GenerateReportRequest, CreateReportScheduleRequest } from '../../../src/types/reports'
+import { FeatureGate } from '../../../src/components/subscription/FeatureGate'
 
 export default function ReportsPage() {
   const { data: _session } = useSession()
-  const { _subscription } = useSubscription()
+  const _subscription = useSubscription()
   const {
-    _templates,
+    templates,
     generatedReports,
     schedules,
     loading,
@@ -66,7 +66,12 @@ export default function ReportsPage() {
             borders: { default_width: 1, default_color: '#e5e7eb', default_style: 'solid' }
           },
           branding: {},
-          data_configuration: {}
+          data_configuration: {
+            sensors: [],
+            date_range: { start_date: '', end_date: '' },
+            filters: {},
+            aggregation: 'hourly'
+          }
         }
       })
       setSelectedTemplate(newTemplate)
@@ -87,8 +92,7 @@ export default function ReportsPage() {
   return (
     <FeatureGate
       feature="advanced_reports"
-      tier="Professional"
-      fallbackComponent={
+      fallback={
         <div className="max-w-4xl mx-auto p-6">
           <div className="text-center py-12">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
@@ -174,7 +178,7 @@ export default function ReportsPage() {
         {/* Tab Content */}
         {activeTab === 'templates' && (
           <TemplatesTab
-            templates={_templates}
+            templates={templates}
             onCreateTemplate={handleCreateTemplate}
             onEditTemplate={(template) => {
               setSelectedTemplate(template)
@@ -201,7 +205,7 @@ export default function ReportsPage() {
         {activeTab === 'schedules' && (
           <SchedulesTab
             schedules={schedules}
-            templates={_templates}
+            templates={templates}
             onCreateSchedule={createSchedule}
           />
         )}
@@ -211,15 +215,15 @@ export default function ReportsPage() {
 }
 
 function TemplatesTab({
-  _templates,
+  templates,
   onCreateTemplate,
   onEditTemplate,
   onGenerateReport
 }: {
-  _templates: ReportTemplate[]
+  templates: ReportTemplate[]
   onCreateTemplate: () => void
   onEditTemplate: (template: ReportTemplate) => void
-  onGenerateReport: (data: unknown) => Promise<unknown>
+  onGenerateReport: (data: GenerateReportRequest) => Promise<GeneratedReport>
 }) {
   return (
     <div>
@@ -320,7 +324,7 @@ function BuilderTab({
   )
 }
 
-function GeneratedReportsTab({ reports }: { reports: unknown[] }) {
+function GeneratedReportsTab({ reports }: { reports: GeneratedReport[] }) {
   return (
     <div>
       <h2 className="text-xl font-semibold text-gray-900 mb-6">Generated Reports</h2>
@@ -370,12 +374,12 @@ function GeneratedReportsTab({ reports }: { reports: unknown[] }) {
 
 function SchedulesTab({
   schedules,
-  _templates,
-  _onCreateSchedule
+  templates: _templates,
+  onCreateSchedule: _onCreateSchedule
 }: {
-  schedules: unknown[]
-  _templates: ReportTemplate[]
-  _onCreateSchedule: (data: unknown) => Promise<unknown>
+  schedules: ReportSchedule[]
+  templates: ReportTemplate[]
+  onCreateSchedule: (data: CreateReportScheduleRequest) => Promise<ReportSchedule>
 }) {
   return (
     <div>

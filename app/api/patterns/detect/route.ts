@@ -11,6 +11,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
 import { StatisticalAnomalyDetector } from '@/lib/algorithms/StatisticalAnomalyDetector'
+import { RateLimiter, RateLimitMiddleware } from '@/src/lib/api/rate-limiting'
+import { DETECTION_CONFIG, getPerformanceSLA } from '@/lib/algorithms/detection-config'
+import { PatternDetectionCache } from '@/lib/algorithms/cache-service'
 import type {
   PatternDetectionRequest,
   PatternDetectionResponse,
@@ -49,12 +52,53 @@ export async function POST(request: NextRequest) {
       }, { status: 401 })
     }
 
+    const userId = (session.user as { id?: string }).id || 'unknown'
+
+    // SECURITY: Apply rate limiting based on subscription tier
+    const rateLimitTier = await RateLimitMiddleware.getUserTierFromSubscription(userId)
+    const rateLimitResult = await RateLimiter.checkRateLimit(
+      `pattern_detect_${userId}`,
+      userId,
+      rateLimitTier,
+      'patterns/detect'
+    )
+
+    // Return 429 if rate limit exceeded
+    if (!rateLimitResult.allowed) {
+      console.warn('[Rate Limit] Pattern detection blocked:', {
+        userId,
+        tier: rateLimitTier,
+        limit: rateLimitResult.limit,
+        remaining: rateLimitResult.remaining,
+        resetTime: rateLimitResult.resetTime
+      })
+
+      return NextResponse.json(
+        RateLimitMiddleware.createErrorResponse(rateLimitResult),
+        {
+          status: 429,
+          headers: RateLimitMiddleware.createHeaders(rateLimitResult)
+        }
+      )
+    }
+
     // Check subscription tier for advanced features
-    const userTier = session.user.subscriptionTier || 'free'
-    const isAdvancedUser = userTier === 'professional' || userTier === 'enterprise'
+    const userTier = (session.user as { subscriptionTier?: string })?.subscriptionTier || 'free'
+    const isAdvancedUser = userTier?.toLowerCase() === 'professional'
 
     // Validate request body
-    const body = await request.json()
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch (error) {
+      console.error('JSON parse error:', error)
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid JSON',
+        message: 'Request body must be valid JSON'
+      }, { status: 400 })
+    }
+
     const validatedRequest = PatternDetectionRequestSchema.parse(body)
 
     // Apply tier restrictions
@@ -120,6 +164,23 @@ export async function POST(request: NextRequest) {
 
     const detectionResult = await detector.detectAnomalies(timeSeriesData, analysisWindow)
 
+    // Check if detection was successful
+    if (!detectionResult.success) {
+      return NextResponse.json({
+        success: false,
+        error: 'Pattern detection failed',
+        message: 'Failed to process sensor data for pattern detection',
+        details: detectionResult.error,
+        suggestions: [
+          'Try reducing the number of sensors',
+          'Use a shorter time window',
+          'Check sensor data quality',
+          'Contact support if issue persists'
+        ],
+        error_id: `PD_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      }, { status: 500 })
+    }
+
     // Filter results based on request criteria
     let filteredPatterns = detectionResult.patterns
 
@@ -137,8 +198,33 @@ export async function POST(request: NextRequest) {
     }
 
     // Add recommendations if requested (Professional tier only)
+    const warnings: string[] = []
     if (validatedRequest.include_recommendations && isAdvancedUser) {
-      filteredPatterns = await addRecommendations(filteredPatterns)
+      try {
+        const { RecommendationEngine } = await import('@/lib/algorithms/RecommendationEngine')
+        const engine = new RecommendationEngine()
+        const recommendationResults = await engine.generateRecommendations(filteredPatterns, {
+          operational_criticality: 'high',
+          equipment_age_months: 60,
+          last_maintenance_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          failure_history: 2,
+          budget_constraints: 50000,
+          available_expertise: ['basic', 'technician', 'engineer'],
+          maintenance_window_hours: 8
+        })
+
+        // Merge recommendations back into patterns
+        filteredPatterns = filteredPatterns.map(pattern => {
+          const patternRecommendations = recommendationResults.find(r => r.id === pattern.id)
+          return {
+            ...pattern,
+            recommendations: patternRecommendations ? patternRecommendations.recommendations : []
+          }
+        })
+      } catch (error) {
+        warnings.push('Failed to generate recommendations')
+        console.error('Recommendation generation failed:', error)
+      }
     }
 
     // Calculate summary statistics
@@ -162,10 +248,30 @@ export async function POST(request: NextRequest) {
       ).length
     }
 
-    // Prepare analysis metadata
+    // PERFORMANCE: Calculate processing time and check SLA
     const processingTime = performance.now() - startTime
+    const sensorCount = validatedRequest.sensor_ids.length
+    const slaBudget = getPerformanceSLA(sensorCount)
+    const slaViolation = processingTime > slaBudget
+
+    // Alert if SLA is breached
+    if (slaViolation && DETECTION_CONFIG.performance.alertOnSlaBreach) {
+      console.warn('[SLA VIOLATION] Pattern detection exceeded performance budget:', {
+        processingTime: `${processingTime.toFixed(2)}ms`,
+        budget: `${slaBudget}ms`,
+        sensorCount,
+        overage: `${((processingTime / slaBudget - 1) * 100).toFixed(1)}%`,
+        userId,
+        timestamp: new Date().toISOString()
+      })
+    }
+
+    // Get cache statistics
+    const cacheStats = PatternDetectionCache.getStats()
+
+    // Prepare analysis metadata
     const analysisMetadata = {
-      analysis_duration_ms: Math.round(processingTime),
+      analysis_duration_ms: Math.max(1, Math.round(processingTime)),
       sensors_analyzed: validatedRequest.sensor_ids.length,
       data_points_processed: detectionResult.statistical_summary.total_points_analyzed,
       algorithms_used: [algorithmConfig.algorithm_type],
@@ -178,10 +284,37 @@ export async function POST(request: NextRequest) {
       performance_metrics: {
         cpu_usage_ms: Math.round(processingTime),
         memory_peak_mb: detectionResult.performance_metrics.memory_usage_mb,
-        cache_hit_rate: 0, // Would be implemented with caching
-        algorithm_efficiency: detectionResult.performance_metrics.algorithm_efficiency
+        cache_hit_rate: cacheStats.hitRate,
+        cache_entries: cacheStats.totalEntries,
+        algorithm_efficiency: detectionResult.performance_metrics.algorithm_efficiency,
+        sla_compliant: !slaViolation,
+        sla_budget_ms: slaBudget,
+        parallel_processing: true,
+        welford_optimization: true
       }
     }
+
+    // PERFORMANCE: Log comprehensive performance metrics
+    console.log('[Pattern Detection Performance]', {
+      user_id: userId,
+      tier: rateLimitTier,
+      sensor_count: validatedRequest.sensor_ids.length,
+      time_window: validatedRequest.time_window,
+      patterns_detected: filteredPatterns.length,
+      processing_time_ms: Math.round(processingTime),
+      sla_budget_ms: slaBudget,
+      sla_compliant: !slaViolation,
+      cache_hit_rate: `${(cacheStats.hitRate * 100).toFixed(1)}%`,
+      cache_hits: cacheStats.hits,
+      cache_misses: cacheStats.misses,
+      rate_limit_remaining: rateLimitResult.remaining,
+      optimizations: {
+        parallel_processing: true,
+        welford_algorithm: true,
+        result_caching: DETECTION_CONFIG.performance.cacheEnabled,
+        correlation_caching: DETECTION_CONFIG.performance.cacheCorrelationMatrices
+      }
+    })
 
     const response: PatternDetectionResponse = {
       success: true,
@@ -189,7 +322,8 @@ export async function POST(request: NextRequest) {
         patterns: filteredPatterns,
         summary,
         analysis_metadata: analysisMetadata
-      }
+      },
+      ...(warnings.length > 0 && { warnings })
     }
 
     return NextResponse.json(response, {
@@ -198,7 +332,10 @@ export async function POST(request: NextRequest) {
         'Cache-Control': 'private, max-age=300', // 5 minute cache
         'X-Processing-Time': `${Math.round(processingTime)}ms`,
         'X-Patterns-Detected': filteredPatterns.length.toString(),
-        'X-User-Tier': userTier
+        'X-User-Tier': userTier,
+        'X-SLA-Compliant': (!slaViolation).toString(),
+        'X-Cache-Hit-Rate': `${(cacheStats.hitRate * 100).toFixed(1)}%`,
+        ...RateLimitMiddleware.createHeaders(rateLimitResult)
       }
     })
 
@@ -209,7 +346,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({
         success: false,
-        error: 'Invalid request parameters',
+        error: 'Invalid request data',
         message: 'Please check your request parameters and try again',
         validation_errors: error.errors.map(err => ({
           field: err.path.join('.'),
@@ -262,7 +399,7 @@ export async function POST(request: NextRequest) {
       success: false,
       error: 'Pattern detection failed',
       message: 'An unexpected error occurred during pattern analysis',
-      error_id: `PD_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      error_id: `DET_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date().toISOString(),
       support_contact: 'support@cu-bems.com',
       suggestions: [
@@ -316,26 +453,47 @@ async function generateAnalysisData(request: PatternDetectionRequest) {
 
 /**
  * Add maintenance recommendations to detected patterns
- * This would integrate with the RecommendationEngine in production
+ * Integrates with the RecommendationEngine for comprehensive recommendations
  */
-async function addRecommendations(patterns: DetectedPattern[]): Promise<DetectedPattern[]> {
-  return patterns.map(pattern => ({
-    ...pattern,
-    recommendations: [
-      {
-        id: `rec_${pattern.id}_${Date.now()}`,
-        priority: pattern.severity === 'critical' ? 'high' : pattern.severity === 'warning' ? 'medium' : 'low',
-        action_type: 'inspection',
-        description: `Inspect ${pattern.equipment_type} equipment on floor ${pattern.floor_number} for anomalous behavior`,
-        estimated_cost: 150,
-        estimated_savings: pattern.severity === 'critical' ? 2000 : 500,
-        time_to_implement_hours: 2,
-        required_expertise: 'technician',
-        maintenance_category: 'predictive',
-        success_probability: pattern.confidence_score
-      }
-    ]
-  }))
+async function _addRecommendations(patterns: DetectedPattern[]): Promise<DetectedPattern[]> {
+  try {
+    const { RecommendationEngine } = await import('@/lib/algorithms/RecommendationEngine')
+    const engine = new RecommendationEngine()
+
+    // Generate comprehensive recommendations using the recommendation engine
+    const patternsWithRecommendations = await engine.generateRecommendations(patterns, {
+      operational_criticality: 'high',
+      equipment_age_months: 60, // 5 years
+      last_maintenance_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
+      failure_history: 2,
+      budget_constraints: 50000,
+      available_expertise: ['basic', 'technician', 'engineer'],
+      maintenance_window_hours: 8
+    })
+
+    return patternsWithRecommendations
+  } catch (error) {
+    console.error('RecommendationEngine failed, using fallback:', error)
+
+    // Fallback to basic recommendations if the engine fails
+    return patterns.map(pattern => ({
+      ...pattern,
+      recommendations: [
+        {
+          id: `rec_${pattern.id}_${Date.now()}`,
+          priority: pattern.severity === 'critical' ? 'high' : pattern.severity === 'warning' ? 'medium' : 'low',
+          action_type: 'inspection',
+          description: `Inspect ${pattern.equipment_type} equipment on floor ${pattern.floor_number} for anomalous behavior`,
+          estimated_cost: 150,
+          estimated_savings: pattern.severity === 'critical' ? 2000 : 500,
+          time_to_implement_hours: 2,
+          required_expertise: 'technician',
+          maintenance_category: 'predictive',
+          success_probability: pattern.confidence_score
+        }
+      ]
+    }))
+  }
 }
 
 /**

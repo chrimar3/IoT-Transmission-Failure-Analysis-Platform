@@ -19,7 +19,7 @@ interface NotificationCenterProps {
   sessionId?: string
 }
 
-export default function NotificationCenter({ _sessionId }: NotificationCenterProps) {
+export default function NotificationCenter({ sessionId: _sessionId }: NotificationCenterProps) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)

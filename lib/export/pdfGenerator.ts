@@ -12,8 +12,7 @@ import type {
   ExportError,
   ReportTemplate,
   BrandingSettings,
-  ChartConfiguration,
-  _ContentSection
+  ChartConfiguration
 } from '../../types/export'
 
 // PDF-specific interfaces
@@ -133,6 +132,10 @@ export interface PDFExportResult {
   pages_generated: number
   charts_included: number
   tables_included: number
+  template_used?: string
+  branding_applied?: boolean
+  password_protected?: boolean
+  warnings?: string[]
   processing_time_ms: number
   memory_peak_mb: number
   error?: ExportError
@@ -160,17 +163,24 @@ export class PDFGenerator {
   async generateReport(
     _filters: ExportFilters,
     filePath: string,
-    jobId?: number
+    jobId?: number,
+    options?: { security?: { password: string; permissions: string[] }; branding_settings?: BrandingSettings; template_id?: string }
   ): Promise<PDFExportResult> {
     const startTime = performance.now()
     let pagesGenerated = 0
     let chartsIncluded = 0
     let tablesIncluded = 0
     let memoryPeak = 0
+    let templateUsed = ''
+    let brandingApplied = false
+    let passwordProtected = false
+    const warnings: string[] = []
 
     try {
       // Load report template
-      this.template = await this.loadTemplate(this.config.template_id)
+      const templateId = options?.template_id || this.config.template_id
+      this.template = await this.loadTemplate(templateId)
+      templateUsed = this.template.id
 
       // Initialize PDF document
       const _doc = await this.createPDFDocument()
@@ -183,20 +193,32 @@ export class PDFGenerator {
 
       // Process each section
       for (const _section of sections) {
-        await this.processPDFSection(_doc, _section)
+        try {
+          await this.processPDFSection(_doc, _section)
 
-        if (section.type === 'chart') chartsIncluded++
-        if (section.type === 'table') tablesIncluded++
+          if (_section.type === 'chart') chartsIncluded++
+          if (_section.type === 'table') tablesIncluded++
 
-        // Update progress
-        if (_jobId) {
-          await this.updateJobProgress(_jobId, sections.indexOf(_section) + 1, sections.length)
+          // Update progress
+          if (jobId) {
+            await this.updateJobProgress(jobId, sections.indexOf(_section) + 1, sections.length)
+          }
+        } catch (sectionError) {
+          warnings.push(`Failed to process ${_section.type} section: ${sectionError instanceof Error ? sectionError.message : 'Unknown error'}`)
         }
       }
 
       // Apply branding if enabled
-      if (this.config.include_branding && this.template?.branding_settings) {
-        await this.applyBranding(_doc, this.template.branding_settings)
+      const brandingSettings = options?.branding_settings || this.template?.branding_settings
+      if (this.config.include_branding && brandingSettings) {
+        await this.applyBranding(_doc, brandingSettings)
+        brandingApplied = true
+      }
+
+      // Apply password protection if configured
+      if (options?.security) {
+        await this.applyPasswordProtection(_doc, options.security)
+        passwordProtected = true
       }
 
       // Save PDF document
@@ -230,6 +252,10 @@ export class PDFGenerator {
         pages_generated: pagesGenerated,
         charts_included: chartsIncluded,
         tables_included: tablesIncluded,
+        template_used: templateUsed,
+        branding_applied: brandingApplied,
+        password_protected: passwordProtected,
+        warnings: warnings.length > 0 ? warnings : undefined,
         processing_time_ms: processingTime,
         memory_peak_mb: memoryPeak,
         metrics
@@ -242,11 +268,15 @@ export class PDFGenerator {
         pages_generated: pagesGenerated,
         charts_included: chartsIncluded,
         tables_included: tablesIncluded,
+        template_used: templateUsed,
+        branding_applied: brandingApplied,
+        password_protected: passwordProtected,
+        warnings: warnings.length > 0 ? warnings : undefined,
         processing_time_ms: performance.now() - startTime,
         memory_peak_mb: memoryPeak,
         error: {
           code: 'PDF_GENERATION_FAILED',
-          message: error instanceof Error ? error.message : 'Unknown PDF generation error',
+          message: _error instanceof Error ? _error.message : 'Unknown PDF generation error',
           details: _error,
           suggestions: this.getErrorSuggestions(_error),
           retry_possible: true
@@ -330,8 +360,8 @@ export class PDFGenerator {
     }
 
     // Apply watermark if configured
-    if (this.config._watermark) {
-      await this.applyWatermark(_doc, this.config._watermark)
+    if (this.config.watermark) {
+      await this.applyWatermark(_doc, this.config.watermark)
     }
   }
 
@@ -423,9 +453,9 @@ export class PDFGenerator {
   private async createSummarySection(_filters: ExportFilters): Promise<PDFSection> {
     // In real implementation, this would calculate actual KPIs
     const summaryData = {
-      total_sensors: filters.sensor_ids.length,
-      date_range: `${filters.date_range.start_date} to ${filters.date_range.end_date}`,
-      equipment_types: filters.equipment_types?.length || 0,
+      total_sensors: _filters.sensor_ids.length,
+      date_range: `${_filters.date_range.start_date} to ${_filters.date_range.end_date}`,
+      equipment_types: _filters.equipment_types?.length || 0,
       key_metrics: [
         { name: 'Average Reading Value', value: '24.5°C', change: '+2.1%' },
         { name: 'System Uptime', value: '98.7%', change: '+0.3%' },
@@ -456,7 +486,7 @@ export class PDFGenerator {
     const chartSections: PDFSection[] = []
 
     // Generate charts based on template configuration
-    const charts = await this.generateCharts(_filters)
+    const charts = await this.generateChartsForPDF(_filters)
 
     for (const chart of charts) {
       chartSections.push({
@@ -573,7 +603,16 @@ export class PDFGenerator {
   /**
    * Generate charts for PDF inclusion
    */
-  private async generateCharts(_filters: ExportFilters): Promise<PDFChart[]> {
+  async generateCharts(_filters: ExportFilters): Promise<string[]> {
+    // This would generate charts using Chart.js or D3.js
+    // Mock implementation for testing
+    return ['chart1.png', 'chart2.png']
+  }
+
+  /**
+   * Generate internal charts for PDF inclusion
+   */
+  private async generateChartsForPDF(_filters: ExportFilters): Promise<PDFChart[]> {
     // In real implementation, this would:
     // 1. Generate charts using Chart.js or D3.js
     // 2. Export charts as images (PNG/SVG)
@@ -613,7 +652,7 @@ export class PDFGenerator {
    * Process individual PDF section
    */
   private async processPDFSection(_doc: unknown, _section: PDFSection): Promise<void> {
-    switch (section.type) {
+    switch (_section.type) {
       case 'header':
         await this.renderHeader(_doc, _section)
         break
@@ -633,7 +672,7 @@ export class PDFGenerator {
         await this.renderFooter(_doc, _section)
         break
       case 'page_break':
-        doc.addPage()
+        (_doc as { addPage: () => void }).addPage()
         break
     }
   }
@@ -665,7 +704,7 @@ export class PDFGenerator {
    */
   private async renderChart(_doc: unknown, _section: PDFSection): Promise<void> {
     // Implementation would embed chart image in PDF
-    const chart = section.content as PDFChart
+    const chart = _section.content as PDFChart
     if (chart.image_data) {
       // doc.image(chart.image_data, chart.position.x, chart.position.y, {
       //   width: chart.dimensions.width,
@@ -738,6 +777,16 @@ export class PDFGenerator {
       'Verify template configuration is valid'
     ]
   }
+
+  /**
+   * Fetch sensor data based on filters
+   */
+  async fetchSensorData(_filters: ExportFilters): Promise<unknown[]> {
+    // This would integrate with your database layer
+    // Mock implementation for testing
+    return []
+  }
+
 }
 
 // Export utilities

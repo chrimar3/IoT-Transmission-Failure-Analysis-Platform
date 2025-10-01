@@ -10,7 +10,7 @@ import {
   GenerateReportRequest,
   CreateReportScheduleRequest,
   UseReportsReturn
-} from '@/types/reports'
+} from '../types/reports'
 
 export function useReports(): UseReportsReturn {
   const [templates, setTemplates] = useState<ReportTemplate[]>([])

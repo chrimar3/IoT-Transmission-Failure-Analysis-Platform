@@ -10,13 +10,13 @@ import InteractiveDataVisualizations from '../InteractiveDataVisualizations'
 
 // Mock Recharts components to avoid canvas/SVG issues in tests
 jest.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: unknown) => <div data-testid="responsive-container">{children}</div>,
-  ComposedChart: ({ children }: unknown) => <div data-testid="composed-chart">{children}</div>,
-  BarChart: ({ children }: unknown) => <div data-testid="bar-chart">{children}</div>,
-  LineChart: ({ children }: unknown) => <div data-testid="line-chart">{children}</div>,
-  ScatterChart: ({ children }: unknown) => <div data-testid="scatter-chart">{children}</div>,
-  PieChart: ({ children }: unknown) => <div data-testid="pie-chart">{children}</div>,
-  AreaChart: ({ children }: unknown) => <div data-testid="area-chart">{children}</div>,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="responsive-container">{children}</div>,
+  ComposedChart: ({ children }: { children: React.ReactNode }) => <div data-testid="composed-chart">{children}</div>,
+  BarChart: ({ children }: { children: React.ReactNode }) => <div data-testid="bar-chart">{children}</div>,
+  LineChart: ({ children }: { children: React.ReactNode }) => <div data-testid="line-chart">{children}</div>,
+  ScatterChart: ({ children }: { children: React.ReactNode }) => <div data-testid="scatter-chart">{children}</div>,
+  PieChart: ({ children }: { children: React.ReactNode }) => <div data-testid="pie-chart">{children}</div>,
+  AreaChart: ({ children }: { children: React.ReactNode }) => <div data-testid="area-chart">{children}</div>,
   CartesianGrid: () => <div data-testid="cartesian-grid" />,
   XAxis: () => <div data-testid="x-axis" />,
   YAxis: () => <div data-testid="y-axis" />,
@@ -43,7 +43,7 @@ const mockCreateElement = jest.fn(() => ({
   href: '',
   download: ''
 }))
-document.createElement = mockCreateElement
+document.createElement = mockCreateElement as unknown as typeof document.createElement
 
 const mockBangkokDataset = {
   dataset_info: {
@@ -209,12 +209,12 @@ describe('InteractiveDataVisualizations Component', () => {
 
       await waitFor(() => {
         const timeSeriesButton = screen.getByText('Time Series').closest('button')
-        expect(timeSeriesButton).toHaveClass('bg-blue-600', 'text-white')
+        expect(timeSeriesButton).toHaveClass('bg-blue-600 text-white')
 
         fireEvent.click(screen.getByText('Floor Performance'))
 
         const floorPerfButton = screen.getByText('Floor Performance').closest('button')
-        expect(floorPerfButton).toHaveClass('bg-blue-600', 'text-white')
+        expect(floorPerfButton).toHaveClass('bg-blue-600 text-white')
         expect(timeSeriesButton).not.toHaveClass('bg-blue-600')
       })
     })
@@ -274,7 +274,7 @@ describe('InteractiveDataVisualizations Component', () => {
         fireEvent.click(fullscreenButton)
 
         const container = screen.getByText('Interactive Data Visualizations').closest('.bg-white')
-        expect(container).toHaveClass('fixed', 'inset-0', 'z-50')
+        expect(container).toHaveClass('fixed inset-0 z-50')
       })
     })
   })

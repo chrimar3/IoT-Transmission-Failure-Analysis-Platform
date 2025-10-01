@@ -9,10 +9,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, _CardDescription, _CardHeader, _CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { AlertTriangle, _TrendingUp, Activity, _Bell, Settings, RefreshCw, Download } from 'lucide-react'
+import { AlertTriangle, Activity, Settings, RefreshCw, Download } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PatternDetectionWidget } from '@/components/patterns/PatternDetectionWidget'
@@ -340,7 +340,7 @@ export default function PatternDetectionDashboard() {
         open={configModalOpen}
         onClose={() => setConfigModalOpen(false)}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={(newFilters) => setFilters(newFilters)}
         autoRefresh={state.autoRefresh}
         refreshInterval={state.refreshInterval}
         onAutoRefreshChange={(enabled) =>

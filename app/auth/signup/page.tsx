@@ -43,11 +43,11 @@ export default function SignUpPage() {
 
     try {
       // Create user with Supabase Auth
-      const { _data, error: signUpError } = await supabase.auth.signUp({
+      const { data: _data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          _data: {
+          data: {
             full_name: formData.fullName,
           },
         },

@@ -257,13 +257,7 @@ export async function GET(request: NextRequest) {
         end: filteredRequest.dateRange?.end || endDate
       },
       total_patterns_found: patterns.length,
-      total_estimated_impact: Math.round(totalEstimatedImpact),
-      // Revenue protection metadata
-      tier_restrictions: filteredRequest.revenueProtection.tierRestricted ? {
-        applied_restrictions: filteredRequest.appliedRestrictions,
-        data_limit_applied: queryLimit < 10000,
-        upgrade_available: filteredRequest.showUpgradePrompt
-      } : undefined
+      total_estimated_impact: Math.round(totalEstimatedImpact)
     }
 
     const executionTime = Date.now() - startTime
@@ -281,7 +275,7 @@ export async function GET(request: NextRequest) {
       data: response,
       // Include upgrade prompt if user hit data restrictions
       upgrade_prompt: filteredRequest.showUpgradePrompt ? generateUpgradePrompt(filteredRequest.appliedRestrictions) : undefined
-    } as ApiResponse<PatternDetectionResponse> & { upgrade_prompt?: any }
+    }
 
     return NextResponse.json(
       apiResponse,

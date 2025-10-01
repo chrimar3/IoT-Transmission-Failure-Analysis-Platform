@@ -165,12 +165,12 @@ describe('Bangkok Dataset Report Integration Tests', () => {
     jest.clearAllMocks()
 
     // Setup database mocks
-    mockPrisma.reportTemplate.findUnique.mockResolvedValue(mockTemplate as unknown)
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown)
-    mockPrisma.generatedReport.update.mockResolvedValue({} as unknown)
+    (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(mockTemplate)
+    ;(mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser)
+    ;(mockPrisma.generatedReport.update as jest.Mock).mockResolvedValue({})
 
     // Setup storage mock
-    mockUploadToR2.mockResolvedValue('https://storage.example.com/report.pdf')
+    mockUploadToR2.mockResolvedValue({ url: 'https://storage.example.com/report.pdf', size: 1024 })
   })
 
   describe('End-to-End Report Generation with Real Bangkok Data', () => {
@@ -271,7 +271,7 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         }
       }
 
-      mockPrisma.reportTemplate.findUnique.mockResolvedValue(filteredTemplate as unknown)
+      (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(filteredTemplate)
 
       const job = {
         reportId: 'filtered-report-123',
@@ -325,7 +325,7 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         }
       }
 
-      mockPrisma.reportTemplate.findUnique.mockResolvedValue(floorTemplate as unknown)
+      (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(floorTemplate)
 
       const job = {
         reportId: 'floor-report-123',
@@ -371,8 +371,8 @@ describe('Bangkok Dataset Report Integration Tests', () => {
       })
 
       // Verify that statistical confidence is a reasonable value (0-1)
-      const updateCall = mockPrisma.generatedReport.update.mock.calls[0]
-      const metadata = updateCall[0].data.metadata as unknown
+      const updateCall = (mockPrisma.generatedReport.update as jest.Mock).mock.calls[0]
+      const metadata = updateCall[0].data.metadata as any
       expect(metadata.statistical_confidence).toBeGreaterThanOrEqual(0)
       expect(metadata.statistical_confidence).toBeLessThanOrEqual(1)
     })
@@ -483,7 +483,7 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         }
       }
 
-      mockPrisma.reportTemplate.findUnique.mockResolvedValue(qualityTemplate as unknown)
+      (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(qualityTemplate)
 
       const job = {
         reportId: 'quality-report-123',
@@ -564,7 +564,7 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         }
       }
 
-      mockPrisma.reportTemplate.findUnique.mockResolvedValue(chartOnlyTemplate as unknown)
+      (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(chartOnlyTemplate)
 
       const job = {
         reportId: 'chart-integration-123',
@@ -621,7 +621,7 @@ describe('Bangkok Dataset Report Integration Tests', () => {
         }
       }
 
-      mockPrisma.reportTemplate.findUnique.mockResolvedValue(tableOnlyTemplate as unknown)
+      (mockPrisma.reportTemplate.findUnique as jest.Mock).mockResolvedValue(tableOnlyTemplate)
 
       const job = {
         reportId: 'table-integration-123',

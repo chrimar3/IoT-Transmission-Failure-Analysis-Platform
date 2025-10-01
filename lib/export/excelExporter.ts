@@ -8,13 +8,11 @@
 
 import type {
   ExportFilters,
-  _ExportJobParameters,
   ExportMetrics,
   OptimizationSettings,
   ExportError,
   BrandingSettings
 } from '../../types/export'
-import type { SensorReadingCSV } from './csvExporter'
 
 // Excel-specific interfaces
 export interface ExcelWorksheet {
@@ -120,7 +118,10 @@ export interface ExcelExportResult {
   file_size_bytes: number
   sheets_created: string[]
   records_exported: number
+  record_count: number
   charts_created: number
+  charts_included?: boolean
+  branding_applied?: boolean
   processing_time_ms: number
   memory_peak_mb: number
   error?: ExportError
@@ -163,13 +164,16 @@ export class ExcelExporter {
   async exportToExcel(
     _filters: ExportFilters,
     filePath: string,
-    jobId?: number
+    jobId?: number,
+    options?: { include_charts?: boolean; branding_settings?: BrandingSettings }
   ): Promise<ExcelExportResult> {
     const startTime = performance.now()
     let recordsExported = 0
     let chartsCreated = 0
     let memoryPeak = 0
     const sheetsCreated: string[] = []
+    let chartsIncluded = false
+    let brandingApplied = false
 
     try {
       // Validate export parameters
@@ -179,7 +183,7 @@ export class ExcelExporter {
       const _workbook = await this.createWorkbook()
 
       // Create worksheets based on configuration
-      const worksheets = await this.createWorksheets(_filters, _jobId)
+      const worksheets = await this.createWorksheets(_filters, jobId)
 
       // Add worksheets to workbook
       for (const worksheet of worksheets) {
@@ -189,17 +193,25 @@ export class ExcelExporter {
 
         if (worksheet.charts) {
           chartsCreated += worksheet.charts.length
+          chartsIncluded = true
         }
 
         // Update progress
-        if (_jobId) {
-          await this.updateJobProgress(_jobId, recordsExported)
+        if (jobId) {
+          await this.updateJobProgress(jobId, recordsExported)
         }
       }
 
       // Apply branding if configured
-      if (this.config._branding) {
-        await this.applyBranding(_workbook, this.config._branding)
+      const brandingSettings = options?.branding_settings || this.config.branding
+      if (brandingSettings) {
+        await this.applyBranding(_workbook, brandingSettings)
+        brandingApplied = true
+      }
+
+      // Override charts setting if specified in options
+      if (options?.include_charts !== undefined) {
+        chartsIncluded = options.include_charts
       }
 
       // Save workbook to file
@@ -231,7 +243,10 @@ export class ExcelExporter {
         file_size_bytes: stats.size,
         sheets_created: sheetsCreated,
         records_exported: recordsExported,
+        record_count: recordsExported,
         charts_created: chartsCreated,
+        charts_included: chartsIncluded,
+        branding_applied: brandingApplied,
         processing_time_ms: processingTime,
         memory_peak_mb: memoryPeak,
         metrics
@@ -243,12 +258,15 @@ export class ExcelExporter {
         file_size_bytes: 0,
         sheets_created: sheetsCreated,
         records_exported: recordsExported,
+        record_count: recordsExported,
         charts_created: chartsCreated,
+        charts_included: false,
+        branding_applied: false,
         processing_time_ms: performance.now() - startTime,
         memory_peak_mb: memoryPeak,
         error: {
           code: 'EXCEL_EXPORT_FAILED',
-          message: error instanceof Error ? error.message : 'Unknown export error',
+          message: _error instanceof Error ? _error.message : 'Unknown export error',
           details: _error,
           suggestions: this.getErrorSuggestions(_error),
           retry_possible: true
@@ -467,9 +485,9 @@ export class ExcelExporter {
   private async createMetadataSheet(_filters: ExportFilters): Promise<ExcelWorksheet> {
     const metadata = [
       { property: 'Export Date', value: new Date().toISOString(), description: 'When this export was generated' },
-      { property: 'Date Range', value: `${filters.date_range.start_date} to ${filters.date_range.end_date}`, description: 'Data time period' },
-      { property: 'Sensors', value: filters.sensor_ids.length.toString(), description: 'Number of sensors included' },
-      { property: 'Equipment Types', value: filters.equipment_types?.join(', ') || 'All', description: 'Equipment types included' },
+      { property: 'Date Range', value: `${_filters.date_range.start_date} to ${_filters.date_range.end_date}`, description: 'Data time period' },
+      { property: 'Sensors', value: _filters.sensor_ids.length.toString(), description: 'Number of sensors included' },
+      { property: 'Equipment Types', value: _filters.equipment_types?.join(', ') || 'All', description: 'Equipment types included' },
       { property: 'Data Source', value: 'Bangkok IoT Dataset', description: 'Source of the sensor data' },
       { property: 'Export Format', value: 'Excel (.xlsx)', description: 'File format' },
       { property: 'Platform', value: 'CU-BEMS IoT Transmission Failure Analysis Platform', description: 'Generating system' }
@@ -499,7 +517,7 @@ export class ExcelExporter {
     // Apply headers, data, formatting, charts, etc.
 
     // Mock implementation
-    const _ws = workbook.addWorksheet(worksheet.name)
+    const _ws = (_workbook as { addWorksheet: (name: string) => unknown }).addWorksheet(worksheet.name)
 
     // Would implement:
     // - Column headers and configuration
@@ -537,7 +555,7 @@ export class ExcelExporter {
   /**
    * Fetch sensor data based on filters
    */
-  private async fetchSensorData(_filters: ExportFilters): Promise<SensorReadingCSV[]> {
+  async fetchSensorData(_filters: ExportFilters): Promise<unknown[]> {
     // This would integrate with your database layer
     // Return mock data for type safety
     return []
@@ -591,11 +609,11 @@ export class ExcelExporter {
    * Validate export filters
    */
   private validateFilters(_filters: ExportFilters): void {
-    if (!filters.date_range.start_date || !filters.date_range.end_date) {
+    if (!_filters.date_range.start_date || !_filters.date_range.end_date) {
       throw new Error('Date range is required for Excel export')
     }
 
-    if (filters.sensor_ids.length === 0) {
+    if (_filters.sensor_ids.length === 0) {
       throw new Error('At least one sensor must be selected')
     }
 
@@ -611,11 +629,11 @@ export class ExcelExporter {
    */
   private estimateRecordCount(_filters: ExportFilters): number {
     const daysDiff = Math.ceil(
-      (new Date(filters.date_range.end_date).getTime() -
-       new Date(filters.date_range.start_date).getTime()) / (1000 * 60 * 60 * 24)
+      (new Date(_filters.date_range.end_date).getTime() -
+       new Date(_filters.date_range.start_date).getTime()) / (1000 * 60 * 60 * 24)
     )
 
-    return daysDiff * filters.sensor_ids.length * 24 // Hourly data assumption
+    return daysDiff * _filters.sensor_ids.length * 24 // Hourly data assumption
   }
 
   // Helper methods (similar to CSV exporter)
@@ -624,6 +642,7 @@ export class ExcelExporter {
   private getOptimizationFlags(): string[] { return [] }
   private calculatePerformanceScore(_records: number, _timeMs: number): number { return 85 }
   private getErrorSuggestions(_error: unknown): string[] { return [] }
+
 }
 
 // Export utilities

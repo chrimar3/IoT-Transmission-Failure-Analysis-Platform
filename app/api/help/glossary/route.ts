@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth/auth'
-import { prisma } from '@/lib/database/prisma'
+// import { prisma } from '@/lib/database/prisma'
 
 interface GlossaryTerm {
   id: string
@@ -250,15 +250,15 @@ export async function GET(request: NextRequest) {
       // Track search if user is authenticated
       if (session?.user?.id) {
         try {
-          await prisma.helpInteractions.create({
-            data: {
-              user_id: session.user.id,
-              help_type: 'search',
-              page_context: 'glossary',
-              help_content_id: `search:${search}`,
-              interaction_type: 'view'
-            }
-          })
+          // await prisma.helpInteractions.create({
+          //   data: {
+          //     user_id: session.user.id,
+          //     help_type: 'search',
+          //     page_context: 'glossary',
+          //     help_content_id: `search:${search}`,
+          //     interaction_type: 'view'
+          //   }
+          // })
         } catch (err) {
           console.warn('Error tracking glossary search:', err)
         }
@@ -372,20 +372,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Record the interaction
-    const interaction = await prisma.helpInteractions.create({
-      data: {
-        user_id: session.user.id,
-        help_type: 'glossary',
-        page_context: 'glossary',
-        help_content_id: term_id,
-        interaction_type
-      }
-    })
+    // Record the interaction (disabled for now)
+    // const interaction = await prisma.helpInteractions.create({
+    //   data: {
+    //     user_id: session.user.id,
+    //     help_type: 'glossary',
+    //     page_context: 'glossary',
+    //     help_content_id: term_id,
+    //     interaction_type
+    //   }
+    // })
 
     return NextResponse.json({
       message: 'Glossary interaction recorded successfully',
-      interaction_id: interaction.id,
+      interaction_id: 'disabled', // interaction.id,
       term: term.term
     })
   } catch (error) {

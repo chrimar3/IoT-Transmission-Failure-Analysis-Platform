@@ -1,5 +1,5 @@
 import { DefaultSession, DefaultUser } from 'next-auth'
-import { _JWT } from 'next-auth/jwt'
+// JWT import removed - not used in this file
 
 // Extend NextAuth types for our application
 declare module 'next-auth' {

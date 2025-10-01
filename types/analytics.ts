@@ -173,3 +173,132 @@ export interface ApiError {
   validation_errors?: ValidationError[]
   status_code: number
 }
+
+// Chart.js Specific Type Definitions for Time-Series Charts
+export interface ChartDataPoint {
+  x: number // timestamp as number for Chart.js
+  y: number // value
+  status?: 'normal' | 'warning' | 'error'
+  sensor_id?: string
+}
+
+export interface ChartDataset {
+  label: string
+  data: ChartDataPoint[]
+  borderColor: string
+  backgroundColor: string
+  borderWidth: number
+  pointRadius: number | ((context: any) => number)
+  pointBackgroundColor: string | ((context: any) => string)
+  fill: boolean
+  tension: number
+  spanGaps: boolean
+}
+
+export interface ChartLegendOptions {
+  display: boolean
+  position: 'top' | 'bottom' | 'left' | 'right'
+  labels: {
+    color: string
+    font: {
+      family: string
+      size: number
+    }
+  }
+}
+
+export interface ChartTooltipOptions {
+  backgroundColor: string
+  titleColor: string
+  bodyColor: string
+  borderColor: string
+  borderWidth: number
+  callbacks: {
+    title: (tooltipItems: any[]) => string
+    label: (context: any) => string
+  }
+}
+
+export interface ChartScaleOptions {
+  type: 'time' | 'linear' | 'category'
+  time?: {
+    displayFormats: {
+      minute: string
+      hour: string
+      day: string
+      week: string
+      month: string
+    }
+  }
+  grid: {
+    color: string
+    drawBorder: boolean
+  }
+  ticks: {
+    color: string
+    font: {
+      family: string
+      size: number
+    }
+  }
+}
+
+export interface ChartAnimationOptions {
+  duration: number
+  easing?: 'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad'
+}
+
+export interface ChartInteractionOptions {
+  mode: 'index' | 'nearest' | 'point' | 'dataset'
+  intersect: boolean
+}
+
+export interface ChartPluginOptions {
+  legend: ChartLegendOptions
+  title: {
+    display: boolean
+    text?: string
+  }
+  tooltip: ChartTooltipOptions
+}
+
+export interface FullChartOptions {
+  responsive: boolean
+  maintainAspectRatio: boolean
+  animation: ChartAnimationOptions
+  interaction: ChartInteractionOptions
+  parsing: boolean
+  normalized: boolean
+  plugins: ChartPluginOptions
+  scales: {
+    x: ChartScaleOptions
+    y: ChartScaleOptions
+  }
+  onHover?: (event: any, activeElements: any[]) => void
+  onClick?: (event: any, activeElements: any[]) => void
+}
+
+// Performance and Optimization Types
+export interface DecimationConfig {
+  enabled: boolean
+  algorithm: 'lttb' | 'min-max' | 'auto'
+  samples: number
+  threshold: number
+}
+
+export interface ChartPerformanceConfig {
+  maxDataPoints: number
+  animationDuration: number
+  decimation: DecimationConfig
+  parsing: boolean
+  normalized: boolean
+  spanGaps: boolean
+}
+
+export interface RealTimeUpdateConfig {
+  enabled: boolean
+  interval: number // milliseconds
+  maxDataAge: number // milliseconds
+  bufferSize: number
+  autoScroll: boolean
+}

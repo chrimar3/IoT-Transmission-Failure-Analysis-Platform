@@ -16,7 +16,8 @@ import type {
   AggregationFunction,
   AlertPriority,
   NotificationLog,
-  AlertValidation
+  AlertValidation,
+  ThresholdValue
 } from '../../types/alerts'
 
 export interface SensorReading {
@@ -77,7 +78,7 @@ export class AlertRuleEngine {
     const triggeredAlerts: AlertInstance[] = []
 
     for (const _config of configurations) {
-      if (config.status !== 'active') continue
+      if (_config.status !== 'active') continue
 
       try {
         const results = await this.evaluateConfiguration(_config, _context)
@@ -89,7 +90,7 @@ export class AlertRuleEngine {
           }
         }
       } catch (error) {
-        console.error(`Error evaluating configuration ${config.id}:`, error)
+        console.error(`Error evaluating configuration ${_config.id}:`, error)
       }
     }
 
@@ -105,7 +106,7 @@ export class AlertRuleEngine {
   ): Promise<RuleEvaluationResult[]> {
     const results: RuleEvaluationResult[] = []
 
-    for (const rule of config.rules) {
+    for (const rule of _config.rules) {
       if (!rule.enabled) continue
 
       try {
@@ -140,8 +141,8 @@ export class AlertRuleEngine {
           metric: condition.metric,
           value: conditionResult.actual_value,
           threshold: conditionResult.threshold_value,
-          timestamp: context.current_time,
-          evaluation_window: `${condition.time_aggregation._period} minutes`,
+          timestamp: _context.current_time,
+          evaluation_window: `${condition.time_aggregation.period} minutes`,
           contributing_factors: this.getContributingFactors(condition, _context)
         }
         metricSnapshots.push(snapshot)
@@ -236,7 +237,7 @@ export class AlertRuleEngine {
     const metric = condition.metric
 
     // Filter by metric type and any specified sensors
-    let filteredData = context.sensor_readings.filter(reading => {
+    let filteredData = _context.sensor_readings.filter(reading => {
       // Match metric type to sensor data
       const matchesMetric = this.doesReadingMatchMetric(reading, metric)
 
@@ -249,7 +250,7 @@ export class AlertRuleEngine {
     })
 
     // Apply time window filtering
-    const windowStart = new Date(context.current_time)
+    const windowStart = new Date(_context.current_time)
     windowStart.setMinutes(windowStart.getMinutes() - condition.time_aggregation.period)
 
     filteredData = filteredData.filter(reading =>
@@ -373,7 +374,7 @@ export class AlertRuleEngine {
   private async evaluateComparison(
     operator: ComparisonOperator,
     actualValue: number,
-    threshold: unknown,
+    threshold: ThresholdValue,
     condition: AlertCondition,
     _context: EvaluationContext
   ): Promise<boolean> {
@@ -452,7 +453,7 @@ export class AlertRuleEngine {
     _period: string
   ): Promise<SensorReading[]> {
     // Mock implementation - would query actual database
-    return context.historical_data.filter(reading =>
+    return _context.historical_data.filter(reading =>
       this.doesReadingMatchMetric(reading, condition.metric)
     )
   }
@@ -540,8 +541,8 @@ export class AlertRuleEngine {
       system_status: [],
       recent_changes: [],
       related_alerts: [],
-      weather_conditions: context.weather_data,
-      occupancy_status: context.occupancy_data
+      weather_conditions: _context.weather_data,
+      occupancy_status: _context.occupancy_data
     }
   }
 
@@ -552,7 +553,7 @@ export class AlertRuleEngine {
     const factors: string[] = []
 
     // Add time-based factors
-    const hour = new Date(context.current_time).getHours()
+    const hour = new Date(_context.current_time).getHours()
     if (hour >= 9 && hour <= 17) {
       factors.push('Business hours')
     } else if (hour >= 18 || hour <= 6) {
@@ -560,7 +561,7 @@ export class AlertRuleEngine {
     }
 
     // Add day of week
-    const dayOfWeek = new Date(context.current_time).getDay()
+    const dayOfWeek = new Date(_context.current_time).getDay()
     if (dayOfWeek === 0 || dayOfWeek === 6) {
       factors.push('Weekend')
     } else {
@@ -568,10 +569,10 @@ export class AlertRuleEngine {
     }
 
     // Add weather factors if available
-    if (context.weather_data) {
-      if (context.weather_data.temperature > 30) {
+    if (_context.weather_data) {
+      if (_context.weather_data.temperature > 30) {
         factors.push('High temperature')
-      } else if (context.weather_data.temperature < 5) {
+      } else if (_context.weather_data.temperature < 5) {
         factors.push('Low temperature')
       }
     }
@@ -607,7 +608,7 @@ export class AlertRuleEngine {
     actions.push('Check system logs for related errors')
     actions.push('Verify sensor calibration and connectivity')
 
-    if (context.recent_changes.length > 0) {
+    if (_context.recent_changes.length > 0) {
       actions.push('Review recent system changes that may have caused this alert')
     }
 
@@ -622,10 +623,10 @@ export class AlertRuleEngine {
     result: RuleEvaluationResult,
     _context: EvaluationContext
   ): Promise<AlertInstance> {
-    const rule = config.rules.find(r => r.id === result.rule_id)!
+    const rule = _config.rules.find(r => r.id === result.rule_id)!
 
     // Check for existing unresolved alerts to avoid duplicates
-    const existingAlert = await this.checkForDuplicateAlert(config.id, result.rule_id)
+    const existingAlert = await this.checkForDuplicateAlert(_config.id, result.rule_id)
 
     if (existingAlert && rule.suppress_duplicates) {
       // Update existing alert instead of creating new one
@@ -634,14 +635,14 @@ export class AlertRuleEngine {
 
     const alertInstance: AlertInstance = {
       id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      configuration_id: config.id,
+      configuration_id: _config.id,
       rule_id: result.rule_id,
       status: 'triggered',
       severity: result.severity,
-      title: `${rule.name} - ${config.name}`,
+      title: `${rule.name} - ${_config.name}`,
       description: this.generateAlertDescription(rule, result),
       metric_values: result.metric_snapshots,
-      triggered_at: context.current_time,
+      triggered_at: _context.current_time,
       escalation_level: 0,
       false_positive: false,
       suppressed: false,
@@ -690,12 +691,12 @@ export class AlertRuleEngine {
   ): Promise<void> {
     try {
       const notifications = await this.notificationService.sendAlertNotifications(
-        config.notification_settings,
+        _config.notification_settings,
         _alert
       )
 
       // Update alert with notification log
-      alert.notification_log = notifications
+      _alert.notification_log = notifications
     } catch (error) {
       console.error('Failed to send notifications:', error)
     }
@@ -710,7 +711,7 @@ export class AlertRuleEngine {
     const suggestions: unknown[] = []
 
     // Validate basic fields
-    if (!config.name) {
+    if (!_config.name) {
       errors.push({
         field: 'name',
         error_code: 'REQUIRED',
@@ -719,7 +720,7 @@ export class AlertRuleEngine {
       })
     }
 
-    if (!config.rules || config.rules.length === 0) {
+    if (!_config.rules || _config.rules.length === 0) {
       errors.push({
         field: 'rules',
         error_code: 'REQUIRED',
@@ -729,8 +730,8 @@ export class AlertRuleEngine {
     }
 
     // Validate rules
-    if (config.rules) {
-      for (const [index, rule] of config.rules.entries()) {
+    if (_config.rules) {
+      for (const [index, rule] of _config.rules.entries()) {
         if (rule.conditions.length === 0) {
           errors.push({
             field: `rules[${index}].conditions`,
@@ -783,11 +784,11 @@ export class AlertRuleEngine {
    * Estimate daily alert volume for configuration
    */
   private estimateAlertVolume(_config: Partial<AlertConfiguration>): number {
-    if (!config.rules) return 0
+    if (!_config.rules) return 0
 
     let totalVolume = 0
 
-    for (const rule of config.rules) {
+    for (const rule of _config.rules) {
       if (!rule.enabled) continue
 
       // Base estimate based on evaluation window
@@ -847,7 +848,7 @@ class AnomalyDetectionService {
     if (!condition.anomaly_detection) return false
 
     // Get historical data for comparison
-    const historicalData = context.historical_data.filter(reading =>
+    const historicalData = _context.historical_data.filter(reading =>
       reading.sensor_id === condition.metric.sensor_id
     )
 

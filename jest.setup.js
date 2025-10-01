@@ -45,6 +45,7 @@ jest.mock('next/navigation', () => ({
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key'
+process.env.STRIPE_SECRET_KEY = 'sk_test_1234567890abcdef'
 
 // Polyfills for all environments
 global.TextEncoder = TextEncoder
@@ -131,15 +132,29 @@ global.fetch = jest.fn(() =>
 if (typeof window === 'undefined') {
   // Mock NextRequest specifically for Next.js API testing
   jest.mock('next/server', () => ({
-    NextRequest: jest.fn().mockImplementation((url, options = {}) => ({
-      url,
-      method: options.method || 'GET',
-      headers: new Map(Object.entries(options.headers || {})),
-      nextUrl: new URL(url),
-      json: jest.fn().mockResolvedValue({}),
-      text: jest.fn().mockResolvedValue(''),
-      formData: jest.fn().mockResolvedValue(new FormData()),
-    })),
+    NextRequest: jest.fn().mockImplementation((url, options = {}) => {
+      const request = {
+        url,
+        method: options.method || 'GET',
+        headers: new Map(Object.entries(options.headers || {})),
+        nextUrl: new URL(url),
+        _body: options.body,
+        json: jest.fn().mockImplementation(async () => {
+          if (request._body) {
+            return typeof request._body === 'string' ? JSON.parse(request._body) : request._body
+          }
+          return {}
+        }),
+        text: jest.fn().mockImplementation(async () => {
+          if (request._body) {
+            return typeof request._body === 'string' ? request._body : JSON.stringify(request._body)
+          }
+          return ''
+        }),
+        formData: jest.fn().mockResolvedValue(new FormData()),
+      }
+      return request
+    }),
     NextResponse: {
       json: jest.fn().mockImplementation((data, options = {}) => ({
         status: options.status || 200,

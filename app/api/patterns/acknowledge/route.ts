@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
-import type { _PatternAcknowledgmentRequest, PatternAcknowledgment } from '@/types/patterns'
+import type { PatternAcknowledgment } from '@/types/patterns'
 
 // Request validation schema
 const AcknowledgmentRequestSchema = z.object({
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     await saveAcknowledgment(acknowledgment)
 
     // Update pattern status (in production, would update pattern record)
-    await updatePatternStatus(acknowledgmentData.pattern_id, 'acknowledged', session.user.id || session.user.email)
+    await updatePatternStatus(acknowledgmentData.pattern_id, 'acknowledged', session.user.id || session.user.email || 'unknown')
 
     // Log for audit trail
     console.log('Pattern acknowledged:', {
@@ -204,7 +204,7 @@ export async function GET(request: NextRequest) {
  */
 async function verifyPatternExists(_patternId: string): Promise<boolean> {
   // Mock verification - in production, would query patterns table
-  return patternId.startsWith('pattern_')
+  return _patternId.startsWith('pattern_')
 }
 
 async function getExistingAcknowledgment(_patternId: string): Promise<PatternAcknowledgment | null> {

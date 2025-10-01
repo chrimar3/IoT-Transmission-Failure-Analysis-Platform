@@ -39,13 +39,16 @@ export interface ReportTemplateData {
 }
 
 export interface DataConfiguration {
-  sensors: string[]
-  date_range: {
+  sensors?: string[]
+  date_range?: {
     start_date: string
     end_date: string
   }
-  filters: Record<string, unknown>
-  aggregation: 'raw' | 'hourly' | 'daily' | 'weekly' | 'monthly'
+  filters?: Record<string, unknown>
+  aggregation?: 'raw' | 'hourly' | 'daily' | 'weekly' | 'monthly'
+  refresh_interval?: number
+  cache_duration?: number
+  quality_threshold?: number
 }
 
 export interface ReportLayout {
@@ -79,6 +82,10 @@ export interface ReportComponent {
 }
 
 export interface ComponentConfig {
+  // Common properties
+  title?: string
+  label?: string
+
   // Chart specific
   chart_type?: ChartType
   x_axis?: AxisConfiguration
@@ -294,7 +301,7 @@ export interface BorderConfig {
 
 export interface AxisConfiguration {
   label: string
-  show_grid: boolean
+  show_grid?: boolean
   tick_format?: string
   min_value?: number
   max_value?: number

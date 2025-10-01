@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { ApiKeyManager, ApiKeyValidator } from './key-management'
-import { _RateLimiter, RateLimitMiddleware } from './rate-limiting'
+import { RateLimitMiddleware } from './rate-limiting'
 import type { ApiKey, ApiKeyScope, RateLimitTier } from '@/types/api'
 
 export interface AuthenticatedRequest extends NextRequest {
@@ -39,6 +39,41 @@ export interface ErrorDetails {
   header_examples?: string[]
   suggestions?: string[]
   retry_after?: number
+}
+
+/**
+ * Simplified API key validation function for compatibility with tests
+ */
+export async function validateAPIKey(apiKey: string): Promise<{
+  valid: boolean
+  tier: string
+  userId: string
+}> {
+  try {
+    // Use the existing ApiKeyManager to validate the key
+    const keyData = await ApiKeyManager.validateApiKey(apiKey)
+
+    if (!keyData) {
+      return {
+        valid: false,
+        tier: 'FREE',
+        userId: ''
+      }
+    }
+
+    return {
+      valid: true,
+      tier: keyData.rate_limit_tier?.toUpperCase() || 'FREE',
+      userId: keyData.user_id
+    }
+  } catch (error) {
+    console.error('API key validation error:', error)
+    return {
+      valid: false,
+      tier: 'FREE',
+      userId: ''
+    }
+  }
 }
 
 /**
@@ -331,8 +366,13 @@ export function withApiAuth(options: AuthorizationOptions = {}) {
         const authResult = await ApiAuthentication.authorize(req, options)
 
         if (!authResult.success) {
+          const errorStatus =
+            authResult.error && typeof authResult.error === 'object' && 'status' in authResult.error
+              ? (authResult.error.status as number)
+              : 401
+
           const response = NextResponse.json(authResult.error, {
-            status: authResult.error.status || 401,
+            status: errorStatus,
             headers: {
               ...authResult.error.headers,
               ...authResult.rateLimitHeaders,

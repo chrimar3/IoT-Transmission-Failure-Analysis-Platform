@@ -1,4 +1,4 @@
-import { _NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth/auth'
 import { getUserSubscription } from '@/lib/stripe/subscription'
@@ -127,7 +127,7 @@ export async function GET() {
     }
 
     const subscription = await getUserSubscription(session.user.id)
-    const isProfessional = subscription?.status === 'active' && subscription?.tier === 'professional'
+    const isProfessional = subscription?.status === 'active' && subscription?.tier === 'PROFESSIONAL'
 
     const onboardingSteps = isProfessional ? PROFESSIONAL_TIER_ONBOARDING : FREE_TIER_ONBOARDING
 

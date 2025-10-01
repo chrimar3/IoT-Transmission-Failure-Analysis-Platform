@@ -344,6 +344,8 @@ export interface AlertInstance {
   acknowledged_by?: string
   resolved_by?: string
   resolution_notes?: string
+  acknowledgment_notes?: string
+  resolution_time_minutes?: number
   false_positive: boolean
   suppressed: boolean
   notification_log: NotificationLog[]
@@ -794,4 +796,22 @@ export interface TestAlertResponse {
   success: boolean
   data?: AlertTest
   error?: string
+}
+
+// Missing types for alert engine evaluation
+export interface EvaluationContext {
+  current_time: string
+  sensor_readings: SensorReading[]
+  historical_data: SensorReading[]
+  system_status: Record<string, unknown>
+  weather_data?: WeatherContext
+  occupancy_data?: OccupancyContext
+}
+
+export interface SensorReading {
+  sensor_id: string
+  timestamp: string
+  value: number
+  unit: string
+  quality: 'good' | 'warning' | 'error'
 }

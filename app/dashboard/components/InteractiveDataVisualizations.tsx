@@ -9,14 +9,10 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  _LineChart,
   Line,
-  _PieChart,
-  _Pie,
   Cell,
   ScatterChart,
   Scatter,
-  _AreaChart,
   Area,
   ComposedChart,
   Legend
@@ -30,17 +26,11 @@ import {
   Filter,
   Download,
   RefreshCw,
-  _Settings,
   ZoomIn,
   Calendar,
   MapPin,
   Thermometer,
-  _Wind,
-  _Lightbulb,
-  _Zap,
-  _Droplets,
-  Shield,
-  _AlertCircle
+  Shield
 } from 'lucide-react'
 
 interface TimeSeriesData {
@@ -128,12 +118,6 @@ export default function InteractiveDataVisualizations({
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
-  useEffect(() => {
-    fetchVisualizationData()
-    const interval = setInterval(fetchVisualizationData, refreshInterval)
-    return () => clearInterval(interval)
-  }, [fetchVisualizationData, refreshInterval])
-
   const fetchVisualizationData = useCallback(async () => {
     try {
       const params = new URLSearchParams({
@@ -188,6 +172,12 @@ export default function InteractiveDataVisualizations({
     URL.revokeObjectURL(url)
   }
 
+  useEffect(() => {
+    fetchVisualizationData()
+    const interval = setInterval(fetchVisualizationData, refreshInterval)
+    return () => clearInterval(interval)
+  }, [fetchVisualizationData, refreshInterval])
+
   const getChartIcon = (type: ChartType) => {
     switch (type) {
       case 'timeseries': return <LineChartIcon className="h-4 w-4" />
@@ -199,12 +189,22 @@ export default function InteractiveDataVisualizations({
     }
   }
 
-  const CustomTooltip = ({ active, payload, label }: unknown) => {
+  const CustomTooltip = ({ active, payload, label }: {
+    active?: boolean;
+    payload?: Array<{
+      color: string;
+      dataKey: string;
+      value: number;
+      unit?: string;
+      name?: string;
+    }>;
+    label?: string;
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-4 border rounded-lg shadow-lg max-w-xs">
           <p className="font-medium text-gray-900 mb-2">{label}</p>
-          {payload.map((entry: unknown, index: number) => (
+          {payload?.map((entry, index) => (
             <div key={index} className="flex items-center space-x-2 mb-1">
               <div
                 className="w-3 h-3 rounded-full"

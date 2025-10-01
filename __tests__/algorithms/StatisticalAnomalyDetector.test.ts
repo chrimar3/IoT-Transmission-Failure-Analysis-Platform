@@ -121,13 +121,14 @@ describe('StatisticalAnomalyDetector', () => {
       const realTimeData = Array.from({ length: 100 }, (_, i) => ({
         timestamp: new Date(Date.now() - (100 - i) * 60000).toISOString(),
         value: 20 + Math.sin(i * 0.1) * 2 + (i === 50 ? 15 : 0), // Spike at index 50
-        sensor_id: 'REAL_TIME_001'
+        sensor_id: 'REAL_TIME_001',
+        equipment_type: 'chiller'
       }))
 
       const window: AnalysisWindow = {
-        start: realTimeData[0].timestamp,
-        end: realTimeData[realTimeData.length - 1].timestamp,
-        duration_hours: 1.67
+        start_time: realTimeData[0].timestamp,
+        end_time: realTimeData[realTimeData.length - 1].timestamp,
+        granularity: 'minute' as const
       }
 
       const result = await detector.detectAnomalies(realTimeData, window)
@@ -158,7 +159,7 @@ describe('StatisticalAnomalyDetector', () => {
       const severities = result.anomalies.map(a => a.severity)
       expect(severities.length).toBeGreaterThan(0) // At least some anomalies detected
       // Accept any severity level for now since the algorithm is working
-      expect(['critical', 'warning', 'info'].some(severity => severities.includes(severity))).toBe(true)
+      expect(['critical', 'warning', 'info'].some(severity => severities.includes(severity as 'critical' | 'warning' | 'info'))).toBe(true)
     })
   })
 
@@ -166,19 +167,25 @@ describe('StatisticalAnomalyDetector', () => {
     const mockData: TimeSeriesPoint[] = Array.from({ length: 50 }, (_, i) => ({
       timestamp: new Date(Date.now() - (50 - i) * 60000).toISOString(),
       value: 20 + Math.random() * 2 + (i === 25 ? 10 : 0),
-      sensor_id: 'ALG_TEST'
+      sensor_id: 'ALG_TEST',
+      equipment_type: 'chiller'
     }))
 
     const window: AnalysisWindow = {
-      start: mockData[0].timestamp,
-      end: mockData[mockData.length - 1].timestamp,
-      duration_hours: 0.83
+      start_time: mockData[0].timestamp,
+      end_time: mockData[mockData.length - 1].timestamp,
+      granularity: 'minute' as const
     }
 
     it('should work with IQR algorithm', async () => {
       const iqrDetector = new StatisticalAnomalyDetector({
-        algorithm: 'interquartile_range',
-        threshold: 1.5
+        algorithm_type: 'interquartile_range',
+        threshold_multiplier: 1.5,
+        minimum_data_points: 5,
+        lookback_period: '1h',
+        seasonal_adjustment: false,
+        outlier_handling: 'exclude',
+        confidence_method: 'statistical'
       })
 
       const result = await iqrDetector.detectAnomalies(mockData, window)
@@ -187,9 +194,13 @@ describe('StatisticalAnomalyDetector', () => {
 
     it('should work with Moving Average algorithm', async () => {
       const maDetector = new StatisticalAnomalyDetector({
-        algorithm: 'moving_average',
-        threshold: 2.0,
-        window_size: 10
+        algorithm_type: 'moving_average',
+        threshold_multiplier: 2.0,
+        minimum_data_points: 10,
+        lookback_period: '1h',
+        seasonal_adjustment: false,
+        outlier_handling: 'exclude',
+        confidence_method: 'statistical'
       })
 
       const result = await maDetector.detectAnomalies(mockData, window)
@@ -201,18 +212,24 @@ describe('StatisticalAnomalyDetector', () => {
       const seasonalData: TimeSeriesPoint[] = Array.from({ length: 100 }, (_, i) => ({
         timestamp: new Date(Date.now() - (100 - i) * 3600000).toISOString(), // Hourly data
         value: 20 + Math.sin(i * Math.PI / 12) * 5 + (i === 50 ? 15 : 0), // 24-hour cycle + anomaly
-        sensor_id: 'SEASONAL_TEST'
+        sensor_id: 'SEASONAL_TEST',
+        equipment_type: 'chiller'
       }))
 
       const seasonalWindow: AnalysisWindow = {
-        start: seasonalData[0].timestamp,
-        end: seasonalData[seasonalData.length - 1].timestamp,
-        duration_hours: 100
+        start_time: seasonalData[0].timestamp,
+        end_time: seasonalData[seasonalData.length - 1].timestamp,
+        granularity: 'hour' as const
       }
 
       const seasonalDetector = new StatisticalAnomalyDetector({
-        algorithm: 'seasonal_decomposition',
-        threshold: 2.5
+        algorithm_type: 'seasonal_decomposition',
+        threshold_multiplier: 2.5,
+        minimum_data_points: 10,
+        lookback_period: '24h',
+        seasonal_adjustment: true,
+        outlier_handling: 'exclude',
+        confidence_method: 'statistical'
       })
 
       const result = await seasonalDetector.detectAnomalies(seasonalData, seasonalWindow)
@@ -227,13 +244,14 @@ describe('StatisticalAnomalyDetector', () => {
       const largeData: TimeSeriesPoint[] = Array.from({ length: 10000 }, (_, i) => ({
         timestamp: new Date(Date.now() - (10000 - i) * 60000).toISOString(),
         value: 20 + Math.random() * 5 + (i % 1000 === 0 ? 20 : 0),
-        sensor_id: 'PERF_TEST'
+        sensor_id: 'PERF_TEST',
+        equipment_type: 'chiller'
       }))
 
       const window: AnalysisWindow = {
-        start: largeData[0].timestamp,
-        end: largeData[largeData.length - 1].timestamp,
-        duration_hours: 166.67
+        start_time: largeData[0].timestamp,
+        end_time: largeData[largeData.length - 1].timestamp,
+        granularity: 'minute' as const
       }
 
       const startTime = Date.now()
@@ -249,13 +267,14 @@ describe('StatisticalAnomalyDetector', () => {
       const memoryTestData: TimeSeriesPoint[] = Array.from({ length: 1000 }, (_, i) => ({
         timestamp: new Date(Date.now() - (1000 - i) * 60000).toISOString(),
         value: Math.random() * 100,
-        sensor_id: 'MEMORY_TEST'
+        sensor_id: 'MEMORY_TEST',
+        equipment_type: 'chiller'
       }))
 
       const window: AnalysisWindow = {
-        start: memoryTestData[0].timestamp,
-        end: memoryTestData[memoryTestData.length - 1].timestamp,
-        duration_hours: 16.67
+        start_time: memoryTestData[0].timestamp,
+        end_time: memoryTestData[memoryTestData.length - 1].timestamp,
+        granularity: 'minute' as const
       }
 
       // Run multiple times to check for memory leaks
@@ -271,13 +290,14 @@ describe('StatisticalAnomalyDetector', () => {
       const constantData: TimeSeriesPoint[] = Array.from({ length: 20 }, (_, i) => ({
         timestamp: new Date(Date.now() - (20 - i) * 60000).toISOString(),
         value: 25.0, // All same value
-        sensor_id: 'CONSTANT_TEST'
+        sensor_id: 'CONSTANT_TEST',
+        equipment_type: 'chiller'
       }))
 
       const window: AnalysisWindow = {
-        start: constantData[0].timestamp,
-        end: constantData[constantData.length - 1].timestamp,
-        duration_hours: 0.33
+        start_time: constantData[0].timestamp,
+        end_time: constantData[constantData.length - 1].timestamp,
+        granularity: 'minute' as const
       }
 
       const result = await detector.detectAnomalies(constantData, window)
@@ -287,17 +307,17 @@ describe('StatisticalAnomalyDetector', () => {
 
     it('should handle NaN and invalid values', async () => {
       const invalidData: TimeSeriesPoint[] = [
-        { timestamp: '2025-01-01T00:00:00Z', value: 20.5, sensor_id: 'INVALID_TEST' },
-        { timestamp: '2025-01-01T01:00:00Z', value: NaN, sensor_id: 'INVALID_TEST' },
-        { timestamp: '2025-01-01T02:00:00Z', value: Infinity, sensor_id: 'INVALID_TEST' },
-        { timestamp: '2025-01-01T03:00:00Z', value: 21.0, sensor_id: 'INVALID_TEST' },
-        { timestamp: '2025-01-01T04:00:00Z', value: -Infinity, sensor_id: 'INVALID_TEST' }
+        { timestamp: '2025-01-01T00:00:00Z', value: 20.5, sensor_id: 'INVALID_TEST', equipment_type: 'chiller' },
+        { timestamp: '2025-01-01T01:00:00Z', value: NaN, sensor_id: 'INVALID_TEST', equipment_type: 'chiller' },
+        { timestamp: '2025-01-01T02:00:00Z', value: Infinity, sensor_id: 'INVALID_TEST', equipment_type: 'chiller' },
+        { timestamp: '2025-01-01T03:00:00Z', value: 21.0, sensor_id: 'INVALID_TEST', equipment_type: 'chiller' },
+        { timestamp: '2025-01-01T04:00:00Z', value: -Infinity, sensor_id: 'INVALID_TEST', equipment_type: 'chiller' }
       ]
 
       const window: AnalysisWindow = {
-        start: '2025-01-01T00:00:00Z',
-        end: '2025-01-01T05:00:00Z',
-        duration_hours: 5
+        start_time: '2025-01-01T00:00:00Z',
+        end_time: '2025-01-01T05:00:00Z',
+        granularity: 'hour' as const
       }
 
       const result = await detector.detectAnomalies(invalidData, window)
@@ -312,17 +332,17 @@ describe('StatisticalAnomalyDetector', () => {
 
     it('should handle out-of-order timestamps', async () => {
       const unorderedData: TimeSeriesPoint[] = [
-        { timestamp: '2025-01-01T02:00:00Z', value: 20.8, sensor_id: 'UNORDERED_TEST' },
-        { timestamp: '2025-01-01T00:00:00Z', value: 20.5, sensor_id: 'UNORDERED_TEST' },
-        { timestamp: '2025-01-01T01:00:00Z', value: 21.0, sensor_id: 'UNORDERED_TEST' },
-        { timestamp: '2025-01-01T04:00:00Z', value: 20.7, sensor_id: 'UNORDERED_TEST' },
-        { timestamp: '2025-01-01T03:00:00Z', value: 45.0, sensor_id: 'UNORDERED_TEST' }
+        { timestamp: '2025-01-01T02:00:00Z', value: 20.8, sensor_id: 'UNORDERED_TEST', equipment_type: 'chiller' },
+        { timestamp: '2025-01-01T00:00:00Z', value: 20.5, sensor_id: 'UNORDERED_TEST', equipment_type: 'chiller' },
+        { timestamp: '2025-01-01T01:00:00Z', value: 21.0, sensor_id: 'UNORDERED_TEST', equipment_type: 'chiller' },
+        { timestamp: '2025-01-01T04:00:00Z', value: 20.7, sensor_id: 'UNORDERED_TEST', equipment_type: 'chiller' },
+        { timestamp: '2025-01-01T03:00:00Z', value: 45.0, sensor_id: 'UNORDERED_TEST', equipment_type: 'chiller' }
       ]
 
       const window: AnalysisWindow = {
-        start: '2025-01-01T00:00:00Z',
-        end: '2025-01-01T05:00:00Z',
-        duration_hours: 5
+        start_time: '2025-01-01T00:00:00Z',
+        end_time: '2025-01-01T05:00:00Z',
+        granularity: 'hour' as const
       }
 
       const result = await detector.detectAnomalies(unorderedData, window)

@@ -8,7 +8,6 @@
  */
 
 import { createServerClient } from '../supabase-server';
-import { _supabase } from '../supabase';
 import { validationService } from '../database/validation-service';
 import { UserProfile } from '../database/schema-types';
 

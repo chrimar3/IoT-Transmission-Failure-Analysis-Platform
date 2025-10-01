@@ -3,13 +3,13 @@
  * Comprehensive validation testing for all v1 API endpoints
  */
 
-import { describe, test, expect, beforeAll, afterAll, _beforeEach } from '@jest/globals'
+import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals'
 import {
   ApiKeyTestFactory,
   UserTestFactory,
   BangkokDataFactory,
-  _WebhookTestFactory,
-  _ApiUsageTestFactory
+  WebhookTestFactory,
+  ApiUsageTestFactory
 } from '../../utils/api-test-factory'
 import { mockApiRequest, createTestEnvironment, cleanupTestEnvironment } from '../../utils/test-helpers'
 
@@ -32,12 +32,15 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
     _freeUser = UserTestFactory.createUser({ subscription_tier: 'free' })
     freeApiKey = ApiKeyTestFactory.generateApiKey()
 
+    // Set global variable to identify free tier key for mock authentication
+    ;(globalThis as any).__testFreeApiKey = freeApiKey
+
     // Generate Bangkok dataset for testing
     _bangkokDataset = BangkokDataFactory.generateFullBangkokDataset()
   })
 
   afterAll(async () => {
-    await cleanupTestEnvironment(testEnvironment)
+    await cleanupTestEnvironment(testEnvironment as any)
   })
 
   describe('AC2: Comprehensive Data Export APIs', () => {
@@ -95,26 +98,26 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
         })
 
         // Validate response performance
-        expect(response.body.meta.processing_time_ms).toBeLessThan(500)
-        expect(response.body.data.metadata.query_time_ms).toBeLessThan(500)
+        expect((response.body as any).meta.processing_time_ms).toBeLessThan(500)
+        expect((response.body as any).data.metadata.query_time_ms).toBeLessThan(500)
       })
 
       test('supports flexible date range filtering', async () => {
         const testCases = [
           {
             name: 'single day',
-            start: '2024-09-23T00:00:00Z',
-            end: '2024-09-23T23:59:59Z'
+            start: '2025-09-23T00:00:00Z',
+            end: '2025-09-23T23:59:59Z'
           },
           {
             name: 'one week',
-            start: '2024-09-17T00:00:00Z',
-            end: '2024-09-23T23:59:59Z'
+            start: '2025-09-17T00:00:00Z',
+            end: '2025-09-23T23:59:59Z'
           },
           {
             name: 'one month',
-            start: '2024-08-23T00:00:00Z',
-            end: '2024-09-23T23:59:59Z'
+            start: '2025-08-23T00:00:00Z',
+            end: '2025-09-23T23:59:59Z'
           }
         ]
 
@@ -129,10 +132,10 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
           })
 
           expect(response.status).toBe(200)
-          expect(response.body.success).toBe(true)
+          expect((response.body as any).success).toBe(true)
 
           // Validate date range compliance
-          const series = response.body.data.series[0]
+          const series = (response.body as any).data.series[0]
           if (series && series.data.length > 0) {
             const firstTimestamp = new Date(series.data[0].timestamp)
             const lastTimestamp = new Date(series.data[series.data.length - 1].timestamp)
@@ -157,7 +160,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
         })
 
         expect(floorResponse.status).toBe(200)
-        expect(floorResponse.body.data.series.every((s: unknown) => [1, 2].includes(s.floor_number))).toBe(true)
+        expect((floorResponse.body as any).data.series.every((s: any) => [1, 2].includes(s.floor_number))).toBe(true)
 
         // Test equipment-specific filtering
         const equipmentResponse = await mockApiRequest('/v1/data/timeseries', professionalApiKey, {
@@ -170,7 +173,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
         })
 
         expect(equipmentResponse.status).toBe(200)
-        expect(equipmentResponse.body.data.series.every((s: unknown) => ['HVAC', 'Power'].includes(s.equipment_type))).toBe(true)
+        expect((equipmentResponse.body as any).data.series.every((s: any) => ['HVAC', 'Power'].includes(s.equipment_type))).toBe(true)
       })
 
       test('implements proper data decimation for large datasets', async () => {
@@ -185,8 +188,8 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
         })
 
         expect(response.status).toBe(200)
-        expect(response.body.data.metadata.total_points).toBeLessThanOrEqual(500)
-        expect(response.body.data.metadata.decimated).toBe(true)
+        expect((response.body as any).data.metadata.total_points).toBeLessThanOrEqual(500)
+        expect((response.body as any).data.metadata.decimated).toBe(true)
       })
 
       test('validates query parameter constraints', async () => {
@@ -232,8 +235,8 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
           })
 
           expect(response.status).toBe(400)
-          expect(response.body.success).toBe(false)
-          expect(response.body.error).toContain('validation')
+          expect((response.body as any).success).toBe(false)
+          expect((response.body as any).error).toContain('validation')
         }
       })
     })
@@ -302,7 +305,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
           })
 
           expect(response.status).toBe(200)
-          expect(response.body.data.summary.equipment_type).toBe(equipmentType)
+          expect((response.body as any).data.summary.equipment_type).toBe(equipmentType)
         }
       })
     })
@@ -365,7 +368,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
           })
 
           expect(response.status).toBe(200)
-          expect(response.body.data.analysis_type).toBe(analysisType)
+          expect((response.body as any).data.analysis_type).toBe(analysisType)
         }
       })
     })
@@ -414,8 +417,8 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
           const response = await mockApiRequest(`/v1/data/floors/${floorId}`, professionalApiKey)
 
           expect(response.status).toBe(404)
-          expect(response.body.success).toBe(false)
-          expect(response.body.error).toContain('Floor not found')
+          expect((response.body as any).success).toBe(false)
+          expect((response.body as any).error).toContain('Floor not found')
         }
       })
     })
@@ -560,7 +563,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
         })
 
         expect(response.status).toBe(202)
-        expect(response.body.job_id).toBeDefined()
+        expect((response.body as any).job_id).toBeDefined()
       })
     })
 
@@ -576,7 +579,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
           }
         })
 
-        const jobId = createResponse.body.job_id
+        const jobId = (createResponse.body as any).job_id
 
         // Check status
         const statusResponse = await mockApiRequest(`/v1/exports/${jobId}/status`, professionalApiKey)
@@ -618,7 +621,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
             })
           })
         } else if (response.status === 202) {
-          expect(response.body.message).toContain('still processing')
+          expect((response.body as any).message).toContain('still processing')
         }
       })
     })
@@ -681,7 +684,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
           })
 
           expect(response.status).toBe(200)
-          expect(response.body.data.timeframe).toBe(testCase.timeframe)
+          expect((response.body as any).data.timeframe).toBe(testCase.timeframe)
         }
       })
     })
@@ -770,7 +773,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
       })
 
       expect(response.status).toBe(413) // Payload Too Large
-      expect(response.body.error).toContain('request too large')
+      expect((response.body as any).error).toContain('request too large')
     })
 
     test('provides helpful error messages for malformed requests', async () => {
@@ -820,7 +823,7 @@ describe('Professional API v1 Validation Suite - Story 4.2', () => {
 
         expect(response.status).toBe(200)
         expect(responseTime).toBeLessThan(test.maxTime)
-        expect(response.body.meta.processing_time_ms).toBeLessThan(test.maxTime)
+        expect((response.body as any).meta.processing_time_ms).toBeLessThan(test.maxTime)
       }
     })
 

@@ -338,16 +338,20 @@ describe('useReports Hook', () => {
   })
 
   it('should handle API errors gracefully', async () => {
+    // Clear previous mocks first
+    mockFetch.mockClear()
+
+    // Mock the initial fetch calls - first one fails (templates), others succeed
     mockFetch
-      .mockRejectedValueOnce(new Error('Network error'))
+      .mockRejectedValueOnce(new Error('Network error')) // fetchTemplates fails
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ reports: [] })
-      } as Response)
+      } as Response) // fetchGeneratedReports succeeds
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ schedules: [] })
-      } as Response)
+      } as Response) // fetchSchedules succeeds
 
     const { result } = renderHook(() => useReports())
 
@@ -372,19 +376,23 @@ describe('useReports Hook', () => {
   })
 
   it('should handle HTTP error responses', async () => {
+    // Clear previous mocks first
+    mockFetch.mockClear()
+
+    // Mock the initial fetch calls - first one returns HTTP error, others succeed
     mockFetch
       .mockResolvedValueOnce({
         ok: false,
         json: async () => ({ error: 'Unauthorized' })
-      } as Response)
+      } as Response) // fetchTemplates returns HTTP error
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ reports: [] })
-      } as Response)
+      } as Response) // fetchGeneratedReports succeeds
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ schedules: [] })
-      } as Response)
+      } as Response) // fetchSchedules succeeds
 
     const { result } = renderHook(() => useReports())
 
@@ -399,20 +407,21 @@ describe('useReports Hook', () => {
       name: 'Updated Schedule'
     }
 
-    // Mock update response
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ schedule: updatedSchedule })
-    } as Response)
-
     const { result } = renderHook(() => useReports())
 
+    // Wait for initial data to load
     await waitFor(() => {
       expect(result.current.schedules.length).toBeGreaterThan(0)
     })
 
     // Update schedule
     await act(async () => {
+      // Mock update response
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ schedule: updatedSchedule })
+      } as Response)
+
       await result.current.updateSchedule('schedule-123', {
         name: 'Updated Schedule'
       })
