@@ -13,8 +13,9 @@ import type {
   RecommendationActionType,
   ExpertiseLevel,
   MaintenanceCategory,
-  _PatternSeverity,
-  PatternType
+  PatternSeverity as _PatternSeverity,
+  PatternType,
+  RecommendationContext
 } from '@/types/patterns'
 
 // Maintenance action database
@@ -40,16 +41,7 @@ export interface CostBenefitConfig {
   equipment_replacement_costs: Record<string, number>
 }
 
-// Recommendation generation context
-export interface RecommendationContext {
-  equipment_age_months?: number
-  last_maintenance_date?: string
-  failure_history?: number
-  operational_criticality: 'low' | 'medium' | 'high'
-  budget_constraints?: number
-  available_expertise?: ExpertiseLevel[]
-  maintenance_window_hours?: number
-}
+// RecommendationContext is imported from types/patterns.ts
 
 /**
  * Advanced Recommendation Engine for Predictive Maintenance
@@ -70,12 +62,30 @@ export class RecommendationEngine {
    */
   async generateRecommendations(
     patterns: DetectedPattern[],
-    _context: RecommendationContext = { operational_criticality: 'medium' }
+    context: RecommendationContext = {
+      building_profile: {
+        building_type: 'office',
+        total_floors: 1,
+        total_sensors: 1,
+        operational_hours: { start: '08:00', end: '18:00' },
+        maintenance_budget: 10000
+      },
+      current_conditions: {
+        outdoor_temperature: 25,
+        humidity: 60,
+        season: 'summer',
+        occupancy_level: 'medium'
+      },
+      maintenance_history: [],
+      equipment_age: 5,
+      criticality_level: 'medium',
+      operational_criticality: 'medium'
+    }
   ): Promise<DetectedPattern[]> {
     const patternsWithRecommendations = []
 
     for (const pattern of patterns) {
-      const recommendations = await this.generatePatternRecommendations(pattern, _context)
+      const recommendations = await this.generatePatternRecommendations(pattern, context)
 
       patternsWithRecommendations.push({
         ...pattern,
@@ -91,7 +101,7 @@ export class RecommendationEngine {
    */
   private async generatePatternRecommendations(
     pattern: DetectedPattern,
-    _context: RecommendationContext
+    context: RecommendationContext
   ): Promise<PatternRecommendation[]> {
     const recommendations: PatternRecommendation[] = []
 
@@ -99,18 +109,18 @@ export class RecommendationEngine {
     const applicableActions = this.findApplicableActions(pattern)
 
     for (const action of applicableActions) {
-      const recommendation = await this.createRecommendation(pattern, action, _context)
+      const recommendation = await this.createRecommendation(pattern, action, context)
       if (recommendation.success_probability >= 30) { // Minimum viability threshold
         recommendations.push(recommendation)
       }
     }
 
     // Add pattern-specific custom recommendations
-    const customRecommendations = this.generateCustomRecommendations(pattern, _context)
+    const customRecommendations = this.generateCustomRecommendations(pattern, context)
     recommendations.push(...customRecommendations)
 
     // Apply Bangkok-specific operational rules
-    return this.applyOperationalRules(recommendations, pattern, _context)
+    return this.applyOperationalRules(recommendations, pattern, context)
   }
 
   /**
@@ -138,21 +148,21 @@ export class RecommendationEngine {
   private async createRecommendation(
     pattern: DetectedPattern,
     action: MaintenanceAction,
-    _context: RecommendationContext
+    context: RecommendationContext
   ): Promise<PatternRecommendation> {
     // Calculate dynamic costs based on context
-    const adjustedCost = this.calculateAdjustedCost(action, pattern, _context)
-    const estimatedSavings = this.calculateEstimatedSavings(pattern, action, _context)
-    const timeToImplement = this.calculateImplementationTime(action, pattern, _context)
-    const priority = this.calculatePriority(pattern, action, _context)
-    const successProbability = this.calculateSuccessProbability(pattern, action, _context)
+    const adjustedCost = this.calculateAdjustedCost(action, pattern, context)
+    const estimatedSavings = this.calculateEstimatedSavings(pattern, action, context)
+    const timeToImplement = this.calculateImplementationTime(action, pattern, context)
+    const priority = this.calculatePriority(pattern, action, context)
+    const successProbability = this.calculateSuccessProbability(pattern, action, context)
     const urgencyDeadline = this.calculateUrgencyDeadline(pattern, action)
 
     const recommendation: PatternRecommendation = {
       id: `rec_${pattern.id}_${action.id}_${Date.now()}`,
       priority,
       action_type: action.action_type,
-      description: this.generateRecommendationDescription(pattern, action, _context),
+      description: this.generateRecommendationDescription(pattern, action, context),
       estimated_cost: adjustedCost,
       estimated_savings: estimatedSavings,
       time_to_implement_hours: timeToImplement,
@@ -268,7 +278,7 @@ export class RecommendationEngine {
   private calculateAdjustedCost(
     action: MaintenanceAction,
     pattern: DetectedPattern,
-    _context: RecommendationContext
+    context: RecommendationContext
   ): number {
     let adjustedCost = action.base_cost
 
@@ -286,7 +296,7 @@ export class RecommendationEngine {
     adjustedCost += laborCost
 
     // Context adjustments
-    if (_context.operational_criticality === 'high') {
+    if (context.operational_criticality === 'high') {
       adjustedCost *= 1.2 // Priority service premium
     }
 
@@ -299,7 +309,7 @@ export class RecommendationEngine {
   private calculateEstimatedSavings(
     pattern: DetectedPattern,
     action: MaintenanceAction,
-    _context: RecommendationContext
+    context: RecommendationContext
   ): number {
     // Base failure cost
     const failureMultiplier = this.costBenefitConfig.failure_cost_multipliers[pattern.equipment_type] || 1.0
@@ -318,7 +328,7 @@ export class RecommendationEngine {
     estimatedSavings += downtimeCost * preventedDowntimeHours
 
     // Operational criticality multiplier
-    if (_context.operational_criticality === 'high') {
+    if (context.operational_criticality === 'high') {
       estimatedSavings *= 1.5
     }
 
@@ -359,7 +369,7 @@ export class RecommendationEngine {
   private calculatePriority(
     pattern: DetectedPattern,
     action: MaintenanceAction,
-    _context: RecommendationContext
+    context: RecommendationContext
   ): RecommendationPriority {
     let priorityScore = 0
 
@@ -373,7 +383,7 @@ export class RecommendationEngine {
     priorityScore += action.urgency_multiplier * 20
 
     // Context contribution (10% weight)
-    priorityScore += _context.operational_criticality === 'high' ? 10 : _context.operational_criticality === 'medium' ? 5 : 2
+    priorityScore += context.operational_criticality === 'high' ? 10 : context.operational_criticality === 'medium' ? 5 : 2
 
     if (priorityScore >= 70) return 'high'
     if (priorityScore >= 40) return 'medium'
@@ -386,7 +396,7 @@ export class RecommendationEngine {
   private calculateSuccessProbability(
     pattern: DetectedPattern,
     action: MaintenanceAction,
-    _context: RecommendationContext
+    context: RecommendationContext
   ): number {
     let successProb = action.effectiveness_score
 
@@ -394,7 +404,7 @@ export class RecommendationEngine {
     successProb *= (0.5 + (pattern.confidence_score / 200)) // 0.5 to 1.0 multiplier
 
     // Adjust based on expertise match
-    if (_context.available_expertise?.includes(action.required_expertise)) {
+    if (context.available_expertise?.includes(action.required_expertise) || context.building_profile.staff_expertise?.includes(action.required_expertise)) {
       successProb *= 1.1
     }
 
@@ -440,7 +450,7 @@ export class RecommendationEngine {
   private generateRecommendationDescription(
     pattern: DetectedPattern,
     action: MaintenanceAction,
-    _context: RecommendationContext
+    context: RecommendationContext
   ): string {
     const baseDescription = action.description
       .replace('{equipment_type}', pattern.equipment_type)
@@ -453,7 +463,7 @@ export class RecommendationEngine {
       enhancedDescription += ' High-confidence detection algorithm recommends immediate attention.'
     }
 
-    if (_context.operational_criticality === 'high') {
+    if (context.operational_criticality === 'high') {
       enhancedDescription += ' Critical operational equipment requires priority handling.'
     }
 

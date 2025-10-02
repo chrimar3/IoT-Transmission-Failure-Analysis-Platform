@@ -1,27 +1,31 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/__tests__/jest-dom-setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/jest-dom-setup.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^@/lib/(.*)$': '<rootDir>/lib/$1',
     '^@/app/(.*)$': '<rootDir>/app/$1',
     '^@/components/(.*)$': '<rootDir>/components/$1',
+    '^@/hooks/(.*)$': '<rootDir>/hooks/$1',
+    '^@/types/(.*)$': '<rootDir>/types/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '^fs$': '<rootDir>/__mocks__/fs.js',
-    '^exceljs$': '<rootDir>/__mocks__/exceljs.js',
-    '^pdf-lib$': '<rootDir>/__mocks__/pdf-lib.js',
+    '^fs$': '<rootDir>/tests/__mocks__/fs.js',
+    '^exceljs$': '<rootDir>/tests/__mocks__/exceljs.js',
+    '^pdf-lib$': '<rootDir>/tests/__mocks__/pdf-lib.js',
   },
   testMatch: [
-    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
-    '<rootDir>/**/*.{test,spec}.{js,jsx,ts,tsx}'
+    '<rootDir>/tests/**/*.{test,spec}.{js,jsx,ts,tsx}',
+    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}'
   ],
   collectCoverageFrom: [
     '<rootDir>/app/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/components/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/lib/**/*.{js,jsx,ts,tsx}',
+    '<rootDir>/hooks/**/*.{js,jsx,ts,tsx}',
     '!**/*.d.ts',
     '!**/node_modules/**',
+    '!**/tests/**',
     '!**/__tests__/**',
     '!**/*.test.*',
     '!**/*.spec.*'
@@ -43,17 +47,19 @@ module.exports = {
   projects: [
     {
       displayName: 'api',
-      testMatch: ['<rootDir>/__tests__/api/**/*.test.{js,jsx,ts,tsx}'],
+      testMatch: ['<rootDir>/tests/api/**/*.test.{js,jsx,ts,tsx}'],
       testEnvironment: 'node',
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/__tests__/jest-dom-setup.js'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/jest-dom-setup.js'],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
         '^@/lib/(.*)$': '<rootDir>/lib/$1',
         '^@/app/(.*)$': '<rootDir>/app/$1',
         '^@/components/(.*)$': '<rootDir>/components/$1',
-        '^fs$': '<rootDir>/__mocks__/fs.js',
-        '^exceljs$': '<rootDir>/__mocks__/exceljs.js',
-        '^pdf-lib$': '<rootDir>/__mocks__/pdf-lib.js',
+        '^@/hooks/(.*)$': '<rootDir>/hooks/$1',
+        '^@/types/(.*)$': '<rootDir>/types/$1',
+        '^fs$': '<rootDir>/tests/__mocks__/fs.js',
+        '^exceljs$': '<rootDir>/tests/__mocks__/exceljs.js',
+        '^pdf-lib$': '<rootDir>/tests/__mocks__/pdf-lib.js',
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -65,18 +71,20 @@ module.exports = {
     },
     {
       displayName: 'integration',
-      testMatch: ['<rootDir>/__tests__/integration/**/*.test.{js,jsx,ts,tsx}'],
+      testMatch: ['<rootDir>/tests/integration/**/*.test.{js,jsx,ts,tsx}'],
       testEnvironment: 'jsdom',
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/__tests__/jest-dom-setup.js'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/jest-dom-setup.js'],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
         '^@/lib/(.*)$': '<rootDir>/lib/$1',
         '^@/app/(.*)$': '<rootDir>/app/$1',
         '^@/components/(.*)$': '<rootDir>/components/$1',
+        '^@/hooks/(.*)$': '<rootDir>/hooks/$1',
+        '^@/types/(.*)$': '<rootDir>/types/$1',
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-        '^fs$': '<rootDir>/__mocks__/fs.js',
-        '^exceljs$': '<rootDir>/__mocks__/exceljs.js',
-        '^pdf-lib$': '<rootDir>/__mocks__/pdf-lib.js',
+        '^fs$': '<rootDir>/tests/__mocks__/fs.js',
+        '^exceljs$': '<rootDir>/tests/__mocks__/exceljs.js',
+        '^pdf-lib$': '<rootDir>/tests/__mocks__/pdf-lib.js',
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -92,15 +100,17 @@ module.exports = {
     },
     {
       displayName: 'security',
-      testMatch: ['<rootDir>/__tests__/security/**/*.test.{js,jsx,ts,tsx}'],
+      testMatch: ['<rootDir>/tests/security/**/*.test.{js,jsx,ts,tsx}'],
       testEnvironment: 'node',
       setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
         '^@/lib/(.*)$': '<rootDir>/lib/$1',
         '^@/app/(.*)$': '<rootDir>/app/$1',
-        '^@/src/(.*)$': '<rootDir>/src/$1',
-        '^fs$': '<rootDir>/__mocks__/fs.js',
+        '^@/components/(.*)$': '<rootDir>/components/$1',
+        '^@/hooks/(.*)$': '<rootDir>/hooks/$1',
+        '^@/types/(.*)$': '<rootDir>/types/$1',
+        '^fs$': '<rootDir>/tests/__mocks__/fs.js',
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -115,13 +125,18 @@ module.exports = {
     },
     {
       displayName: 'components',
-      testMatch: ['<rootDir>/__tests__/**/!(api|integration|security)/*.test.{js,jsx,ts,tsx}'],
+      testMatch: ['<rootDir>/tests/**/!(api|integration|security)/*.test.{js,jsx,ts,tsx}'],
       testEnvironment: 'jsdom',
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/__tests__/jest-dom-setup.js'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/jest-dom-setup.js'],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
+        '^@/lib/(.*)$': '<rootDir>/lib/$1',
+        '^@/app/(.*)$': '<rootDir>/app/$1',
+        '^@/components/(.*)$': '<rootDir>/components/$1',
+        '^@/hooks/(.*)$': '<rootDir>/hooks/$1',
+        '^@/types/(.*)$': '<rootDir>/types/$1',
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-        '^fs$': '<rootDir>/__mocks__/fs.js',
+        '^fs$': '<rootDir>/tests/__mocks__/fs.js',
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {

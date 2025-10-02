@@ -16,7 +16,7 @@ export const query = (sql: string, _params?: unknown[]) => {
   return Promise.resolve([])
 }
 
-// Export prisma for compatibility (commented out - using Supabase)
-// export { prisma } from './prisma'
+// Export prisma for compatibility
+export { prisma } from './prisma'
 
 export default db

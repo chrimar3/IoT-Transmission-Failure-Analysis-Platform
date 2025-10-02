@@ -381,7 +381,7 @@ export class R2StorageClient {
   }
 
   private trackResponseTime(_startTime: number): void {
-    const responseTime = Date.now() - _startTime
+    const responseTime = Date.now() - startTime
     this.performanceMetrics.totalResponseTime += responseTime
   }
 
@@ -491,7 +491,7 @@ export class R2StorageClient {
 
     data.forEach(record => {
       const date = new Date(record.timestamp)
-      let groupKey: string
+      let _groupKey: string
 
       switch (query.aggregationLevel) {
         case 'hourly':
@@ -507,10 +507,10 @@ export class R2StorageClient {
           groupKey = record.timestamp
       }
 
-      if (!groups.has(groupKey)) {
-        groups.set(groupKey, [])
+      if (!groups.has(_groupKey)) {
+        groups.set(_groupKey, [])
       }
-      groups.get(groupKey)!.push(record)
+      groups.get(_groupKey)!.push(record)
     })
 
     // Aggregate each group

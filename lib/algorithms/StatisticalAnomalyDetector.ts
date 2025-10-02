@@ -4,12 +4,6 @@
  *
  * Advanced statistical analysis for detecting anomalies in Bangkok IoT sensor data
  * Optimized for real-time processing of 134 sensors with 100k+ data points each
- *
- * PERFORMANCE OPTIMIZATIONS (v2.0):
- * - Parallel processing: 10 sensors concurrently (4.3s → <2s for 50 sensors)
- * - Welford's algorithm for online statistics (O(n) instead of O(n²))
- * - Result caching with 60%+ hit rate target
- * - Configurable thresholds (no more magic numbers)
  */
 
 import type {
@@ -20,9 +14,7 @@ import type {
   StatisticalMetrics,
   AnomalyDetectionConfig,
   EquipmentThresholds
-} from '../../types/patterns'
-import { DETECTION_CONFIG } from './detection-config'
-import { PatternDetectionCache } from './cache-service'
+} from '@/types/patterns'
 
 // Time series data point for analysis
 export interface TimeSeriesPoint {
@@ -73,7 +65,7 @@ export class StatisticalAnomalyDetector {
   private equipmentThresholds: Map<string, EquipmentThresholds>
   private historicalStats: Map<string, StatisticalMetrics>
 
-  constructor(config: AnomalyDetectionConfig) {
+  constructor(config: Partial<AnomalyDetectionConfig>) {
     this.config = {
       algorithm_type: 'statistical_zscore',
       sensitivity: 7, // 1-10 scale (7 = moderate sensitivity)
@@ -84,7 +76,7 @@ export class StatisticalAnomalyDetector {
       outlier_handling: 'cap',
       confidence_method: 'statistical',
       ...config
-    }
+    } as AnomalyDetectionConfig
 
     this.equipmentThresholds = new Map()
     this.historicalStats = new Map()
@@ -150,35 +142,19 @@ export class StatisticalAnomalyDetector {
       const patterns: DetectedPattern[] = []
       let overallStatistics: StatisticalMetrics | null = null
 
-      // OPTIMIZATION: Process sensors in parallel batches
-      const sensorEntries = Array.from(sensorGroups.entries())
-      const batchSize = DETECTION_CONFIG.performance.maxSensorsParallel
-
-      for (let i = 0; i < sensorEntries.length; i += batchSize) {
-        const batch = sensorEntries.slice(i, i + batchSize)
-
-        // Process batch in parallel using Promise.all
-        const batchResults = await Promise.all(
-          batch.map(async ([sensorId, sensorData]) => {
-            if (sensorData.length < this.config.minimum_data_points) {
-              return [] // Skip sensors with insufficient data
-            }
-            return await this.analyzeSensorData(sensorId, sensorData, _window)
-          })
-        )
-
-        // Flatten and collect results
-        for (const sensorPatterns of batchResults) {
-          patterns.push(...sensorPatterns)
+      // Process each sensor group
+      for (const [sensorId, sensorData] of Array.from(sensorGroups.entries())) {
+        if (sensorData.length < this.config.minimum_data_points) {
+          continue // Skip sensors with insufficient data
         }
-      }
 
-      // Calculate overall statistics from first sensor group with sufficient data
-      for (const [_sensorId, sensorData] of sensorGroups.entries()) {
-        if (sensorData.length >= this.config.minimum_data_points) {
+        const sensorPatterns = await this.analyzeSensorData(sensorId, sensorData, _window)
+        patterns.push(...sensorPatterns)
+
+        // Calculate overall statistics from first sensor with sufficient data
+        if (!overallStatistics && sensorData.length > 0) {
           const values = sensorData.map(d => d.value)
-          overallStatistics = await this.calculateStatisticalMetricsOptimized(values)
-          break
+          overallStatistics = this.calculateStatisticalMetrics(values)
         }
       }
 
@@ -232,7 +208,6 @@ export class StatisticalAnomalyDetector {
 
   /**
    * Analyze individual sensor data for anomalies
-   * OPTIMIZATION: Uses caching for statistical calculations
    */
   private async analyzeSensorData(
     sensorId: string,
@@ -244,26 +219,16 @@ export class StatisticalAnomalyDetector {
     // Sort data by timestamp
     const sortedData = data.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
 
-    // OPTIMIZATION: Check cache for statistical metrics
-    const timeWindow = this.config.lookback_period
-    let statisticalMetrics = await PatternDetectionCache.getStatistics(sensorId, timeWindow)
-
-    if (!statisticalMetrics) {
-      // Cache miss - calculate and cache
-      const values = sortedData.map(d => d.value)
-      statisticalMetrics = await this.calculateStatisticalMetricsOptimized(values)
-      await PatternDetectionCache.cacheStatistics(sensorId, timeWindow, statisticalMetrics)
-    }
+    // Calculate statistical metrics
+    const values = sortedData.map(d => d.value)
+    const statisticalMetrics = this.calculateStatisticalMetrics(values)
 
     // Apply selected detection algorithm
     const anomalyResults = await this.applyDetectionAlgorithm(sortedData, statisticalMetrics)
 
     // Convert results to patterns
-    // OPTIMIZATION: Use configured confidence threshold instead of magic number
-    const minConfidence = DETECTION_CONFIG.algorithms.patternConfidenceFloor
-
     for (const anomaly of anomalyResults) {
-      if (anomaly.confidence_score >= minConfidence) {
+      if (anomaly.confidence_score >= (this.config.threshold_multiplier * 20)) { // Minimum confidence threshold
         const pattern = await this.createPattern(sensorId, anomaly, statisticalMetrics, sortedData[0].equipment_type)
         patterns.push(pattern)
       }
@@ -417,10 +382,10 @@ export class StatisticalAnomalyDetector {
     const results: AnomalyResult[] = []
 
     for (let i = windowSize; i < data.length; i++) {
-      const _window = data.slice(i - windowSize, i)
-      const movingAvg = _window.reduce((sum, d) => sum + d.value, 0) / windowSize
+      const windowData = data.slice(i - windowSize, i)
+      const movingAvg = windowData.reduce((sum, d) => sum + d.value, 0) / windowSize
       const movingStd = Math.sqrt(
-        _window.reduce((sum, d) => sum + Math.pow(d.value - movingAvg, 2), 0) / windowSize
+        windowData.reduce((sum, d) => sum + Math.pow(d.value - movingAvg, 2), 0) / windowSize
       )
 
       const currentValue = data[i].value
@@ -470,58 +435,7 @@ export class StatisticalAnomalyDetector {
   }
 
   /**
-   * OPTIMIZED: Calculate statistical metrics using Welford's online algorithm
-   * O(n) complexity instead of O(n²) for traditional two-pass method
-   * Reference: Welford, B. P. (1962). "Note on a method for calculating corrected sums of squares and products"
-   */
-  private async calculateStatisticalMetricsOptimized(values: number[]): Promise<StatisticalMetrics> {
-    const n = values.length
-
-    // Welford's online algorithm for mean and variance
-    let mean = 0
-    let m2 = 0 // Sum of squared differences from current mean
-
-    for (let i = 0; i < n; i++) {
-      const delta = values[i] - mean
-      mean += delta / (i + 1)
-      const delta2 = values[i] - mean
-      m2 += delta * delta2
-    }
-
-    const variance = n > 1 ? m2 / (n - 1) : 0
-    const stdDev = Math.sqrt(variance)
-
-    // Calculate z-scores for normality assessment (single pass)
-    const zScores = values.map(val => Math.abs((val - mean) / stdDev))
-    const avgZScore = zScores.reduce((sum, z) => sum + z, 0) / n
-
-    // Percentile rank calculation
-    const sortedValues = [...values].sort((a, b) => a - b)
-    const meanIndex = sortedValues.findIndex(val => val >= mean)
-    const percentileRank = (meanIndex / n) * 100
-
-    // Calculate median and quartiles (optimized single-pass for sorted array)
-    const median = this.calculateMedian(sortedValues)
-    const q1 = this.calculatePercentile(sortedValues, 25)
-    const q3 = this.calculatePercentile(sortedValues, 75)
-
-    return {
-      mean,
-      std_deviation: stdDev,
-      variance,
-      median,
-      q1,
-      q3,
-      z_score: avgZScore,
-      percentile_rank: percentileRank,
-      normality_test: this.assessNormality(values, mean, stdDev),
-      seasonality_strength: this.config.seasonal_adjustment ? this.assessSeasonality(values) : undefined
-    }
-  }
-
-  /**
-   * Legacy method for backward compatibility
-   * Uses optimized version internally
+   * Calculate comprehensive statistical metrics
    */
   private calculateStatisticalMetrics(values: number[]): StatisticalMetrics {
     const n = values.length
