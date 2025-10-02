@@ -636,11 +636,14 @@ docker run -p 3000:3000 --env-file .env.production cu-bems-platform
 
 Comprehensive documentation available in the `docs/` directory:
 
-- 📋 **[Product Requirements](docs/prd.md)** - Business requirements and scope
-- 🏗️ **[Architecture Guide](docs/architecture.md)** - Technical architecture
-- 🧪 **[Testing Strategy](docs/testing/)** - QA procedures and test cases
-- 🚀 **[Deployment Guide](docs/deployment.md)** - Production deployment steps
-- 📊 **[API Reference](docs/api/)** - Complete API documentation
+- 📋 **[Project Summary](docs/PROJECT_SUMMARY.md)** - Complete project overview
+- 🚀 **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment steps
+- 📊 **[API Reference](docs/API.md)** - Complete API documentation
+- 🧪 **[Testing Guide](docs/TESTING.md)** - Testing strategy and coverage
+- 🛠️ **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- 🏗️ **[Architecture](docs/architecture/index.md)** - Technical architecture
+- 📖 **[Product Requirements](docs/prd/index.md)** - Business requirements and scope
+- 📝 **[Epics](docs/epics/index.md)** - Development epics and stories
 
 ## 🤝 Contributing
 
