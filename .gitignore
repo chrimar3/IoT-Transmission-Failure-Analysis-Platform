@@ -131,4 +131,31 @@ temp/
 !.claude/
 !CLAUDE.md
 !.claudeignore
+
 # BMAD (local only)
+.bmad/
+bmad-config.json
+
+# Vercel
+.vercel
+
+# Test reports and coverage
+reports/
+*.test.log
+test-results/
+
+# Build artifacts
+.turbo
+
+# Generated documentation
+api-docs/
+swagger-ui-dist/
+
+# Local screenshots and demos
+screenshots/
+demos/
+
+# Backup files
+*.backup
+*.bak
+.DS_Store?

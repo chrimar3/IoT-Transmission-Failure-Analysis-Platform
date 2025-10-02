@@ -1,7 +1,44 @@
 {
   "name": "cu-bems-iot-platform",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "Enterprise-grade IoT analytics platform for building energy management systems. Analyzes 124.9M sensor records to identify transmission failures, energy anomalies, and maintenance opportunities worth $273,500 in annual savings.",
+  "private": false,
+  "author": {
+    "name": "Christopher Marroquin",
+    "email": "contact@github.com",
+    "url": "https://github.com/chrimar3"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chrimar3/IoT-Transmission-Failure-Analysis-Platform.git"
+  },
+  "bugs": {
+    "url": "https://github.com/chrimar3/IoT-Transmission-Failure-Analysis-Platform/issues"
+  },
+  "homepage": "https://github.com/chrimar3/IoT-Transmission-Failure-Analysis-Platform#readme",
+  "keywords": [
+    "iot",
+    "analytics",
+    "building-management",
+    "energy-management",
+    "bems",
+    "sensor-data",
+    "data-analytics",
+    "nextjs",
+    "typescript",
+    "react",
+    "supabase",
+    "postgresql",
+    "stripe",
+    "subscription",
+    "saas",
+    "enterprise",
+    "real-time",
+    "dashboard",
+    "visualization",
+    "predictive-maintenance"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
